@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Dashboard - Chanho FPO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f1f8f3;
+}
+
+header{
+    background:#198754;
+    color:white;
+    padding:18px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+header h1{
+    margin:0;
+    font-size:25px;
+}
+
+header p{
+    margin:5px 0 0;
+}
+
+.logout{
+    background:#dc3545;
+    color:white;
+    border:0;
+    padding:10px 16px;
+    border-radius:7px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.container{
+    width:94%;
+    max-width:1200px;
+    margin:25px auto;
+}
+
+.top-box{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.top-box h2{
+    margin-top:0;
+    color:#198754;
+}
+
+.search{
+    width:100%;
+    box-sizing:border-box;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.message{
+    text-align:center;
+    margin:15px 0;
+    font-weight:bold;
+}
+
+.table-box{
+    background:white;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1050px;
+}
+
+th{
+    background:#198754;
+    color:white;
+    padding:12px;
+    text-align:left;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+}
+
+tr:hover{
+    background:#f5fff7;
+}
+
+.status-select{
+    padding:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-weight:bold;
+}
+
+.save-btn{
+    background:#198754;
+    color:white;
+    border:0;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-left:5px;
+}
+
+.save-btn:hover{
+    background:#146c43;
+}
+
+.loading{
+    text-align:center;
+    padding:30px;
+}
+
+.no-data{
+    text-align:center;
+    padding:30px;
+    color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <div>
+        <h1>🌾 Chanho FPO Admin</h1>
+        <p>Farmer Management Dashboard</p>
+    </div>
+
+    <button class="logout" onclick="logout()">
+        Logout
+    </button>
+
+</header>
+
+
+<div class="container">
+
+    <div class="top-box">
+
+        <h2>👨‍🌾 Farmer List</h2>
+
+        <input
+            type="text"
+            id="search"
+            class="search"
+            placeholder="Registration No. या किसान का नाम खोजें..."
+            onkeyup="searchFarmers()"
+        >
+
+        <div id="message" class="message"></div>
+
+    </div>
+
+
+    <div class="table-box">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Registration No.</th>
+                    <th>नाम</th>
+                    <th>पिता / पति</th>
+                    <th>Mobile</th>
+                    <th>गाँव</th>
+                    <th>पंचायत</th>
+                    <th>फसल</th>
+                    <th>भूमि</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="farmerTable">
+
+                <tr>
+                    <td colspan="10" class="loading">
+                        ⏳ किसान की जानकारी लोड हो रही है...
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://unqihzayhrpmtdxrjiyy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const { createClient } = supabase;
+
+const db = createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+let farmers = [];
+
+
+/* =========================
+   CHECK ADMIN LOGIN
+========================= */
+
+async function checkLogin(){
+
+    const { data } =
+        await db.auth.getSession();
+
+    if(!data.session){
+
+        window.location.href =
+            "admin-login.html";
+
+        return false;
+    }
+
+    return true;
+}
+
+
+/* =========================
+   LOAD FARMERS
+========================= */
+
+async function loadFarmers(){
+
+    const loggedIn =
+        await checkLogin();
+
+    if(!loggedIn) return;
+
+
+    const message =
+        document.getElementById("message");
+
+
+    const { data, error } =
+        await db
+        .from("farmer")
+        .select(`
+            registration_no,
+            name,
+            father_name,
+            mobile,
+            village,
+            panchayat,
+            crop,
+            land,
+            status
+        `)
+        .order("registration_no", {
+            ascending:true
+        });
+
+
+    if(error){
+
+        console.error(error);
+
+        message.style.color="red";
+
+        message.innerHTML =
+            "❌ Farmer data load नहीं हो पाया।";
+
+        return;
+    }
+
+
+    farmers = data || [];
+
+    message.style.color="green";
+
+    message.innerHTML =
+        "कुल किसान: " + farmers.length;
+
+    displayFarmers(farmers);
+}
+
+
+/* =========================
+   DISPLAY FARMERS
+========================= */
+
+function displayFarmers(list){
+
+    const table =
+        document.getElementById("farmerTable");
+
+    table.innerHTML = "";
+
+
+    if(list.length === 0){
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="10" class="no-data">
+                    कोई किसान नहीं मिला।
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    list.forEach(function(farmer, index){
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                <b>${escapeHTML(farmer.registration_no || "-")}</b>
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.name || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.father_name || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.mobile || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.village || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.panchayat || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.crop || "-")}
+            </td>
+
+            <td>
+                ${escapeHTML(farmer.land || "-")}
+            </td>
+
+            <td>
+
+                <select
+                    class="status-select"
+                    id="status-${index}"
+                >
+
+                    <option value="Pending"
+                        ${getStatus(farmer.status)==="Pending" ? "selected":""}>
+                        Pending
+                    </option>
+
+                    <option value="Verified"
+                        ${getStatus(farmer.status)==="Verified" ? "selected":""}>
+                        Verified
+                    </option>
+
+                    <option value="Approved"
+                        ${getStatus(farmer.status)==="Approved" ? "selected":""}>
+                        Approved
+                    </option>
+
+                    <option value="Rejected"
+                        ${getStatus(farmer.status)==="Rejected" ? "selected":""}>
+                        Rejected
+                    </option>
+
+                </select>
+
+            </td>
+
+            <td>
+
+                <button
+                    class="save-btn"
+                    onclick="updateStatus('${encodeURIComponent(farmer.registration_no)}', ${index})"
+                >
+                    Save
+                </button>
+
+            </td>
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+function getStatus(status){
+
+    if(!status){
+        return "Pending";
+    }
+
+    return status;
+}
+
+
+/* =========================
+   UPDATE STATUS
+========================= */
+
+async function updateStatus(encodedRegistrationNo, index){
+
+    const registrationNo =
+        decodeURIComponent(encodedRegistrationNo);
+
+    const newStatus =
+        document.getElementById(
+            "status-" + index
+        ).value;
+
+
+    const message =
+        document.getElementById("message");
+
+
+    message.style.color="#198754";
+
+    message.innerHTML =
+        "⏳ Status update हो रहा है...";
+
+
+    const { error } =
+        await db
+        .from("farmer")
+        .update({
+            status:newStatus
+        })
+        .eq(
+            "registration_no",
+            registrationNo
+        );
+
+
+    if(error){
+
+        console.error(error);
+
+        message.style.color="red";
+
+        message.innerHTML =
+            "❌ Status update नहीं हुआ।";
+
+        return;
+    }
+
+
+    message.style.color="green";
+
+    message.innerHTML =
+        "✅ " +
+        registrationNo +
+        " का Status " +
+        newStatus +
+        " कर दिया गया।";
+
+
+    await loadFarmers();
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+function searchFarmers(){
+
+    const search =
+        document.getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    const filtered =
+        farmers.filter(function(farmer){
+
+            return (
+                (farmer.registration_no || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                (farmer.name || "")
+                    .toLowerCase()
+                    .includes(search)
+            );
+
+        });
+
+
+    displayFarmers(filtered);
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout(){
+
+    await db.auth.signOut();
+
+    window.location.href =
+        "admin-login.html";
+}
+
+
+/* =========================
+   HTML SECURITY
+========================= */
+
+function escapeHTML(value){
+
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+/* =========================
+   START
+========================= */
+
+loadFarmers();
+
+</script>
+
+</body>
+</html>

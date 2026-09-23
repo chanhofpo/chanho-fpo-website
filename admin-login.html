@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Login - Chanho FPO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef7f0;
+}
+
+header{
+    background:#198754;
+    color:white;
+    text-align:center;
+    padding:22px;
+}
+
+header h1{
+    margin:0;
+    font-size:28px;
+}
+
+header p{
+    margin:6px 0 0;
+}
+
+.box{
+    width:90%;
+    max-width:450px;
+    margin:50px auto;
+    background:white;
+    padding:28px;
+    border-radius:15px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.12);
+}
+
+h2{
+    text-align:center;
+    color:#198754;
+}
+
+label{
+    display:block;
+    margin-top:18px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    box-sizing:border-box;
+    padding:13px;
+    margin-top:7px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:13px;
+    margin-top:24px;
+    border:0;
+    border-radius:8px;
+    background:#198754;
+    color:white;
+    font-size:17px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#146c43;
+}
+
+#message{
+    text-align:center;
+    margin-top:18px;
+    font-weight:bold;
+}
+
+.back{
+    display:block;
+    text-align:center;
+    margin-top:20px;
+    color:#198754;
+    text-decoration:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Chanho FPO</h1>
+    <p>Admin Panel</p>
+</header>
+
+<div class="box">
+
+    <h2>🔐 Admin Login</h2>
+
+    <label>Admin Email</label>
+
+    <input
+        type="email"
+        id="email"
+        placeholder="Admin Email"
+    >
+
+    <label>Password</label>
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Password"
+    >
+
+    <button onclick="adminLogin()">
+        Login करें
+    </button>
+
+    <div id="message"></div>
+
+    <a class="back" href="index.html">
+        ← मुख्य वेबसाइट पर वापस जाएँ
+    </a>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://unqihzayhrpmtdxrjiyy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const { createClient } = supabase;
+
+const db = createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+async function adminLogin(){
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const message =
+        document.getElementById("message");
+
+
+    message.innerHTML = "";
+
+
+    if(email === "" || password === ""){
+
+        message.style.color = "red";
+
+        message.innerHTML =
+            "❌ Email और Password डालें।";
+
+        return;
+    }
+
+
+    message.style.color = "#198754";
+
+    message.innerHTML =
+        "⏳ Login हो रहा है...";
+
+
+    const { data, error } =
+        await db.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+
+    if(error){
+
+        console.error(error);
+
+        message.style.color = "red";
+
+        message.innerHTML =
+            "❌ Email या Password गलत है।";
+
+        return;
+    }
+
+
+    message.style.color = "green";
+
+    message.innerHTML =
+        "✅ Login सफल हुआ।";
+
+
+    setTimeout(function(){
+
+        window.location.href =
+            "admin-dashboard.html";
+
+    },1000);
+
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farmer Login - Chanho FPO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+    body{
+        margin:0;
+        font-family:Arial, sans-serif;
+        background:#f1f8f3;
+    }
+
+    header{
+        background:#198754;
+        color:white;
+        text-align:center;
+        padding:20px;
+    }
+
+    header h1{
+        margin:0;
+        font-size:28px;
+    }
+
+    header p{
+        margin:6px 0 0;
+    }
+
+    .box{
+        width:90%;
+        max-width:500px;
+        margin:40px auto;
+        background:white;
+        padding:25px;
+        border-radius:15px;
+        box-shadow:0 4px 15px rgba(0,0,0,0.12);
+    }
+
+    h2{
+        text-align:center;
+        color:#198754;
+    }
+
+    label{
+        display:block;
+        margin-top:15px;
+        font-weight:bold;
+    }
+
+    input{
+        width:100%;
+        padding:12px;
+        margin-top:6px;
+        border:1px solid #ccc;
+        border-radius:8px;
+        box-sizing:border-box;
+        font-size:16px;
+    }
+
+    button{
+        width:100%;
+        padding:13px;
+        margin-top:22px;
+        background:#198754;
+        color:white;
+        border:none;
+        border-radius:8px;
+        font-size:17px;
+        cursor:pointer;
+    }
+
+    button:hover{
+        background:#146c43;
+    }
+
+    #message{
+        margin-top:20px;
+        text-align:center;
+        font-weight:bold;
+    }
+
+    #result{
+        display:none;
+        margin-top:25px;
+        padding:20px;
+        background:#f8fff9;
+        border:1px solid #b7dfc5;
+        border-radius:10px;
+    }
+
+    .row{
+        padding:9px 0;
+        border-bottom:1px solid #ddd;
+    }
+
+    .row:last-child{
+        border-bottom:none;
+    }
+
+    .status{
+        display:inline-block;
+        padding:7px 14px;
+        border-radius:20px;
+        font-weight:bold;
+        background:#fff3cd;
+        color:#856404;
+    }
+
+    .back{
+        display:block;
+        text-align:center;
+        margin-top:20px;
+        color:#198754;
+        text-decoration:none;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Chanho FPO</h1>
+    <p>किसान Status Login</p>
+</header>
+
+<div class="box">
+
+    <h2>🌾 किसान Login</h2>
+
+    <label>Registration Number</label>
+    <input
+        type="text"
+        id="registrationNo"
+        placeholder="जैसे CBMS/2026/01"
+    >
+
+    <label>Mobile Number</label>
+    <input
+        type="tel"
+        id="mobile"
+        placeholder="अपना मोबाइल नंबर डालें"
+        maxlength="10"
+    >
+
+    <button onclick="checkStatus()">
+        अपना Status देखें
+    </button>
+
+    <div id="message"></div>
+
+    <div id="result">
+
+        <div class="row">
+            <b>Registration No:</b>
+            <span id="r_registration"></span>
+        </div>
+
+        <div class="row">
+            <b>किसान का नाम:</b>
+            <span id="r_name"></span>
+        </div>
+
+        <div class="row">
+            <b>पिता / पति का नाम:</b>
+            <span id="r_father"></span>
+        </div>
+
+        <div class="row">
+            <b>मोबाइल:</b>
+            <span id="r_mobile"></span>
+        </div>
+
+        <div class="row">
+            <b>गाँव:</b>
+            <span id="r_village"></span>
+        </div>
+
+        <div class="row">
+            <b>पंचायत:</b>
+            <span id="r_panchayat"></span>
+        </div>
+
+        <div class="row">
+            <b>फसल:</b>
+            <span id="r_crop"></span>
+        </div>
+
+        <div class="row">
+            <b>भूमि:</b>
+            <span id="r_land"></span>
+        </div>
+
+        <div class="row">
+            <b>Status:</b>
+            <span class="status" id="r_status"></span>
+        </div>
+
+    </div>
+
+    <a class="back" href="index.html">
+        ← मुख्य वेबसाइट पर वापस जाएँ
+    </a>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://unqihzayhrpmtdxrjiyy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const { createClient } = supabase;
+
+const db = createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+async function checkStatus(){
+
+    const registrationNo =
+        document.getElementById("registrationNo").value.trim();
+
+    const mobile =
+        document.getElementById("mobile").value.trim();
+
+    const message =
+        document.getElementById("message");
+
+    const result =
+        document.getElementById("result");
+
+
+    message.innerHTML = "";
+    result.style.display = "none";
+
+
+    if(registrationNo === "" || mobile === ""){
+
+        message.style.color = "red";
+
+        message.innerHTML =
+            "❌ Registration Number और Mobile Number डालें।";
+
+        return;
+    }
+
+
+    if(!/^\d{10}$/.test(mobile)){
+
+        message.style.color = "red";
+
+        message.innerHTML =
+            "❌ सही 10 अंकों का Mobile Number डालें।";
+
+        return;
+    }
+
+
+    message.style.color = "#198754";
+
+    message.innerHTML =
+        "⏳ Status खोजा जा रहा है...";
+
+
+    try{
+
+        const { data, error } = await db.rpc(
+            "get_farmer_status",
+            {
+                p_registration_no: registrationNo,
+                p_mobile: mobile
+            }
+        );
+
+
+        if(error){
+
+            console.error(error);
+
+            message.style.color = "red";
+
+            message.innerHTML =
+                "❌ Status देखने में समस्या हुई।";
+
+            return;
+        }
+
+
+        if(!data){
+
+            message.style.color = "red";
+
+            message.innerHTML =
+                "❌ Registration Number या Mobile Number गलत है।";
+
+            return;
+        }
+
+
+        document.getElementById("r_registration").textContent =
+            data.registration_no || "-";
+
+        document.getElementById("r_name").textContent =
+            data.name || "-";
+
+        document.getElementById("r_father").textContent =
+            data.father_name || "-";
+
+        document.getElementById("r_mobile").textContent =
+            data.mobile || "-";
+
+        document.getElementById("r_village").textContent =
+            data.village || "-";
+
+        document.getElementById("r_panchayat").textContent =
+            data.panchayat || "-";
+
+        document.getElementById("r_crop").textContent =
+            data.crop || "-";
+
+        document.getElementById("r_land").textContent =
+            data.land || "-";
+
+        document.getElementById("r_status").textContent =
+            data.status || "Pending";
+
+
+        message.style.color = "green";
+
+        message.innerHTML =
+            "✅ किसान की जानकारी मिल गई।";
+
+
+        result.style.display = "block";
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+        message.style.color = "red";
+
+        message.innerHTML =
+            "❌ कुछ तकनीकी समस्या हुई।";
+    }
+
+}
+
+</script>
+
+</body>
+</html>
