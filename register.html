@@ -3,691 +3,521 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Farmer Registration - Chanho FPO</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:Arial,sans-serif;
-}
-
+*{box-sizing:border-box}
 body{
-    background:#f2f8f3;
-    color:#222;
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f1f8f4;
+    color:#173b24;
 }
-
-header{
-    background:#126b32;
+.header{
+    background:#087a35;
     color:white;
-    padding:18px 6%;
+    padding:22px 15px;
     text-align:center;
 }
-
-header h1{
-    font-size:25px;
-}
-
-header p{
-    margin-top:7px;
-}
+.header h1{margin:0;font-size:25px}
+.header p{margin:7px 0 0;font-size:14px}
 
 .container{
-    max-width:850px;
-    margin:35px auto;
+    max-width:900px;
+    margin:25px auto;
+    padding:0 15px;
+}
+.card{
     background:white;
-    padding:30px;
     border-radius:14px;
-    box-shadow:0 4px 15px rgba(0,0,0,.12);
+    padding:25px;
+    box-shadow:0 4px 18px rgba(0,0,0,.10);
 }
-
-.title{
-    text-align:center;
-    color:#126b32;
-    margin-bottom:25px;
+.section-title{
+    background:#087a35;
+    color:white;
+    padding:11px 14px;
+    border-radius:8px;
+    margin:20px 0 15px;
+    font-size:18px;
 }
-
-.form-grid{
+.grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:18px;
+    gap:15px;
 }
-
-.field{
-    display:flex;
-    flex-direction:column;
-}
-
-.field.full{
-    grid-column:1 / -1;
-}
-
+.field{margin-bottom:5px}
 label{
+    display:block;
     font-weight:bold;
-    margin-bottom:7px;
+    margin-bottom:6px;
+    font-size:14px;
 }
-
 input,select,textarea{
-    padding:12px;
-    border:1px solid #ccc;
+    width:100%;
+    padding:11px;
+    border:1px solid #c8d8ce;
     border-radius:7px;
     font-size:15px;
 }
+textarea{min-height:80px;resize:vertical}
+.full{grid-column:1/-1}
 
-textarea{
-    min-height:90px;
-    resize:vertical;
+.upload-box{
+    border:1px dashed #9ab9a4;
+    padding:12px;
+    border-radius:8px;
+    background:#f8fcf9;
 }
-
-.submit-area{
-    text-align:center;
-    margin-top:25px;
-}
+.upload-box input{border:0;padding:5px 0}
 
 button{
-    background:#126b32;
+    width:100%;
+    border:0;
+    background:#087a35;
     color:white;
-    border:none;
-    padding:14px 35px;
-    border-radius:7px;
-    font-size:16px;
+    padding:14px;
+    border-radius:8px;
+    font-size:17px;
     font-weight:bold;
     cursor:pointer;
+    margin-top:15px;
 }
-
-button:hover{
-    background:#0d5427;
-}
-
 button:disabled{
-    background:#777;
+    background:#8ba995;
     cursor:not-allowed;
 }
-
-.back{
-    display:block;
-    text-align:center;
-    margin-top:20px;
-    color:#126b32;
-    text-decoration:none;
-    font-weight:bold;
-}
-
 .note{
-    background:#fff8dc;
-    padding:12px;
-    border-radius:7px;
-    margin-bottom:20px;
-    line-height:1.5;
+    font-size:12px;
+    color:#666;
+    margin-top:5px;
 }
-
-.success{
-    display:none;
-    background:#e7f8eb;
-    border:1px solid #28a745;
-    color:#126b32;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-    text-align:center;
-    line-height:1.7;
-}
-
-.registration-number{
-    font-size:28px;
-    font-weight:bold;
-    margin:10px 0;
-}
-
-.error{
-    display:none;
-    white-space:pre-line;
-    background:#ffe8e8;
-    border:1px solid #dc3545;
-    color:#a00000;
+#message{
+    margin-top:20px;
     padding:15px;
     border-radius:8px;
-    margin-bottom:20px;
+    display:none;
+    text-align:center;
+    font-weight:bold;
 }
-
+.success{
+    background:#e4f7e9;
+    color:#12652d;
+}
+.error{
+    background:#ffe9e9;
+    color:#a40000;
+}
+.registration{
+    font-size:25px;
+    color:#087a35;
+    margin-top:8px;
+}
 @media(max-width:650px){
-    .form-grid{
-        grid-template-columns:1fr;
-    }
-
-    .field.full{
-        grid-column:auto;
-    }
-
-    .container{
-        margin:20px 12px;
-        padding:20px;
-    }
+    .grid{grid-template-columns:1fr}
+    .full{grid-column:auto}
+    .card{padding:18px}
 }
 </style>
 </head>
 
 <body>
 
-<header>
-    <h1>🌾 Chanho Birsa Munda Sangathan</h1>
-    <p>Producer Company Limited</p>
-</header>
+<div class="header">
+    <h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
+    <p>Farmer Registration Form</p>
+</div>
 
 <div class="container">
-
-    <h2 class="title">👨‍🌾 Farmer Registration</h2>
-
-    <div class="note">
-        कृपया किसान की सही जानकारी भरें। Registration Submit होने के बाद
-        Registration Number अपने-आप जारी किया जाएगा।
-    </div>
-
-    <!-- SUCCESS -->
-    <div class="success" id="successBox">
-
-        <div>🎉 <strong>Registration सफलतापूर्वक हो गया!</strong></div>
-
-        <div>आपका Registration Number:</div>
-
-        <div class="registration-number"
-             id="registrationNumber">
-        </div>
-
-        <div>
-            इस Registration Number को सुरक्षित रखें।
-        </div>
-
-    </div>
-
-    <!-- ERROR -->
-    <div class="error" id="errorBox"></div>
-
-
-    <!-- FARMER FORM -->
-
-    <form id="farmerForm">
-
-        <div class="form-grid">
-
-            <div class="field">
-                <label>किसान का नाम *</label>
-
-                <input
-                    type="text"
-                    id="name"
-                    required
-                    placeholder="पूरा नाम">
-            </div>
-
-
-            <div class="field">
-                <label>पिता / पति का नाम *</label>
-
-                <input
-                    type="text"
-                    id="father"
-                    required
-                    placeholder="पिता / पति का नाम">
-            </div>
-
-
-            <div class="field">
-                <label>मोबाइल नंबर *</label>
-
-                <input
-                    type="tel"
-                    id="mobile"
-                    pattern="[0-9]{10}"
-                    maxlength="10"
-                    required
-                    placeholder="10 अंकों का मोबाइल नंबर">
-            </div>
-
-
-            <div class="field">
-                <label>लिंग *</label>
-
-                <select id="gender" required>
-
-                    <option value="">
-                        चुनें
-                    </option>
-
-                    <option value="पुरुष">
-                        पुरुष
-                    </option>
-
-                    <option value="महिला">
-                        महिला
-                    </option>
-
-                    <option value="अन्य">
-                        अन्य
-                    </option>
-
-                </select>
-            </div>
-
-
-            <div class="field">
-                <label>गाँव *</label>
-
-                <input
-                    type="text"
-                    id="village"
-                    required
-                    placeholder="गाँव का नाम">
-            </div>
-
-
-            <div class="field">
-                <label>पंचायत *</label>
-
-                <input
-                    type="text"
-                    id="panchayat"
-                    required
-                    placeholder="पंचायत का नाम">
-            </div>
-
-
-            <div class="field">
-                <label>प्रखंड *</label>
-
-                <input
-                    type="text"
-                    id="block"
-                    required
-                    value="Chanho">
-            </div>
-
-
-            <div class="field">
-                <label>जिला *</label>
-
-                <input
-                    type="text"
-                    id="district"
-                    required
-                    value="Ranchi">
-            </div>
-
-
-            <div class="field">
-                <label>राज्य *</label>
-
-                <input
-                    type="text"
-                    id="state"
-                    required
-                    value="Jharkhand">
-            </div>
-
-
-            <div class="field">
-                <label>मुख्य फसल</label>
-
-                <select id="crop">
-
-                    <option value="">
-                        चुनें
-                    </option>
-
-                    <option value="धान">
-                        धान
-                    </option>
-
-                    <option value="मक्का">
-                        मक्का
-                    </option>
-
-                    <option value="मड़ुआ">
-                        मड़ुआ
-                    </option>
-
-                    <option value="गेहूँ">
-                        गेहूँ
-                    </option>
-
-                    <option value="सब्जी">
-                        सब्जी
-                    </option>
-
-                    <option value="अन्य">
-                        अन्य
-                    </option>
-
-                </select>
-            </div>
-
-
-            <div class="field">
-                <label>कुल कृषि भूमि</label>
-
-                <input
-                    type="text"
-                    id="land"
-                    placeholder="जैसे 2 एकड़">
-            </div>
-
-
-            <div class="field">
-                <label>किसान की श्रेणी</label>
-
-                <select id="category">
-
-                    <option value="">
-                        चुनें
-                    </option>
-
-                    <option value="छोटे किसान">
-                        छोटे किसान
-                    </option>
-
-                    <option value="सीमांत किसान">
-                        सीमांत किसान
-                    </option>
-
-                    <option value="अन्य">
-                        अन्य
-                    </option>
-
-                </select>
-            </div>
-
-
-            <div class="field full">
-
-                <label>पूरा पता *</label>
-
-                <textarea
-                    id="address"
-                    required
-                    placeholder="गाँव, पंचायत, प्रखंड आदि">
-                </textarea>
-
-            </div>
-
-        </div>
-
-
-        <div class="submit-area">
-
-            <button
-                type="submit"
-                id="submitBtn">
-
-                ✅ Registration Submit करें
-
-            </button>
-
-        </div>
-
-    </form>
-
-
-    <a href="index.html" class="back">
-        ← Home Page पर वापस जाएँ
-    </a>
+<div class="card">
+
+<form id="farmerForm">
+
+<div class="section-title">1. व्यक्तिगत जानकारी</div>
+
+<div class="grid">
+
+<div class="field">
+<label>किसान का नाम *</label>
+<input type="text" id="name" required>
+</div>
+
+<div class="field">
+<label>पिता / पति का नाम *</label>
+<input type="text" id="father_name" required>
+</div>
+
+<div class="field">
+<label>जन्म तिथि *</label>
+<input type="date" id="date_of_birth" required>
+</div>
+
+<div class="field">
+<label>लिंग *</label>
+<select id="gender" required>
+<option value="">Select</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+</div>
+
+<div class="field">
+<label>आधार नंबर *</label>
+<input type="text" id="aadhar_number"
+       inputmode="numeric"
+       maxlength="12"
+       pattern="[0-9]{12}"
+       placeholder="12 digit Aadhaar"
+       required>
+</div>
+
+<div class="field">
+<label>मोबाइल नंबर *</label>
+<input type="tel" id="mobile"
+       inputmode="numeric"
+       maxlength="10"
+       pattern="[0-9]{10}"
+       placeholder="10 digit mobile"
+       required>
+</div>
 
 </div>
 
+<div class="section-title">2. पता</div>
 
-<!-- =====================================
-     SUPABASE JAVASCRIPT LIBRARY
-====================================== -->
+<div class="grid">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div class="field">
+<label>गाँव *</label>
+<input type="text" id="village" required>
+</div>
 
+<div class="field">
+<label>पंचायत *</label>
+<input type="text" id="panchayat" required>
+</div>
+
+<div class="field">
+<label>Block *</label>
+<select id="block" required>
+<option value="">Select Block</option>
+<option>Chanho</option>
+<option>Mandar</option>
+</select>
+</div>
+
+<div class="field">
+<label>District</label>
+<input type="text" id="district" value="Ranchi" readonly>
+</div>
+
+<div class="field">
+<label>State</label>
+<input type="text" id="state" value="Jharkhand" readonly>
+</div>
+
+<div class="field full">
+<label>पूरा पता *</label>
+<textarea id="address" required></textarea>
+</div>
+
+</div>
+
+<div class="section-title">3. कृषि जानकारी</div>
+
+<div class="grid">
+
+<div class="field">
+<label>मुख्य फसल *</label>
+<input type="text" id="crop" placeholder="जैसे धान, मक्का, गेहूँ" required>
+</div>
+
+<div class="field">
+<label>भूमि / Land *</label>
+<input type="text" id="land" placeholder="जैसे 2 एकड़" required>
+</div>
+
+<div class="field">
+<label>Category *</label>
+<select id="category" required>
+<option value="">Select Category</option>
+<option>General</option>
+<option>OBC</option>
+<option>SC</option>
+<option>ST</option>
+<option>Other</option>
+</select>
+</div>
+
+</div>
+
+<div class="section-title">4. Bank Details</div>
+
+<div class="grid">
+
+<div class="field">
+<label>Bank Name *</label>
+<input type="text" id="bank_name" required>
+</div>
+
+<div class="field">
+<label>Branch Name *</label>
+<input type="text" id="bank_branch" required>
+</div>
+
+<div class="field">
+<label>Account Number *</label>
+<input type="text" id="account_number"
+       inputmode="numeric" required>
+</div>
+
+<div class="field">
+<label>IFSC Code *</label>
+<input type="text" id="ifsc_code"
+       maxlength="11"
+       style="text-transform:uppercase"
+       required>
+</div>
+
+</div>
+
+<div class="section-title">5. Payment Details</div>
+
+<div class="grid">
+
+<div class="field">
+<label>Payment Mode *</label>
+<select id="payment_mode" required>
+<option value="">Select Payment Mode</option>
+<option>Cash</option>
+<option>UPI</option>
+</select>
+</div>
+
+</div>
+
+<div class="section-title">6. Documents Upload</div>
+
+<p class="note">
+कृपया साफ और पढ़ने योग्य documents upload करें। Aadhaar और अन्य documents को private रखा जाएगा।
+</p>
+
+<div class="grid">
+
+<div class="field">
+<label>Photo *</label>
+<div class="upload-box">
+<input type="file" id="photo" accept="image/*" required>
+</div>
+</div>
+
+<div class="field">
+<label>Signature *</label>
+<div class="upload-box">
+<input type="file" id="signature" accept="image/*" required>
+</div>
+</div>
+
+<div class="field">
+<label>Aadhaar Card *</label>
+<div class="upload-box">
+<input type="file" id="aadhar_file"
+       accept="image/*,.pdf" required>
+</div>
+</div>
+
+<div class="field">
+<label>Form *</label>
+<div class="upload-box">
+<input type="file" id="form_file"
+       accept="image/*,.pdf" required>
+</div>
+</div>
+
+<div class="field full">
+<label>Land Record *</label>
+<div class="upload-box">
+<input type="file" id="land_record"
+       accept="image/*,.pdf" required>
+</div>
+</div>
+
+</div>
+
+<button type="submit" id="submitBtn">
+Submit Farmer Registration
+</button>
+
+</form>
+
+<div id="message"></div>
+
+</div>
+</div>
 
 <script>
 
-/* =====================================
-   SUPABASE CONNECTION
-===================================== */
-
-const SUPABASE_URL =
-    "https://unqihzayhrpmtdxrjiyy.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
-
+const SUPABASE_URL = "https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 
 const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const form = document.getElementById("farmerForm");
+const submitBtn = document.getElementById("submitBtn");
+const message = document.getElementById("message");
 
-const db = createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+function showMessage(text, type){
+    message.style.display = "block";
+    message.className = type;
+    message.innerHTML = text;
+    window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
+}
 
+function getValue(id){
+    return document.getElementById(id).value.trim();
+}
 
-/* =====================================
-   FARMER REGISTRATION
-===================================== */
+async function uploadFile(file, folder){
 
-document
-.getElementById("farmerForm")
-.addEventListener("submit", async function(e){
+    if(!file) return null;
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    const randomPart =
+        Date.now() + "_" +
+        Math.random().toString(36).substring(2,10);
+
+    const filePath =
+        folder + "/" + randomPart + "." + extension;
+
+    const { error } = await db.storage
+        .from("farmer-documents")
+        .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false
+        });
+
+    if(error){
+        throw new Error("Document upload failed: " + error.message);
+    }
+
+    return filePath;
+}
+
+form.addEventListener("submit", async function(e){
 
     e.preventDefault();
 
-
-    const submitBtn =
-        document.getElementById("submitBtn");
-
-    const successBox =
-        document.getElementById("successBox");
-
-    const errorBox =
-        document.getElementById("errorBox");
-
-
-    successBox.style.display = "none";
-    errorBox.style.display = "none";
-
-
     submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
 
-    submitBtn.innerText =
-        "⏳ Registration हो रहा है...";
+    message.style.display = "none";
 
+    try{
 
-    try {
+        const aadhar = getValue("aadhar_number");
 
+        if(!/^[0-9]{12}$/.test(aadhar)){
+            throw new Error("Aadhaar number 12 digit का होना चाहिए।");
+        }
 
-        /* ============================
-           RPC FUNCTION CALL
-        ============================ */
+        const mobile = getValue("mobile");
+
+        if(!/^[0-9]{10}$/.test(mobile)){
+            throw new Error("Mobile number 10 digit का होना चाहिए।");
+        }
+
+        const files = {
+            photo: document.getElementById("photo").files[0],
+            signature: document.getElementById("signature").files[0],
+            aadhar_file: document.getElementById("aadhar_file").files[0],
+            form_file: document.getElementById("form_file").files[0],
+            land_record: document.getElementById("land_record").files[0]
+        };
+
+        for(const key in files){
+            if(!files[key]){
+                throw new Error("सभी documents upload करना जरूरी है।");
+            }
+        }
+
+        const photo_url =
+            await uploadFile(files.photo, "photo");
+
+        const signature_url =
+            await uploadFile(files.signature, "signature");
+
+        const aadhar_url =
+            await uploadFile(files.aadhar_file, "aadhar");
+
+        const form_url =
+            await uploadFile(files.form_file, "form");
+
+        const land_record_url =
+            await uploadFile(files.land_record, "land-record");
 
         const { data, error } = await db.rpc(
             "register_farmer",
             {
-
-                p_name:
-                    document
-                    .getElementById("name")
-                    .value
-                    .trim(),
-
-
-                p_father_name:
-                    document
-                    .getElementById("father")
-                    .value
-                    .trim(),
-
-
-                p_mobile:
-                    document
-                    .getElementById("mobile")
-                    .value
-                    .trim(),
-
-
-                p_gender:
-                    document
-                    .getElementById("gender")
-                    .value,
-
-
-                p_village:
-                    document
-                    .getElementById("village")
-                    .value
-                    .trim(),
-
-
-                p_panchayat:
-                    document
-                    .getElementById("panchayat")
-                    .value
-                    .trim(),
-
-
-                p_block:
-                    document
-                    .getElementById("block")
-                    .value
-                    .trim(),
-
-
-                p_district:
-                    document
-                    .getElementById("district")
-                    .value
-                    .trim(),
-
-
-                p_state:
-                    document
-                    .getElementById("state")
-                    .value
-                    .trim(),
-
-
-                p_crop:
-                    document
-                    .getElementById("crop")
-                    .value,
-
-
-                p_land:
-                    document
-                    .getElementById("land")
-                    .value
-                    .trim(),
-
-
-                p_category:
-                    document
-                    .getElementById("category")
-                    .value,
-
-
-                p_address:
-                    document
-                    .getElementById("address")
-                    .value
-                    .trim()
-
+                p_name: getValue("name"),
+                p_father_name: getValue("father_name"),
+                p_date_of_birth: getValue("date_of_birth"),
+                p_aadhar_number: aadhar,
+                p_mobile: mobile,
+                p_gender: getValue("gender"),
+                p_village: getValue("village"),
+                p_panchayat: getValue("panchayat"),
+                p_block: getValue("block"),
+                p_district: "Ranchi",
+                p_state: "Jharkhand",
+                p_crop: getValue("crop"),
+                p_land: getValue("land"),
+                p_category: getValue("category"),
+                p_address: getValue("address"),
+                p_bank_name: getValue("bank_name"),
+                p_bank_branch: getValue("bank_branch"),
+                p_account_number: getValue("account_number"),
+                p_ifsc_code: getValue("ifsc_code").toUpperCase(),
+                p_payment_mode: getValue("payment_mode"),
+                p_photo_url: photo_url,
+                p_signature_url: signature_url,
+                p_aadhar_url: aadhar_url,
+                p_form_url: form_url,
+                p_land_record_url: land_record_url
             }
         );
 
-
-        /* ============================
-           ERROR CHECK
-        ============================ */
-
         if(error){
-
-            throw error;
-
+            throw new Error(error.message);
         }
 
+        showMessage(
+            "Registration Successful!<div class='registration'>" +
+            data +
+            "</div><br>" +
+            "कृपया अपना Registration Number सुरक्षित रखें।",
+            "success"
+        );
 
-        /* ============================
-           REGISTRATION NUMBER
-        ============================ */
+        form.reset();
 
-        document
-        .getElementById("registrationNumber")
-        .innerText = data;
-
-
-        successBox.style.display =
-            "block";
-
-
-        /* ============================
-           FORM RESET
-        ============================ */
-
-        document
-        .getElementById("farmerForm")
-        .reset();
-
-
-        document
-        .getElementById("block")
-        .value = "Chanho";
-
-
-        document
-        .getElementById("district")
-        .value = "Ranchi";
-
-
-        document
-        .getElementById("state")
-        .value = "Jharkhand";
-
-
-        submitBtn.disabled = false;
-
-        submitBtn.innerText =
-            "✅ Registration Submit करें";
-
-
-        /* ============================
-           TOP पर ले जाएँ
-        ============================ */
-
-        window.scrollTo({
-
-            top:0,
-
-            behavior:"smooth"
-
-        });
-
-
-    }
-
-
-    catch(error){
-
+    }catch(error){
 
         console.error(error);
 
+        showMessage(
+            "Registration failed:<br>" + error.message,
+            "error"
+        );
 
-        errorBox.innerText =
-            "❌ Registration नहीं हो पाया।\n\n" +
-            "Error: " +
-            error.message;
-
-
-        errorBox.style.display =
-            "block";
-
+    }finally{
 
         submitBtn.disabled = false;
-
-        submitBtn.innerText =
-            "✅ Registration Submit करें";
+        submitBtn.textContent = "Submit Farmer Registration";
 
     }
 
