@@ -2416,9 +2416,10 @@ function openRejectByIndex(index){
             farmer.status || ""
         ).toLowerCase();
 
-    if(!status.includes(
-        "pending officer"
-    )){
+    if(
+    !status.includes("pending officer") &&
+    status !== "verified"
+){
 
         showError(
             "This farmer is not pending Officer approval."
