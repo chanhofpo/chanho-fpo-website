@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Officer Login - Chanho FPO</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0b6b3a,#39a852);
+    padding:20px;
+}
+
+.login-box{
+    width:100%;
+    max-width:430px;
+    background:white;
+    border-radius:18px;
+    padding:35px 30px;
+    box-shadow:0 12px 35px rgba(0,0,0,.25);
+}
+
+.logo{
+    width:75px;
+    height:75px;
+    margin:0 auto 15px;
+    border-radius:50%;
+    background:#0b6b3a;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:bold;
+}
+
+h1{
+    text-align:center;
+    color:#0b6b3a;
+    font-size:26px;
+    margin-bottom:5px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#666;
+    margin-bottom:25px;
+}
+
+label{
+    display:block;
+    margin:14px 0 7px;
+    font-weight:bold;
+    color:#333;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    border:1px solid #ccc;
+    border-radius:9px;
+    font-size:15px;
+    outline:none;
+}
+
+input:focus{
+    border-color:#0b6b3a;
+}
+
+button{
+    width:100%;
+    margin-top:24px;
+    padding:14px;
+    border:none;
+    border-radius:9px;
+    background:#0b6b3a;
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#07542d;
+}
+
+#message{
+    text-align:center;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.back{
+    display:block;
+    text-align:center;
+    margin-top:20px;
+    color:#0b6b3a;
+    text-decoration:none;
+}
+
+.officer-id{
+    text-align:center;
+    margin-top:18px;
+    padding:10px;
+    background:#f0f8f3;
+    border-radius:8px;
+    color:#0b6b3a;
+    font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <div class="logo">CB</div>
+
+    <h1>Officer Login</h1>
+
+    <div class="subtitle">
+        Chanho Birsa Munda Sangathan Producer Company Limited
+    </div>
+
+    <form id="loginForm">
+
+        <label>Officer ID / Email</label>
+        <input
+            type="text"
+            id="email"
+            placeholder="Officer Email डालें"
+            required
+        >
+
+        <label>Password</label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Password डालें"
+            required
+        >
+
+        <button type="submit">Login</button>
+
+        <div id="message"></div>
+
+    </form>
+
+    <div class="officer-id">
+        Officer ID: <b>CBMS/OFF/7643970915</b>
+    </div>
+
+    <a href="index.html" class="back">← वापस Home पर जाएँ</a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+const SUPABASE_URL =
+"https://unqihzayhrpmtdxrjiyy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const db = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+document.getElementById("loginForm").addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const email =
+        document.getElementById("email").value.trim();
+
+    const password =
+        document.getElementById("password").value;
+
+    const message =
+        document.getElementById("message");
+
+    message.style.color = "#333";
+    message.textContent = "Login हो रहा है...";
+
+    const { data, error } =
+        await db.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+    if(error){
+
+        message.style.color = "red";
+        message.textContent =
+            "Login failed: " + error.message;
+
+        return;
+    }
+
+    message.style.color = "green";
+    message.textContent = "Login successful...";
+
+    setTimeout(function(){
+
+        window.location.href =
+            "officer-dashboard.html";
+
+    },800);
+
+});
+
+</script>
+
+</body>
+</html>
