@@ -560,16 +560,17 @@ th{
 
                     <tr>
                         <th>Registration No</th>
-                        <th>Farmer Name</th>
-                        <th>Mobile</th>
-                        <th>Block</th>
-                        <th>Panchayat</th>
-                        <th>Village</th>
-                        <th>Admin ID</th>
-                        <th>Status</th>
-                        <th>Registered At</th>
-                        <th>Documents</th>
-                        <th>Action</th>
+<th>Farmer Name</th>
+<th>Mobile</th>
+<th>Aadhaar</th>
+<th>Block</th>
+<th>Panchayat</th>
+<th>Village</th>
+<th>Admin ID</th>
+<th>Status</th>
+<th>Registered At</th>
+<th>Documents</th>
+<th>Action</th>
                     </tr>
 
                 </thead>
@@ -1747,16 +1748,22 @@ async function loadFarmers(){
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.mobile || "-"
-                    )}
-                </td>
+    ${escapeHtml(
+        farmer.mobile || "-"
+    )}
+</td>
 
-                <td>
-                    ${escapeHtml(
-                        farmer.block || "-"
-                    )}
-                </td>
+<td>
+    ${escapeHtml(
+        farmer.aadhar_number || "-"
+    )}
+</td>
+
+<td>
+    ${escapeHtml(
+        farmer.block || "-"
+    )}
+</td>
 
                 <td>
                     ${escapeHtml(
@@ -1865,6 +1872,10 @@ function openProfileByIndex(index){
                 "Mobile",
                 farmer.mobile
             )}
+${profileItem(
+    "Aadhaar",
+    farmer.aadhar_number
+)}
 
             ${profileItem(
                 "Gender",
