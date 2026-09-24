@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -9,25 +10,25 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 *{
     box-sizing:border-box;
 }
 
 body{
     margin:0;
-    font-family:Arial, sans-serif;
-    background:#f3f6f9;
+    font-family:Arial,sans-serif;
+    background:#f3f7f5;
     color:#222;
 }
 
 .header{
-    background:#0b6b3a;
+    background:#198754;
     color:white;
     padding:18px 25px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:15px;
 }
 
 .header h1{
@@ -40,14 +41,14 @@ body{
     font-size:14px;
 }
 
-.logout-btn{
-    background:#fff;
-    color:#b00020;
+.logout{
+    background:white;
+    color:#dc3545;
     border:0;
-    padding:10px 16px;
+    padding:10px 17px;
     border-radius:7px;
-    cursor:pointer;
     font-weight:bold;
+    cursor:pointer;
 }
 
 .container{
@@ -58,32 +59,37 @@ body{
 
 .card{
     background:white;
-    border-radius:12px;
     padding:20px;
+    border-radius:12px;
     margin-bottom:20px;
     box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
-.info-grid{
+.card h2{
+    margin-top:0;
+    color:#198754;
+}
+
+.admin-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
     gap:15px;
 }
 
-.info-box{
-    background:#f6faf7;
-    border:1px solid #dceee3;
-    border-radius:9px;
+.info{
+    background:#f4faf6;
+    border:1px solid #d8eadf;
     padding:15px;
+    border-radius:9px;
 }
 
-.info-box small{
-    color:#666;
+.info small{
     display:block;
+    color:#666;
     margin-bottom:5px;
 }
 
-.info-box strong{
+.info strong{
     font-size:17px;
 }
 
@@ -94,30 +100,29 @@ body{
 }
 
 .stat{
-    padding:20px;
+    padding:18px;
     border-radius:10px;
-    background:#eef7f1;
+    background:#eef8f1;
     border:1px solid #d8ebdf;
 }
 
-.stat h3{
-    margin:0 0 8px;
-    font-size:14px;
+.stat span{
+    display:block;
     color:#555;
+    font-size:14px;
 }
 
-.stat p{
-    margin:0;
-    font-size:28px;
-    font-weight:bold;
-    color:#0b6b3a;
+.stat strong{
+    display:block;
+    color:#198754;
+    font-size:30px;
+    margin-top:6px;
 }
 
-.controls{
+.filters{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:12px;
-    margin-top:15px;
+    grid-template-columns:1fr 220px 120px;
+    gap:10px;
 }
 
 input,
@@ -129,43 +134,33 @@ select{
     font-size:14px;
 }
 
-button{
-    border:0;
-    border-radius:7px;
-    padding:10px 14px;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.refresh-btn{
-    background:#0b6b3a;
+.refresh{
+    background:#198754;
     color:white;
 }
 
-.table-wrapper{
+.table-wrap{
     overflow-x:auto;
 }
 
 table{
     width:100%;
+    min-width:1250px;
     border-collapse:collapse;
-    min-width:1200px;
 }
 
 th,
 td{
+    padding:10px;
     border-bottom:1px solid #ddd;
-    padding:11px 9px;
     text-align:left;
     font-size:13px;
     vertical-align:middle;
 }
 
 th{
-    background:#0b6b3a;
+    background:#198754;
     color:white;
-    position:sticky;
-    top:0;
 }
 
 tr:hover{
@@ -176,58 +171,57 @@ tr:hover{
     display:inline-block;
     padding:6px 9px;
     border-radius:20px;
-    font-size:12px;
+    font-size:11px;
     font-weight:bold;
 }
 
-.status-pending{
+.pending{
     background:#fff3cd;
     color:#856404;
 }
 
-.status-verified{
-    background:#d4edda;
-    color:#155724;
-}
-
-.status-rejected{
-    background:#f8d7da;
-    color:#721c24;
-}
-
-.status-officer{
+.verified{
     background:#d1ecf1;
     color:#0c5460;
 }
 
-.action-btn{
+.rejected{
+    background:#f8d7da;
+    color:#721c24;
+}
+
+.btn{
+    border:0;
+    border-radius:6px;
+    padding:7px 9px;
     margin:2px;
+    cursor:pointer;
     color:white;
     font-size:12px;
+    font-weight:bold;
 }
 
-.view-btn{
-    background:#1565c0;
+.view{
+    background:#0d6efd;
 }
 
-.verify-btn{
+.documents{
+    background:#6f42c1;
+}
+
+.verify{
     background:#198754;
 }
 
-.reject-btn{
+.reject{
     background:#dc3545;
 }
 
-.disabled-btn{
-    background:#999;
-    cursor:not-allowed;
-}
-
-.doc-btn{
-    background:#6f42c1;
-    color:white;
-    margin:2px;
-    font-size:12px;
+.loading{
+    text-align:center;
+    padding:30px;
+    color:#198754;
+    font-weight:bold;
 }
 
 .empty{
@@ -236,52 +230,46 @@ tr:hover{
     color:#777;
 }
 
-.loading{
-    text-align:center;
-    padding:25px;
-    color:#0b6b3a;
+.message{
+    display:none;
+    padding:12px;
+    border-radius:7px;
+    margin-bottom:15px;
     font-weight:bold;
 }
 
-.message{
-    display:none;
-    padding:12px 15px;
-    border-radius:7px;
-    margin-bottom:15px;
-}
-
 .success{
-    background:#d4edda;
-    color:#155724;
+    background:#d1e7dd;
+    color:#0f5132;
 }
 
 .error{
     background:#f8d7da;
-    color:#721c24;
+    color:#842029;
 }
 
-/* MODAL */
+/* DOCUMENT MODAL */
 
 .modal{
     display:none;
     position:fixed;
-    z-index:9999;
     inset:0;
-    background:rgba(0,0,0,.75);
-    padding:20px;
+    z-index:99999;
+    background:rgba(0,0,0,.8);
+    padding:15px;
     overflow:auto;
 }
 
 .modal-box{
     background:white;
-    max-width:950px;
-    margin:30px auto;
+    max-width:1000px;
+    margin:20px auto;
     border-radius:12px;
     overflow:hidden;
 }
 
 .modal-header{
-    background:#0b6b3a;
+    background:#198754;
     color:white;
     padding:15px 20px;
     display:flex;
@@ -291,91 +279,99 @@ tr:hover{
 
 .modal-header h2{
     margin:0;
+    color:white;
     font-size:18px;
 }
 
-.close-btn{
+.close{
     background:white;
     color:#222;
+    border:0;
+    border-radius:5px;
     font-size:20px;
-    padding:4px 10px;
+    padding:3px 10px;
+    cursor:pointer;
 }
 
 .modal-body{
     padding:20px;
 }
 
-.document-grid{
+.documents-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
     gap:20px;
 }
 
-.document-card{
+.doc-card{
     border:1px solid #ddd;
     border-radius:10px;
     padding:12px;
     background:#fafafa;
 }
 
-.document-card h3{
+.doc-card h3{
     margin:0 0 10px;
     font-size:15px;
+    color:#333;
 }
 
-.document-preview{
+.doc-preview{
     width:100%;
-    height:220px;
+    height:230px;
+    object-fit:contain;
+    background:white;
     border:1px solid #ddd;
     border-radius:7px;
-    background:white;
-    object-fit:contain;
 }
 
-.document-actions{
-    margin-top:10px;
+.no-file{
+    height:230px;
     display:flex;
-    gap:7px;
+    justify-content:center;
+    align-items:center;
+    background:#eee;
+    border-radius:7px;
+    color:#777;
 }
 
-.document-actions a{
+.doc-buttons{
+    margin-top:10px;
+}
+
+.doc-buttons a{
+    display:inline-block;
     text-decoration:none;
     padding:8px 10px;
     border-radius:6px;
-    background:#0b6b3a;
+    margin-right:5px;
+    background:#198754;
     color:white;
     font-size:12px;
     font-weight:bold;
 }
 
-.no-document{
-    height:220px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#eee;
-    color:#777;
-    border-radius:7px;
+.doc-buttons a.open{
+    background:#0d6efd;
 }
 
-.reject-box{
+.reject-area{
     display:none;
-    margin-top:10px;
+    margin-top:8px;
 }
 
-.reject-box textarea{
+.reject-area textarea{
     width:100%;
-    min-height:80px;
+    min-height:70px;
+    padding:8px;
     border:1px solid #ccc;
-    border-radius:7px;
-    padding:10px;
-    resize:vertical;
+    border-radius:6px;
 }
 
 .reject-confirm{
-    margin-top:8px;
     background:#dc3545;
     color:white;
+    margin-top:5px;
 }
 
 @media(max-width:700px){
@@ -383,29 +379,44 @@ tr:hover{
     .header{
         flex-direction:column;
         align-items:flex-start;
+        gap:12px;
     }
 
     .container{
         width:98%;
     }
 
-    .card{
-        padding:14px;
+    .filters{
+        grid-template-columns:1fr;
     }
+
 }
+
 </style>
+
 </head>
 
 <body>
 
+
 <header class="header">
 
     <div>
-        <h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
-        <p>Admin Dashboard</p>
+
+        <h1>
+            Chanho Birsa Munda Sangathan Producer Company Limited
+        </h1>
+
+        <p>
+            Admin Dashboard
+        </p>
+
     </div>
 
-    <button class="logout-btn" onclick="logoutAdmin()">
+    <button
+        class="logout"
+        onclick="logout()"
+    >
         Logout
     </button>
 
@@ -414,40 +425,98 @@ tr:hover{
 
 <div class="container">
 
-    <div id="message" class="message"></div>
+
+    <div
+        id="message"
+        class="message"
+    ></div>
 
 
-    <!-- ADMIN INFORMATION -->
+    <!-- ADMIN AREA -->
 
     <div class="card">
 
-        <h2>Admin Information</h2>
+        <h2>
+            Admin & Assigned Area
+        </h2>
 
-        <div class="info-grid">
+        <div class="admin-grid">
 
-            <div class="info-box">
-                <small>Admin ID</small>
-                <strong id="adminId">Loading...</strong>
+            <div class="info">
+
+                <small>
+                    Admin ID
+                </small>
+
+                <strong id="adminId">
+                    Loading...
+                </strong>
+
             </div>
 
-            <div class="info-box">
-                <small>Admin Name</small>
-                <strong id="adminName">Loading...</strong>
+
+            <div class="info">
+
+                <small>
+                    Admin Name
+                </small>
+
+                <strong id="adminName">
+                    Loading...
+                </strong>
+
             </div>
 
-            <div class="info-box">
-                <small>Block</small>
-                <strong id="adminBlock">Loading...</strong>
+
+            <div class="info">
+
+                <small>
+                    Block
+                </small>
+
+                <strong id="assignedBlock">
+                    Loading...
+                </strong>
+
             </div>
 
-            <div class="info-box">
-                <small>Panchayat</small>
-                <strong id="adminPanchayat">Loading...</strong>
+
+            <div class="info">
+
+                <small>
+                    Panchayat
+                </small>
+
+                <strong id="assignedPanchayat">
+                    Loading...
+                </strong>
+
             </div>
 
-            <div class="info-box">
-                <small>Village</small>
-                <strong id="adminVillage">Loading...</strong>
+
+            <div class="info">
+
+                <small>
+                    Village
+                </small>
+
+                <strong id="assignedVillage">
+                    Loading...
+                </strong>
+
+            </div>
+
+
+            <div class="info">
+
+                <small>
+                    Assignment Status
+                </small>
+
+                <strong id="assignmentStatus">
+                    Loading...
+                </strong>
+
             </div>
 
         </div>
@@ -459,28 +528,61 @@ tr:hover{
 
     <div class="card">
 
-        <h2>Farmer Statistics</h2>
+        <h2>
+            Farmer Statistics
+        </h2>
 
         <div class="stats">
 
             <div class="stat">
-                <h3>Total Farmers</h3>
-                <p id="totalCount">0</p>
+
+                <span>
+                    Total Farmers
+                </span>
+
+                <strong id="total">
+                    0
+                </strong>
+
             </div>
 
-            <div class="stat">
-                <h3>Pending Verification</h3>
-                <p id="pendingCount">0</p>
-            </div>
 
             <div class="stat">
-                <h3>Verified</h3>
-                <p id="verifiedCount">0</p>
+
+                <span>
+                    Pending Verification
+                </span>
+
+                <strong id="pending">
+                    0
+                </strong>
+
             </div>
 
+
             <div class="stat">
-                <h3>Rejected</h3>
-                <p id="rejectedCount">0</p>
+
+                <span>
+                    Admin Verified
+                </span>
+
+                <strong id="verified">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat">
+
+                <span>
+                    Rejected
+                </span>
+
+                <strong id="rejected">
+                    0
+                </strong>
+
             </div>
 
         </div>
@@ -488,90 +590,123 @@ tr:hover{
     </div>
 
 
-    <!-- FILTER -->
+    <!-- FARMER LIST -->
 
     <div class="card">
 
-        <h2>Farmer List</h2>
+        <h2>
+            Farmer Applications
+        </h2>
 
-        <div class="controls">
+
+        <div class="filters">
 
             <input
                 type="text"
-                id="searchInput"
-                placeholder="Search name / mobile / registration no."
-                oninput="applyFilters()"
+                id="search"
+                placeholder="Name / Registration No. / Mobile / Village"
+                oninput="filterFarmers()"
             >
 
-            <select id="statusFilter" onchange="applyFilters()">
-                <option value="">All Status</option>
+
+            <select
+                id="statusFilter"
+                onchange="filterFarmers()"
+            >
+
+                <option value="">
+                    All Status
+                </option>
+
                 <option value="Pending Admin Verification">
                     Pending Admin Verification
                 </option>
-                <option value="Verified">
-                    Verified
-                </option>
-                <option value="Rejected">
-                    Rejected
-                </option>
+
                 <option value="Pending Officer Approval">
                     Pending Officer Approval
                 </option>
+
+                <option value="Rejected">
+                    Rejected
+                </option>
+
             </select>
 
+
             <button
-                class="refresh-btn"
+                class="btn refresh"
                 onclick="loadFarmers()"
             >
-                🔄 Refresh
+                Refresh
             </button>
 
         </div>
 
-    </div>
+        <br>
 
 
-    <!-- FARMER TABLE -->
-
-    <div class="card">
-
-        <div id="loading" class="loading">
-            Loading farmer data...
+        <div
+            id="loading"
+            class="loading"
+        >
+            Loading...
         </div>
 
-        <div class="table-wrapper">
 
-            <table id="farmerTable" style="display:none;">
+        <div class="table-wrap">
+
+            <table
+                id="farmerTable"
+                style="display:none;"
+            >
 
                 <thead>
 
                     <tr>
 
                         <th>Sr.</th>
+
                         <th>Registration No.</th>
+
                         <th>Name</th>
+
                         <th>Father Name</th>
+
                         <th>Mobile</th>
+
                         <th>Village</th>
+
                         <th>Panchayat</th>
+
                         <th>Crop</th>
+
                         <th>Land</th>
+
                         <th>Status</th>
+
                         <th>Documents</th>
+
                         <th>Action</th>
 
                     </tr>
 
                 </thead>
 
-                <tbody id="farmerTableBody"></tbody>
+                <tbody
+                    id="farmerBody"
+                ></tbody>
 
             </table>
 
         </div>
 
-        <div id="emptyMessage" class="empty" style="display:none;">
-            No farmer found.
+
+        <div
+            id="empty"
+            class="empty"
+            style="display:none;"
+        >
+            कोई Farmer नहीं मिला।
         </div>
 
     </div>
@@ -581,33 +716,33 @@ tr:hover{
 
 <!-- DOCUMENT MODAL -->
 
-<div id="documentModal" class="modal">
+<div
+    id="documentModal"
+    class="modal"
+>
 
     <div class="modal-box">
 
         <div class="modal-header">
 
-            <h2 id="documentTitle">
+            <h2 id="modalTitle">
                 Farmer Documents
             </h2>
 
             <button
-                class="close-btn"
-                onclick="closeDocumentModal()"
+                class="close"
+                onclick="closeDocuments()"
             >
                 ×
             </button>
 
         </div>
 
-        <div class="modal-body">
 
-            <div
-                id="documentGrid"
-                class="document-grid"
-            ></div>
-
-        </div>
+        <div
+            id="documentsGrid"
+            class="modal-body documents-grid"
+        ></div>
 
     </div>
 
@@ -615,6 +750,7 @@ tr:hover{
 
 
 <script>
+
 
 /* ==========================================
    SUPABASE
@@ -634,241 +770,271 @@ const db =
 
 
 /* ==========================================
-   ADMIN SESSION
+   VARIABLES
 ========================================== */
 
-let adminId =
-    localStorage.getItem("adminId");
+let adminId = null;
 
-let adminName =
-    localStorage.getItem("adminName");
+let adminName = null;
 
-
-/*
-   Agar aapke existing login me
-   adminLoggedIn use hota hai
-*/
-
-const adminLoggedIn =
-    localStorage.getItem("adminLoggedIn");
-
-
-if(
-    !adminId &&
-    !adminName &&
-    !adminLoggedIn
-){
-
-    window.location.href =
-        "admin-login.html";
-
-}
-
-
-/* ==========================================
-   GLOBAL DATA
-========================================== */
+let assignedArea = null;
 
 let allFarmers = [];
 
-let currentFarmer = null;
-
 
 /* ==========================================
-   MESSAGE
+   LOGIN CHECK
 ========================================== */
 
-function showMessage(message,type){
-
-    const box =
-        document.getElementById("message");
-
-    box.textContent = message;
-
-    box.className =
-        "message " +
-        (type === "error"
-            ? "error"
-            : "success");
-
-    box.style.display = "block";
-
-    setTimeout(function(){
-
-        box.style.display = "none";
-
-    },5000);
-
-}
-
-
-/* ==========================================
-   LOGOUT
-========================================== */
-
-function logoutAdmin(){
-
-    localStorage.removeItem("adminId");
-    localStorage.removeItem("adminName");
-    localStorage.removeItem("adminLoggedIn");
-
-    window.location.href =
-        "admin-login.html";
-
-}
-
-
-/* ==========================================
-   GET PUBLIC DOCUMENT URL
-========================================== */
-
-function getDocumentUrl(path){
-
-    if(!path){
-        return null;
-    }
-
-    const value =
-        String(path).trim();
-
-    if(!value){
-        return null;
-    }
-
-    /*
-       Agar database me already
-       complete URL saved hai
-    */
-
-    if(
-        /^https?:\/\//i.test(value)
-    ){
-
-        return value;
-
-    }
-
-    /*
-       Supabase Storage Public URL
-    */
-
-    const { data } =
-        db
-        .storage
-        .from("farmer-documents")
-        .getPublicUrl(value);
-
-    if(
-        data &&
-        data.publicUrl
-    ){
-
-        return data.publicUrl;
-
-    }
-
-    return null;
-
-}
-
-
-/* ==========================================
-   LOAD ADMIN
-========================================== */
-
-async function loadAdmin(){
-
-    if(!adminId){
-
-        return;
-
-    }
+async function checkLogin(){
 
     const {
         data,
         error
-    } = await db
-        .from("admins")
-        .select(`
-            admin_id,
-            name,
-            block,
-            panchayat,
-            village,
-            status
-        `)
-        .eq(
-            "admin_id",
-            adminId
-        )
-        .maybeSingle();
+    } =
+    await db.auth.getSession();
 
 
     if(error){
 
-        console.error(error);
+        window.location.href =
+            "admin-login.html";
 
-        showMessage(
-            "Admin information load nahi ho paya.",
-            "error"
-        );
-
-        return;
-
+        return false;
     }
 
 
-    if(!data){
+    if(
+        !data ||
+        !data.session
+    ){
 
-        showMessage(
-            "Admin record nahi mila.",
-            "error"
-        );
+        window.location.href =
+            "admin-login.html";
 
-        return;
-
+        return false;
     }
 
 
-    /*
-       Agar localStorage me name nahi hai
-       to database se le lenge
-    */
+    const authUserId =
+        data.session.user.id;
+
+
+    const {
+        data: admin,
+        error: adminError
+    } =
+    await db
+    .from("admins")
+    .select(`
+        id,
+        admin_id,
+        name,
+        auth_user_id,
+        status
+    `)
+    .eq(
+        "auth_user_id",
+        authUserId
+    )
+    .maybeSingle();
+
+
+    if(adminError){
+
+        alert(
+            "Admin information error: " +
+            adminError.message
+        );
+
+        return false;
+    }
+
+
+    if(!admin){
+
+        alert(
+            "Admin record नहीं मिला।"
+        );
+
+        await db.auth.signOut();
+
+        window.location.href =
+            "admin-login.html";
+
+        return false;
+    }
+
+
+    if(
+        String(admin.status || "")
+        .toLowerCase()
+        !==
+        "active"
+    ){
+
+        alert(
+            "Admin account Active नहीं है।"
+        );
+
+        await db.auth.signOut();
+
+        window.location.href =
+            "admin-login.html";
+
+        return false;
+    }
+
+
+    adminId =
+        admin.admin_id;
 
     adminName =
-        data.name ||
-        adminName ||
-        "Admin";
+        admin.name;
 
 
     document.getElementById(
         "adminId"
     ).textContent =
-        data.admin_id || "-";
+        adminId || "-";
 
 
     document.getElementById(
         "adminName"
     ).textContent =
-        data.name || "-";
+        adminName || "-";
 
+
+    return true;
+
+}
+
+
+/* ==========================================
+   LOAD ASSIGNED AREA
+========================================== */
+
+async function loadAssignedArea(){
+
+    /*
+       IMPORTANT:
+       Area admins table se nahi,
+       admin_area_assignments se milega.
+    */
+
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("admin_area_assignments")
+    .select(`
+        id,
+        admin_id,
+        block,
+        panchayat,
+        village,
+        status,
+        assigned_by_officer_id,
+        created_at
+    `)
+    .eq(
+        "admin_id",
+        adminId
+    )
+    .eq(
+        "status",
+        "Active"
+    )
+    .order(
+        "created_at",
+        {
+            ascending:false
+        }
+    )
+    .limit(1)
+    .maybeSingle();
+
+
+    if(error){
+
+        console.error(
+            error
+        );
+
+        showMessage(
+            "Assigned area load nahi hua: " +
+            error.message,
+            "error"
+        );
+
+        return false;
+    }
+
+
+    if(!data){
+
+        document.getElementById(
+            "assignedBlock"
+        ).textContent =
+            "Not Assigned";
+
+
+        document.getElementById(
+            "assignedPanchayat"
+        ).textContent =
+            "Not Assigned";
+
+
+        document.getElementById(
+            "assignedVillage"
+        ).textContent =
+            "Not Assigned";
+
+
+        document.getElementById(
+            "assignmentStatus"
+        ).textContent =
+            "Not Assigned";
+
+
+        return false;
+    }
+
+
+    assignedArea =
+        data;
+
+
+    /*
+       EXACT ASSIGNMENT DATA
+    */
 
     document.getElementById(
-        "adminBlock"
+        "assignedBlock"
     ).textContent =
         data.block || "-";
 
 
     document.getElementById(
-        "adminPanchayat"
+        "assignedPanchayat"
     ).textContent =
         data.panchayat || "-";
 
 
     document.getElementById(
-        "adminVillage"
+        "assignedVillage"
     ).textContent =
         data.village || "-";
+
+
+    document.getElementById(
+        "assignmentStatus"
+    ).textContent =
+        data.status || "-";
+
+
+    return true;
 
 }
 
@@ -881,96 +1047,98 @@ async function loadFarmers(){
 
     document.getElementById(
         "loading"
-    ).style.display = "block";
+    ).style.display =
+        "block";
 
 
     document.getElementById(
         "farmerTable"
-    ).style.display = "none";
+    ).style.display =
+        "none";
 
 
-    document.getElementById(
-        "emptyMessage"
-    ).style.display = "none";
+    if(!adminId){
+
+        return;
+    }
 
 
     /*
-       Farmer table se data
+       Sirf isi Admin ko assigned farmers.
     */
-
-    let query =
-        db
-        .from("farmer")
-        .select(`
-            id,
-            registration_no,
-            name,
-            father_name,
-            mobile,
-            gender,
-            date_of_birth,
-            village,
-            panchayat,
-            block,
-            district,
-            state,
-            crop,
-            land,
-            category,
-            address,
-            status,
-            aadhar_number,
-            bank_name,
-            bank_branch,
-            account_number,
-            ifsc_code,
-            payment_mode,
-            photo_url,
-            signature_url,
-            aadhar_url,
-            form_url,
-            land_record_url,
-            admin_id,
-            registered_at,
-            admin_verified_at,
-            admin_verified_by,
-            admin_rejection_reason
-        `)
-        .eq(
-            "admin_id",
-            adminId
-        )
-        .order(
-            "registered_at",
-            {
-                ascending:false
-            }
-        );
-
 
     const {
         data,
         error
-    } = await query;
+    } =
+    await db
+    .from("farmer")
+    .select(`
+        id,
+        registration_no,
+        name,
+        father_name,
+        mobile,
+        gender,
+        date_of_birth,
+        village,
+        panchayat,
+        block,
+        district,
+        state,
+        crop,
+        land,
+        category,
+        address,
+        status,
+        aadhar_number,
+        bank_name,
+        bank_branch,
+        account_number,
+        ifsc_code,
+        payment_mode,
+        photo_url,
+        signature_url,
+        aadhar_url,
+        form_url,
+        land_record_url,
+        admin_id,
+        registered_at,
+        admin_verified_at,
+        admin_verified_by,
+        admin_rejection_reason
+    `)
+    .eq(
+        "admin_id",
+        adminId
+    )
+    .order(
+        "registered_at",
+        {
+            ascending:false
+        }
+    );
 
 
     document.getElementById(
         "loading"
-    ).style.display = "none";
+    ).style.display =
+        "none";
 
 
     if(error){
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         showMessage(
-            "Farmer data load nahi ho paya: " +
+            "Farmer data load nahi hua: " +
             error.message,
             "error"
         );
 
         return;
-
     }
 
 
@@ -978,12 +1146,9 @@ async function loadFarmers(){
         data || [];
 
 
-    updateStatistics(
-        allFarmers
-    );
+    updateStats();
 
-
-    applyFilters();
+    filterFarmers();
 
 }
 
@@ -992,67 +1157,56 @@ async function loadFarmers(){
    STATISTICS
 ========================================== */
 
-function updateStatistics(farmers){
+function updateStats(){
 
     const total =
-        farmers.length;
+        allFarmers.length;
 
 
     const pending =
-        farmers.filter(
+        allFarmers.filter(
             f =>
-                String(f.status || "")
-                .toLowerCase()
-                ===
-                "pending admin verification"
+                f.status ===
+                "Pending Admin Verification"
         ).length;
 
 
     const verified =
-        farmers.filter(
+        allFarmers.filter(
             f =>
-                String(f.status || "")
-                .toLowerCase()
-                ===
-                "pending officer approval"
-                ||
-                String(f.status || "")
-                .toLowerCase()
-                ===
-                "verified"
+                f.status ===
+                "Pending Officer Approval"
         ).length;
 
 
     const rejected =
-        farmers.filter(
+        allFarmers.filter(
             f =>
-                String(f.status || "")
-                .toLowerCase()
-                ===
-                "rejected"
+                f.status ===
+                "Rejected"
         ).length;
 
 
     document.getElementById(
-        "totalCount"
+        "total"
     ).textContent =
         total;
 
 
     document.getElementById(
-        "pendingCount"
+        "pending"
     ).textContent =
         pending;
 
 
     document.getElementById(
-        "verifiedCount"
+        "verified"
     ).textContent =
         verified;
 
 
     document.getElementById(
-        "rejectedCount"
+        "rejected"
     ).textContent =
         rejected;
 
@@ -1063,12 +1217,13 @@ function updateStatistics(farmers){
    FILTER
 ========================================== */
 
-function applyFilters(){
+function filterFarmers(){
 
     const search =
         document.getElementById(
-            "searchInput"
-        ).value
+            "search"
+        )
+        .value
         .toLowerCase()
         .trim();
 
@@ -1076,7 +1231,8 @@ function applyFilters(){
     const status =
         document.getElementById(
             "statusFilter"
-        ).value;
+        )
+        .value;
 
 
     const filtered =
@@ -1085,32 +1241,47 @@ function applyFilters(){
 
                 const text =
                     (
-                        (farmer.registration_no || "") +
-                        " " +
-                        (farmer.name || "") +
-                        " " +
-                        (farmer.mobile || "") +
-                        " " +
-                        (farmer.village || "") +
-                        " " +
-                        (farmer.panchayat || "")
-                    )
-                    .toLowerCase();
-
-
-                const searchMatch =
-                    !search ||
-                    text.includes(search);
-
-
-                const statusMatch =
-                    !status ||
-                    farmer.status === status;
+                        farmer.registration_no ||
+                        ""
+                    ) +
+                    " " +
+                    (
+                        farmer.name ||
+                        ""
+                    ) +
+                    " " +
+                    (
+                        farmer.mobile ||
+                        ""
+                    ) +
+                    " " +
+                    (
+                        farmer.village ||
+                        ""
+                    ) +
+                    " " +
+                    (
+                        farmer.panchayat ||
+                        ""
+                    );
 
 
                 return (
-                    searchMatch &&
-                    statusMatch
+
+                    (
+                        !search ||
+                        text
+                        .toLowerCase()
+                        .includes(search)
+                    )
+
+                    &&
+
+                    (
+                        !status ||
+                        farmer.status === status
+                    )
+
                 );
 
             }
@@ -1125,43 +1296,48 @@ function applyFilters(){
 
 
 /* ==========================================
-   RENDER FARMERS
+   RENDER
 ========================================== */
 
 function renderFarmers(farmers){
 
-    const tbody =
+    const body =
         document.getElementById(
-            "farmerTableBody"
+            "farmerBody"
         );
 
-    tbody.innerHTML = "";
+
+    body.innerHTML = "";
 
 
     if(!farmers.length){
 
         document.getElementById(
             "farmerTable"
-        ).style.display = "none";
+        ).style.display =
+            "none";
 
 
         document.getElementById(
-            "emptyMessage"
-        ).style.display = "block";
+            "empty"
+        ).style.display =
+            "block";
+
 
         return;
-
     }
 
 
     document.getElementById(
         "farmerTable"
-    ).style.display = "table";
+    ).style.display =
+        "table";
 
 
     document.getElementById(
-        "emptyMessage"
-    ).style.display = "none";
+        "empty"
+    ).style.display =
+        "none";
 
 
     farmers.forEach(
@@ -1173,6 +1349,70 @@ function renderFarmers(farmers){
                 );
 
 
+            let actions = `
+
+                <button
+                    class="btn view"
+                    onclick='viewFarmer(${JSON.stringify(farmer)})'
+                >
+                    👁 View
+                </button>
+
+                <button
+                    class="btn documents"
+                    onclick='openDocuments(${JSON.stringify(farmer)})'
+                >
+                    📄 Documents
+                </button>
+
+            `;
+
+
+            if(
+                farmer.status ===
+                "Pending Admin Verification"
+            ){
+
+                actions += `
+
+                    <button
+                        class="btn verify"
+                        onclick="verifyFarmer('${farmer.id}')"
+                    >
+                        ✓ Verify
+                    </button>
+
+                    <button
+                        class="btn reject"
+                        onclick="showReject('${farmer.id}')"
+                    >
+                        ✕ Reject
+                    </button>
+
+                    <div
+                        id="rejectBox-${farmer.id}"
+                        class="reject-area"
+                    >
+
+                        <textarea
+                            id="rejectReason-${farmer.id}"
+                            placeholder="Reject reason लिखें..."
+                        ></textarea>
+
+                        <button
+                            class="btn reject-confirm"
+                            onclick="rejectFarmer('${farmer.id}')"
+                        >
+                            Confirm Reject
+                        </button>
+
+                    </div>
+
+                `;
+
+            }
+
+
             tr.innerHTML = `
 
                 <td>
@@ -1181,135 +1421,77 @@ function renderFarmers(farmers){
 
                 <td>
                     <strong>
-                        ${escapeHtml(
-                            farmer.registration_no || "-"
+                        ${safe(
+                            farmer.registration_no
                         )}
                     </strong>
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.name || "-"
+                    ${safe(
+                        farmer.name
                     )}
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.father_name || "-"
+                    ${safe(
+                        farmer.father_name
                     )}
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.mobile || "-"
+                    ${safe(
+                        farmer.mobile
                     )}
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.village || "-"
+                    ${safe(
+                        farmer.village
                     )}
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.panchayat || "-"
+                    ${safe(
+                        farmer.panchayat
                     )}
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.crop || "-"
+                    ${safe(
+                        farmer.crop
                     )}
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.land || "-"
+                    ${safe(
+                        farmer.land
                     )}
                 </td>
 
                 <td>
-                    ${getStatusHtml(
+                    ${statusHtml(
                         farmer.status
                     )}
                 </td>
 
                 <td>
-
                     <button
-                        class="action-btn doc-btn"
-                        onclick='openDocumentModal(${JSON.stringify(farmer)})'
+                        class="btn documents"
+                        onclick='openDocuments(${JSON.stringify(farmer)})'
                     >
-                        📄 View Documents
+                        📄 View
                     </button>
-
                 </td>
 
                 <td>
-
-                    <button
-                        class="action-btn view-btn"
-                        onclick='viewFarmer(${JSON.stringify(farmer)})'
-                    >
-                        👁 View
-                    </button>
-
-                    ${
-                        farmer.status ===
-                        "Pending Admin Verification"
-                        ?
-                        `
-                        <button
-                            class="action-btn verify-btn"
-                            onclick="verifyFarmer('${farmer.id}')"
-                        >
-                            ✓ Verify
-                        </button>
-
-                        <button
-                            class="action-btn reject-btn"
-                            onclick="showRejectBox('${farmer.id}')"
-                        >
-                            ✕ Reject
-                        </button>
-
-                        <div
-                            id="reject-${farmer.id}"
-                            class="reject-box"
-                        >
-
-                            <textarea
-                                id="reason-${farmer.id}"
-                                placeholder="Reject karne ka reason likhiye..."
-                            ></textarea>
-
-                            <button
-                                class="reject-confirm"
-                                onclick="rejectFarmer('${farmer.id}')"
-                            >
-                                Confirm Reject
-                            </button>
-
-                        </div>
-                        `
-                        :
-                        `
-                        <button
-                            class="action-btn disabled-btn"
-                            disabled
-                        >
-                            Action Done
-                        </button>
-                        `
-                    }
-
+                    ${actions}
                 </td>
 
             `;
 
 
-            tbody.appendChild(
+            body.appendChild(
                 tr
             );
 
@@ -1320,49 +1502,40 @@ function renderFarmers(farmers){
 
 
 /* ==========================================
-   STATUS HTML
+   STATUS
 ========================================== */
 
-function getStatusHtml(status){
-
-    const s =
-        String(status || "")
-        .toLowerCase();
-
+function statusHtml(status){
 
     let cls =
-        "status-pending";
+        "pending";
 
 
     if(
-        s === "verified"
+        status ===
+        "Pending Officer Approval"
     ){
 
         cls =
-            "status-verified";
+            "verified";
 
     }
-    else if(
-        s === "rejected"
+
+
+    if(
+        status ===
+        "Rejected"
     ){
 
         cls =
-            "status-rejected";
-
-    }
-    else if(
-        s === "pending officer approval"
-    ){
-
-        cls =
-            "status-officer";
+            "rejected";
 
     }
 
 
     return `
         <span class="status ${cls}">
-            ${escapeHtml(status || "-")}
+            ${safe(status || "-")}
         </span>
     `;
 
@@ -1370,234 +1543,89 @@ function getStatusHtml(status){
 
 
 /* ==========================================
-   VERIFY FARMER
+   DOCUMENT URL
 ========================================== */
 
-async function verifyFarmer(id){
+function getDocumentUrl(path){
 
-    const farmer =
-        allFarmers.find(
-            f =>
-                String(f.id)
-                === String(id)
-        );
+    if(!path){
 
-
-    if(!farmer){
-
-        showMessage(
-            "Farmer record nahi mila.",
-            "error"
-        );
-
-        return;
-
+        return null;
     }
 
 
-    const confirmed =
-        confirm(
-            "Kya aap is farmer ko verify karna chahte hain?"
-        );
+    const value =
+        String(path)
+        .trim();
 
 
-    if(!confirmed){
+    if(!value){
 
-        return;
-
+        return null;
     }
 
+
+    /*
+       Already complete URL
+    */
+
+    if(
+        /^https?:\/\//i.test(value)
+    ){
+
+        return value;
+    }
+
+
+    /*
+       Supabase public bucket
+    */
 
     const {
-        error
-    } = await db
-        .from("farmer")
-        .update({
-
-            status:
-                "Pending Officer Approval",
-
-            admin_verified_at:
-                new Date().toISOString(),
-
-            admin_verified_by:
-                adminId,
-
-            admin_rejection_reason:
-                null
-
-        })
-        .eq(
-            "id",
-            id
-        )
-        .eq(
-            "admin_id",
-            adminId
-        )
-        .eq(
-            "status",
-            "Pending Admin Verification"
-        );
-
-
-    if(error){
-
-        console.error(error);
-
-        showMessage(
-            "Verification failed: " +
-            error.message,
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    showMessage(
-        "Farmer successfully verified. Ab application Officer ke paas chali gayi hai.",
-        "success"
+        data
+    } =
+    db
+    .storage
+    .from(
+        "farmer-documents"
+    )
+    .getPublicUrl(
+        value
     );
 
 
-    await loadFarmers();
+    if(
+        data &&
+        data.publicUrl
+    ){
+
+        return data.publicUrl;
+
+    }
+
+
+    return null;
 
 }
 
 
 /* ==========================================
-   SHOW REJECT BOX
+   OPEN DOCUMENTS
 ========================================== */
 
-function showRejectBox(id){
+function openDocuments(farmer){
 
-    const box =
+    const grid =
         document.getElementById(
-            "reject-" + id
+            "documentsGrid"
         );
 
 
-    if(box){
-
-        box.style.display =
-            box.style.display === "block"
-            ? "none"
-            : "block";
-
-    }
-
-}
-
-
-/* ==========================================
-   REJECT FARMER
-========================================== */
-
-async function rejectFarmer(id){
-
-    const reason =
-        document.getElementById(
-            "reason-" + id
-        ).value.trim();
-
-
-    if(!reason){
-
-        alert(
-            "Reject reason likhna zaroori hai."
-        );
-
-        return;
-
-    }
-
-
-    const confirmed =
-        confirm(
-            "Kya aap is farmer ki application reject karna chahte hain?"
-        );
-
-
-    if(!confirmed){
-
-        return;
-
-    }
-
-
-    const {
-        error
-    } = await db
-        .from("farmer")
-        .update({
-
-            status:
-                "Rejected",
-
-            admin_verified_at:
-                new Date().toISOString(),
-
-            admin_verified_by:
-                adminId,
-
-            admin_rejection_reason:
-                reason
-
-        })
-        .eq(
-            "id",
-            id
-        )
-        .eq(
-            "admin_id",
-            adminId
-        )
-        .eq(
-            "status",
-            "Pending Admin Verification"
-        );
-
-
-    if(error){
-
-        console.error(error);
-
-        showMessage(
-            "Reject failed: " +
-            error.message,
-            "error"
-        );
-
-        return;
-
-    }
-
-
-    showMessage(
-        "Farmer application rejected.",
-        "success"
-    );
-
-
-    await loadFarmers();
-
-}
-
-
-/* ==========================================
-   DOCUMENT MODAL
-========================================== */
-
-function openDocumentModal(farmer){
-
-    currentFarmer =
-        farmer;
+    grid.innerHTML = "";
 
 
     document.getElementById(
-        "documentTitle"
+        "modalTitle"
     ).textContent =
         "Documents - " +
         (
@@ -1607,16 +1635,7 @@ function openDocumentModal(farmer){
         );
 
 
-    const grid =
-        document.getElementById(
-            "documentGrid"
-        );
-
-
-    grid.innerHTML = "";
-
-
-    const documents = [
+    const docs = [
 
         {
             title:"Farmer Photo",
@@ -1646,17 +1665,8 @@ function openDocumentModal(farmer){
     ];
 
 
-    documents.forEach(
+    docs.forEach(
         doc => {
-
-            const card =
-                document.createElement(
-                    "div"
-                );
-
-            card.className =
-                "document-card";
-
 
             const url =
                 getDocumentUrl(
@@ -1664,7 +1674,17 @@ function openDocumentModal(farmer){
                 );
 
 
-            if(url){
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "doc-card";
+
+
+            if(!url){
 
                 card.innerHTML = `
 
@@ -1672,59 +1692,63 @@ function openDocumentModal(farmer){
                         ${doc.title}
                     </h3>
 
-                    <img
-                        class="document-preview"
-                        src="${escapeAttribute(url)}"
-                        alt="${escapeAttribute(doc.title)}"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                    >
-
-                    <div
-                        class="no-document"
-                        style="display:none;"
-                    >
-                        Document load nahi hua
-                    </div>
-
-                    <div class="document-actions">
-
-                        <a
-                            href="${escapeAttribute(url)}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            🔗 Open
-                        </a>
-
-                        <a
-                            href="${escapeAttribute(url)}"
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            ⬇ Download
-                        </a>
-
+                    <div class="no-file">
+                        Document उपलब्ध नहीं है
                     </div>
 
                 `;
 
+                grid.appendChild(
+                    card
+                );
+
+                return;
             }
-            else{
 
-                card.innerHTML = `
 
-                    <h3>
-                        ${doc.title}
-                    </h3>
+            card.innerHTML = `
 
-                    <div class="no-document">
-                        Document Available Nahi Hai
-                    </div>
+                <h3>
+                    ${doc.title}
+                </h3>
 
-                `;
+                <img
+                    src="${safeAttr(url)}"
+                    class="doc-preview"
+                    alt="${safeAttr(doc.title)}"
+                    onerror="document.getElementById('error-${doc.title.replace(/[^a-zA-Z0-9]/g,'')}').style.display='flex'; this.style.display='none';"
+                >
 
-            }
+                <div
+                    id="error-${doc.title.replace(/[^a-zA-Z0-9]/g,'')}"
+                    class="no-file"
+                    style="display:none;"
+                >
+                    File open नहीं हो रही है
+                </div>
+
+                <div class="doc-buttons">
+
+                    <a
+                        class="open"
+                        href="${safeAttr(url)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        🔗 Open
+                    </a>
+
+                    <a
+                        href="${safeAttr(url + (url.includes('?') ? '&' : '?') + 'download=1')}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        ⬇ Download
+                    </a>
+
+                </div>
+
+            `;
 
 
             grid.appendChild(
@@ -1744,10 +1768,10 @@ function openDocumentModal(farmer){
 
 
 /* ==========================================
-   CLOSE DOCUMENT MODAL
+   CLOSE DOCUMENTS
 ========================================== */
 
-function closeDocumentModal(){
+function closeDocuments(){
 
     document.getElementById(
         "documentModal"
@@ -1758,109 +1782,296 @@ function closeDocumentModal(){
 
 
 /* ==========================================
-   VIEW FARMER DETAILS
+   VERIFY
 ========================================== */
 
-function viewFarmer(farmer){
+async function verifyFarmer(id){
 
-    const message =
+    if(
+        !confirm(
+            "Kya aap is farmer ko verify karna chahte hain?"
+        )
+    ){
 
-        "Registration No.: " +
-        (farmer.registration_no || "-") +
+        return;
+    }
 
-        "\n\nName: " +
-        (farmer.name || "-") +
 
-        "\nFather Name: " +
-        (farmer.father_name || "-") +
+    const {
+        error
+    } =
+    await db
+    .from("farmer")
+    .update({
 
-        "\nMobile: " +
-        (farmer.mobile || "-") +
+        status:
+            "Pending Officer Approval",
 
-        "\nGender: " +
-        (farmer.gender || "-") +
+        admin_verified_at:
+            new Date().toISOString(),
 
-        "\nDate of Birth: " +
-        (farmer.date_of_birth || "-") +
+        admin_verified_by:
+            adminId,
 
-        "\n\nBlock: " +
-        (farmer.block || "-") +
+        admin_rejection_reason:
+            null
 
-        "\nPanchayat: " +
-        (farmer.panchayat || "-") +
+    })
+    .eq(
+        "id",
+        id
+    )
+    .eq(
+        "admin_id",
+        adminId
+    )
+    .eq(
+        "status",
+        "Pending Admin Verification"
+    );
 
-        "\nVillage: " +
-        (farmer.village || "-") +
 
-        "\n\nCrop: " +
-        (farmer.crop || "-") +
+    if(error){
 
-        "\nLand: " +
-        (farmer.land || "-") +
-
-        "\nCategory: " +
-        (farmer.category || "-") +
-
-        "\n\nAddress: " +
-        (farmer.address || "-") +
-
-        "\n\nStatus: " +
-        (farmer.status || "-") +
-
-        "\n\nRegistered At: " +
-        formatDate(
-            farmer.registered_at
+        showMessage(
+            "Verify failed: " +
+            error.message,
+            "error"
         );
 
+        return;
+    }
 
-    alert(message);
+
+    showMessage(
+        "✅ Farmer verify ho gaya. Ab Officer ke paas approval ke liye bhej diya gaya hai.",
+        "success"
+    );
+
+
+    await loadFarmers();
 
 }
 
 
 /* ==========================================
-   DATE FORMAT
+   SHOW REJECT
 ========================================== */
 
-function formatDate(value){
+function showReject(id){
 
-    if(!value){
+    const box =
+        document.getElementById(
+            "rejectBox-" + id
+        );
 
-        return "-";
+
+    if(box){
+
+        box.style.display =
+            box.style.display === "block"
+            ? "none"
+            : "block";
 
     }
 
+}
 
-    const date =
-        new Date(value);
+
+/* ==========================================
+   REJECT
+========================================== */
+
+async function rejectFarmer(id){
+
+    const reason =
+        document.getElementById(
+            "rejectReason-" + id
+        ).value
+        .trim();
+
+
+    if(!reason){
+
+        alert(
+            "Reject reason लिखिए।"
+        );
+
+        return;
+    }
 
 
     if(
-        isNaN(
-            date.getTime()
+        !confirm(
+            "Kya aap application reject karna chahte hain?"
         )
     ){
 
-        return value;
-
+        return;
     }
 
 
-    return date.toLocaleString(
-        "en-IN"
+    const {
+        error
+    } =
+    await db
+    .from("farmer")
+    .update({
+
+        status:
+            "Rejected",
+
+        admin_verified_at:
+            new Date().toISOString(),
+
+        admin_verified_by:
+            adminId,
+
+        admin_rejection_reason:
+            reason
+
+    })
+    .eq(
+        "id",
+        id
+    )
+    .eq(
+        "admin_id",
+        adminId
+    )
+    .eq(
+        "status",
+        "Pending Admin Verification"
+    );
+
+
+    if(error){
+
+        showMessage(
+            "Reject failed: " +
+            error.message,
+            "error"
+        );
+
+        return;
+    }
+
+
+    showMessage(
+        "❌ Farmer application rejected.",
+        "success"
+    );
+
+
+    await loadFarmers();
+
+}
+
+
+/* ==========================================
+   VIEW FARMER
+========================================== */
+
+function viewFarmer(f){
+
+    alert(
+
+        "Registration No.: " +
+        (f.registration_no || "-") +
+
+        "\n\nName: " +
+        (f.name || "-") +
+
+        "\nFather Name: " +
+        (f.father_name || "-") +
+
+        "\nMobile: " +
+        (f.mobile || "-") +
+
+        "\nGender: " +
+        (f.gender || "-") +
+
+        "\nDate of Birth: " +
+        (f.date_of_birth || "-") +
+
+        "\n\nBlock: " +
+        (f.block || "-") +
+
+        "\nPanchayat: " +
+        (f.panchayat || "-") +
+
+        "\nVillage: " +
+        (f.village || "-") +
+
+        "\n\nCrop: " +
+        (f.crop || "-") +
+
+        "\nLand: " +
+        (f.land || "-") +
+
+        "\nCategory: " +
+        (f.category || "-") +
+
+        "\n\nAddress: " +
+        (f.address || "-") +
+
+        "\n\nStatus: " +
+        (f.status || "-")
+
     );
 
 }
 
 
 /* ==========================================
-   ESCAPE HTML
+   MESSAGE
 ========================================== */
 
-function escapeHtml(value){
+function showMessage(
+    text,
+    type
+){
+
+    const box =
+        document.getElementById(
+            "message"
+        );
+
+
+    box.textContent =
+        text;
+
+
+    box.className =
+        "message " +
+        type;
+
+
+    box.style.display =
+        "block";
+
+
+    setTimeout(
+        () => {
+
+            box.style.display =
+                "none";
+
+        },
+        5000
+    );
+
+}
+
+
+/* ==========================================
+   SAFE HTML
+========================================== */
+
+function safe(value){
 
     return String(
-        value ?? ""
+        value ?? "-"
     )
     .replace(
         /&/g,
@@ -1886,17 +2097,64 @@ function escapeHtml(value){
 }
 
 
-function escapeAttribute(value){
+function safeAttr(value){
 
-    return escapeHtml(
-        value
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
     );
 
 }
 
 
 /* ==========================================
-   CLOSE MODAL WHEN OUTSIDE CLICK
+   LOGOUT
+========================================== */
+
+async function logout(){
+
+    await db.auth.signOut();
+
+    localStorage.removeItem(
+        "adminId"
+    );
+
+    localStorage.removeItem(
+        "adminName"
+    );
+
+    localStorage.removeItem(
+        "adminLoggedIn"
+    );
+
+
+    window.location.href =
+        "admin-login.html";
+
+}
+
+
+/* ==========================================
+   OUTSIDE MODAL CLICK
 ========================================== */
 
 window.addEventListener(
@@ -1913,7 +2171,7 @@ window.addEventListener(
             event.target === modal
         ){
 
-            closeDocumentModal();
+            closeDocuments();
 
         }
 
@@ -1922,12 +2180,23 @@ window.addEventListener(
 
 
 /* ==========================================
-   INITIAL LOAD
+   START
 ========================================== */
 
 (async function(){
 
-    await loadAdmin();
+    const loggedIn =
+        await checkLogin();
+
+
+    if(!loggedIn){
+
+        return;
+    }
+
+
+    await loadAssignedArea();
+
 
     await loadFarmers();
 
