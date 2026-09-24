@@ -9,10 +9,16 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
     font-family:Arial,sans-serif;
     background:#f1f8f3;
+    color:#222;
 }
 
 header{
@@ -23,6 +29,7 @@ header{
     justify-content:space-between;
     align-items:center;
     flex-wrap:wrap;
+    gap:15px;
 }
 
 header h1{
@@ -46,13 +53,15 @@ header p{
 
 .container{
     width:94%;
-    max-width:1200px;
+    max-width:1400px;
     margin:25px auto;
 }
 
+/* ADMIN INFO */
+
 .admin-info{
     background:white;
-    padding:15px 20px;
+    padding:18px 20px;
     border-radius:12px;
     box-shadow:0 3px 12px rgba(0,0,0,.08);
     margin-bottom:20px;
@@ -62,6 +71,59 @@ header p{
 .admin-info b{
     color:#198754;
 }
+
+/* AREA */
+
+.area-box{
+    background:white;
+    padding:18px 20px;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.area-box h2{
+    margin-top:0;
+    color:#198754;
+}
+
+.area-text{
+    background:#f0fdf4;
+    border-left:4px solid #198754;
+    padding:14px;
+    line-height:1.7;
+}
+
+/* SUMMARY */
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.summary-card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    text-align:center;
+}
+
+.summary-card h3{
+    margin:0 0 10px;
+    color:#666;
+    font-size:15px;
+}
+
+.summary-number{
+    font-size:30px;
+    font-weight:bold;
+    color:#198754;
+}
+
+/* TARGET */
 
 .target-grid{
     display:grid;
@@ -81,14 +143,16 @@ header p{
 .target-card h3{
     margin:0 0 10px;
     color:#666;
-    font-size:16px;
+    font-size:15px;
 }
 
 .target-number{
-    font-size:30px;
+    font-size:28px;
     font-weight:bold;
     color:#198754;
 }
+
+/* PROGRESS */
 
 .progress-box{
     background:white;
@@ -126,6 +190,8 @@ header p{
     font-size:14px;
 }
 
+/* FARMER BOX */
+
 .top-box{
     background:white;
     padding:20px;
@@ -141,7 +207,6 @@ header p{
 
 .search{
     width:100%;
-    box-sizing:border-box;
     padding:12px;
     border:1px solid #ccc;
     border-radius:8px;
@@ -154,17 +219,20 @@ header p{
     font-weight:bold;
 }
 
+/* TABLE */
+
 .table-box{
     background:white;
     border-radius:12px;
     box-shadow:0 3px 12px rgba(0,0,0,.08);
     overflow-x:auto;
+    margin-bottom:25px;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    min-width:1050px;
+    min-width:1400px;
 }
 
 th{
@@ -172,33 +240,106 @@ th{
     color:white;
     padding:12px;
     text-align:left;
+    white-space:nowrap;
 }
 
 td{
     padding:10px;
     border-bottom:1px solid #ddd;
+    vertical-align:middle;
 }
 
 tr:hover{
     background:#f5fff7;
 }
 
-.status-select{
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
+/* STATUS */
+
+.status-badge{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:12px;
     font-weight:bold;
+    white-space:nowrap;
 }
 
-.save-btn{
+.pending{
+    background:#fff3cd;
+    color:#856404;
+}
+
+.verified{
+    background:#cfe2ff;
+    color:#084298;
+}
+
+.rejected{
+    background:#f8d7da;
+    color:#842029;
+}
+
+.approved{
+    background:#d1e7dd;
+    color:#0f5132;
+}
+
+/* ACTION BUTTONS */
+
+.verify-btn{
     background:#198754;
     color:white;
     border:0;
     padding:8px 12px;
     border-radius:6px;
     cursor:pointer;
-    margin-left:5px;
+    font-weight:bold;
+    margin:2px;
 }
+
+.reject-btn{
+    background:#dc3545;
+    color:white;
+    border:0;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+    margin:2px;
+}
+
+.disabled-btn{
+    background:#adb5bd;
+    color:white;
+    border:0;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:not-allowed;
+}
+
+/* DOCUMENT BUTTON */
+
+.documents-btn{
+    background:#0d6efd;
+    color:white;
+    border:0;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.documents-btn:hover{
+    background:#0b5ed7;
+}
+
+.no-documents{
+    color:#888;
+    font-size:12px;
+}
+
+/* LOADING */
 
 .loading{
     text-align:center;
@@ -211,34 +352,184 @@ tr:hover{
     color:#777;
 }
 
-@media(max-width:800px){
+/* REJECT MODAL */
 
+.modal{
+    display:none;
+    position:fixed;
+    z-index:9999;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.55);
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal-content{
+    background:white;
+    width:100%;
+    max-width:500px;
+    border-radius:12px;
+    padding:22px;
+    box-shadow:0 5px 25px rgba(0,0,0,.25);
+}
+
+.modal-content h2{
+    margin-top:0;
+    color:#dc3545;
+}
+
+.modal-content textarea{
+    width:100%;
+    min-height:120px;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    resize:vertical;
+    font-size:15px;
+}
+
+.modal-buttons{
+    margin-top:15px;
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+}
+
+.cancel-btn{
+    background:#6c757d;
+    color:white;
+    border:0;
+    padding:10px 18px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+.confirm-reject-btn{
+    background:#dc3545;
+    color:white;
+    border:0;
+    padding:10px 18px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+/* DOCUMENT MODAL */
+
+.document-modal-content{
+    background:white;
+    width:100%;
+    max-width:550px;
+    border-radius:12px;
+    padding:22px;
+    box-shadow:0 5px 25px rgba(0,0,0,.25);
+    max-height:90vh;
+    overflow-y:auto;
+}
+
+.document-modal-content h2{
+    margin-top:0;
+    color:#198754;
+}
+
+.document-list{
+    margin-top:15px;
+}
+
+.document-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    padding:12px;
+    margin-bottom:10px;
+    background:#f8f9fa;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+}
+
+.document-name{
+    font-weight:bold;
+}
+
+.view-document-btn{
+    background:#198754;
+    color:white;
+    text-decoration:none;
+    padding:8px 13px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.view-document-btn:hover{
+    background:#146c43;
+}
+
+.document-missing{
+    color:#888;
+    font-size:13px;
+}
+
+.close-document-btn{
+    width:100%;
+    margin-top:10px;
+    background:#6c757d;
+    color:white;
+    border:0;
+    padding:11px;
+    border-radius:7px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+@media(max-width:900px){
+
+    .summary-grid,
     .target-grid{
         grid-template-columns:repeat(2,1fr);
     }
 
 }
 
-@media(max-width:500px){
+@media(max-width:550px){
 
+    .summary-grid,
     .target-grid{
         grid-template-columns:1fr 1fr;
         gap:10px;
     }
 
+    .summary-card,
     .target-card{
         padding:15px 8px;
     }
 
+    .summary-number,
     .target-number{
-        font-size:25px;
+        font-size:24px;
     }
 
     header h1{
         font-size:20px;
     }
 
+    .document-item{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .view-document-btn{
+        width:100%;
+        text-align:center;
+    }
+
 }
+
 </style>
 </head>
 
@@ -247,71 +538,202 @@ tr:hover{
 <header>
 
     <div>
+
         <h1>🌾 Chanho FPO Admin</h1>
-        <p>Farmer Management Dashboard</p>
+
+        <p>
+            Farmer Verification Dashboard
+        </p>
+
     </div>
 
-    <button class="logout" onclick="logout()">
+    <button
+        class="logout"
+        onclick="logout()">
+
         Logout
+
     </button>
 
 </header>
 
 <div class="container">
 
-    <!-- ADMIN INFORMATION -->
-
     <div class="admin-info">
+
         👨‍💼 Admin ID:
-        <b id="adminIdText">Loading...</b>
+        <b id="adminIdText">
+            Loading...
+        </b>
+
         &nbsp; | &nbsp;
+
         👤 Name:
-        <b id="adminNameText">Loading...</b>
+        <b id="adminNameText">
+            Loading...
+        </b>
+
     </div>
 
+    <div class="area-box">
 
-    <!-- TARGET SUMMARY -->
+        <h2>
+            📍 Assigned Area
+        </h2>
+
+        <div
+            class="area-text"
+            id="areaText">
+
+            Assigned area loading...
+
+        </div>
+
+    </div>
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+
+            <h3>
+                👨‍🌾 कुल किसान
+            </h3>
+
+            <div
+                class="summary-number"
+                id="totalFarmers">
+
+                0
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <h3>
+                ⏳ Pending Verification
+            </h3>
+
+            <div
+                class="summary-number"
+                id="pendingFarmers">
+
+                0
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <h3>
+                ✅ Admin Verified
+            </h3>
+
+            <div
+                class="summary-number"
+                id="verifiedFarmers">
+
+                0
+
+            </div>
+
+        </div>
+
+        <div class="summary-card">
+
+            <h3>
+                ❌ Rejected
+            </h3>
+
+            <div
+                class="summary-number"
+                id="rejectedFarmers">
+
+                0
+
+            </div>
+
+        </div>
+
+    </div>
 
     <div class="target-grid">
 
         <div class="target-card">
-            <h3>🎯 कुल Target</h3>
-            <div class="target-number" id="targetCount">
+
+            <h3>
+                🎯 कुल Target
+            </h3>
+
+            <div
+                class="target-number"
+                id="targetCount">
+
                 0
+
             </div>
+
         </div>
 
         <div class="target-card">
-            <h3>👨‍🌾 Achieved</h3>
-            <div class="target-number" id="achievedCount">
+
+            <h3>
+                👨‍🌾 Achieved
+            </h3>
+
+            <div
+                class="target-number"
+                id="achievedCount">
+
                 0
+
             </div>
+
         </div>
 
         <div class="target-card">
-            <h3>⏳ Remaining</h3>
-            <div class="target-number" id="remainingCount">
+
+            <h3>
+                ⏳ Remaining
+            </h3>
+
+            <div
+                class="target-number"
+                id="remainingCount">
+
                 0
+
             </div>
+
         </div>
 
         <div class="target-card">
-            <h3>📊 Progress</h3>
-            <div class="target-number" id="progressPercent">
+
+            <h3>
+                📊 Progress
+            </h3>
+
+            <div
+                class="target-number"
+                id="progressPercent">
+
                 0%
+
             </div>
+
         </div>
 
     </div>
-
-
-    <!-- PROGRESS -->
 
     <div class="progress-box">
 
         <div class="progress-title">
 
-            <span>Target Progress</span>
+            <span>
+                Target Progress
+            </span>
 
             <span id="progressText">
                 0 / 0
@@ -331,17 +753,18 @@ tr:hover{
         <div
             class="period-text"
             id="periodText">
+
             Target information loading...
+
         </div>
 
     </div>
 
-
-    <!-- FARMER LIST -->
-
     <div class="top-box">
 
-        <h2>👨‍🌾 Farmer List</h2>
+        <h2>
+            👨‍🌾 Farmer Applications
+        </h2>
 
         <input
             type="text"
@@ -358,7 +781,6 @@ tr:hover{
 
     </div>
 
-
     <div class="table-box">
 
         <table>
@@ -366,16 +788,51 @@ tr:hover{
             <thead>
 
                 <tr>
-                    <th>Registration No.</th>
-                    <th>नाम</th>
-                    <th>पिता / पति</th>
-                    <th>Mobile</th>
-                    <th>गाँव</th>
-                    <th>पंचायत</th>
-                    <th>फसल</th>
-                    <th>भूमि</th>
-                    <th>Status</th>
-                    <th>Action</th>
+
+                    <th>
+                        Registration No.
+                    </th>
+
+                    <th>
+                        नाम
+                    </th>
+
+                    <th>
+                        पिता / पति
+                    </th>
+
+                    <th>
+                        Mobile
+                    </th>
+
+                    <th>
+                        गाँव
+                    </th>
+
+                    <th>
+                        पंचायत
+                    </th>
+
+                    <th>
+                        फसल
+                    </th>
+
+                    <th>
+                        भूमि
+                    </th>
+
+                    <th>
+                        Documents
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
                 </tr>
 
             </thead>
@@ -383,11 +840,15 @@ tr:hover{
             <tbody id="farmerTable">
 
                 <tr>
+
                     <td
-                        colspan="10"
+                        colspan="11"
                         class="loading">
+
                         ⏳ किसान की जानकारी लोड हो रही है...
+
                     </td>
+
                 </tr>
 
             </tbody>
@@ -398,8 +859,96 @@ tr:hover{
 
 </div>
 
+<!-- REJECT MODAL -->
+
+<div
+    class="modal"
+    id="rejectModal">
+
+    <div class="modal-content">
+
+        <h2>
+            ❌ Farmer Reject करें
+        </h2>
+
+        <p>
+            Registration No:
+            <b id="rejectRegistrationNo">
+                -
+            </b>
+        </p>
+
+        <textarea
+            id="rejectReason"
+            placeholder="Reject करने का कारण लिखें..."
+        ></textarea>
+
+        <div class="modal-buttons">
+
+            <button
+                class="cancel-btn"
+                onclick="closeRejectModal()">
+
+                Cancel
+
+            </button>
+
+            <button
+                class="confirm-reject-btn"
+                onclick="confirmReject()">
+
+                Confirm Reject
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- DOCUMENT MODAL -->
+
+<div
+    class="modal"
+    id="documentModal">
+
+    <div class="document-modal-content">
+
+        <h2>
+            📄 Farmer Documents
+        </h2>
+
+        <p>
+            Registration No:
+            <b id="documentRegistrationNo">
+                -
+            </b>
+        </p>
+
+        <div
+            class="document-list"
+            id="documentList">
+
+        </div>
+
+        <button
+            class="close-document-btn"
+            onclick="closeDocumentModal()">
+
+            Close
+
+        </button>
+
+    </div>
+
+</div>
 
 <script>
+
+/* =====================================================
+   SUPABASE
+===================================================== */
 
 const SUPABASE_URL =
 "https://unqihzayhrpmtdxrjiyy.supabase.co";
@@ -407,50 +956,50 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 
-const { createClient } = supabase;
-
-const db = createClient(
+const db =
+supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
 
 
-/* =========================
-   ADMIN VARIABLES
-========================= */
+/* =====================================================
+   VARIABLES
+===================================================== */
 
 let ADMIN_ID = null;
+
 let ADMIN_NAME = null;
+
+let ADMIN_AREAS = [];
 
 let farmers = [];
 
+let rejectRegistrationNo = null;
 
-/* =========================
-   CHECK LOGIN + GET ADMIN
-========================= */
+
+/* =====================================================
+   CHECK LOGIN
+===================================================== */
 
 async function checkLogin(){
 
     const {
-        data: {
+        data:{
             session
         },
-        error: sessionError
+        error:sessionError
     } = await db.auth.getSession();
-
 
     if(sessionError){
 
-        console.error(
-            sessionError
-        );
+        console.error(sessionError);
 
         window.location.href =
             "admin-login.html";
 
         return false;
     }
-
 
     if(!session){
 
@@ -460,17 +1009,11 @@ async function checkLogin(){
         return false;
     }
 
-
     const authUserId =
         session.user.id;
 
-
-    /* =========================
-       GET ADMIN RECORD
-    ========================= */
-
     const {
-        data: admin,
+        data:admin,
         error
     } = await db
         .from("admins")
@@ -484,7 +1027,6 @@ async function checkLogin(){
             authUserId
         )
         .single();
-
 
     if(error){
 
@@ -505,7 +1047,6 @@ async function checkLogin(){
         return false;
     }
 
-
     if(!admin.admin_id){
 
         alert(
@@ -515,10 +1056,9 @@ async function checkLogin(){
         return false;
     }
 
-
     if(
         admin.status &&
-        admin.status !== "Active"
+        String(admin.status).toLowerCase() !== "active"
     ){
 
         alert(
@@ -533,298 +1073,386 @@ async function checkLogin(){
         return false;
     }
 
-
     ADMIN_ID =
         admin.admin_id;
 
     ADMIN_NAME =
-        admin.name || "Admin";
-
+        admin.name ||
+        "Admin";
 
     document.getElementById(
         "adminIdText"
     ).innerText =
         ADMIN_ID;
 
-
     document.getElementById(
         "adminNameText"
     ).innerText =
         ADMIN_NAME;
-
-
-    console.log(
-        "Logged in Admin:",
-        ADMIN_ID
-    );
-
 
     return true;
 
 }
 
 
-/* =========================
-   LOAD TARGET
-========================= */
+/* =====================================================
+   LOAD ADMIN AREAS
+===================================================== */
 
-async function loadTarget(){
+async function loadAdminAreas(){
 
     const {
         data,
         error
     } = await db
-        .from("admin_targets")
+        .from("admin_area_assignments")
         .select(`
-            target_count,
-            period_type,
-            start_date,
-            end_date,
-            notes,
-            created_at
+            block,
+            panchayat,
+            village,
+            status
         `)
         .eq(
             "admin_id",
             ADMIN_ID
+        )
+        .eq(
+            "status",
+            "Active"
         )
         .order(
             "created_at",
             {
                 ascending:false
             }
-        )
-        .limit(1)
-        .maybeSingle();
-
+        );
 
     if(error){
 
         console.error(
-            "Target Error:",
+            "Area Error:",
             error
         );
 
         document.getElementById(
-            "periodText"
-        ).innerText =
-            "Target load नहीं हो पाया।";
+            "areaText"
+        ).innerHTML =
+            "❌ Assigned area load नहीं हो पाया।";
 
         return;
     }
 
+    ADMIN_AREAS =
+        data || [];
 
-    if(!data){
-
+    const areaText =
         document.getElementById(
-            "targetCount"
-        ).innerText =
-            "0";
-
-
-        document.getElementById(
-            "periodText"
-        ).innerText =
-            "अभी कोई Target नहीं दिया गया है।";
-
-
-        updateProgress(
-            0,
-            0
+            "areaText"
         );
-
-
-        return;
-    }
-
-
-    const target =
-        Number(
-            data.target_count
-        ) || 0;
-
-
-    /* =========================
-       ACHIEVED
-       ONLY THIS ADMIN'S FARMERS
-    ========================= */
-
-    const {
-        count: achieved,
-        error: farmerCountError
-    } = await db
-        .from("farmer")
-        .select(
-            "id",
-            {
-                count:"exact",
-                head:true
-            }
-        )
-        .eq(
-            "admin_id",
-            ADMIN_ID
-        );
-
-
-    if(farmerCountError){
-
-        console.error(
-            "Achieved Error:",
-            farmerCountError
-        );
-
-        updateProgress(
-            target,
-            0
-        );
-
-    }else{
-
-        updateProgress(
-            target,
-            achieved || 0
-        );
-
-    }
-
-
-    document.getElementById(
-        "periodText"
-    ).innerText =
-
-        "Period: " +
-        (
-            data.period_type || "-"
-        ) +
-        " | " +
-        formatDate(
-            data.start_date
-        ) +
-        " से " +
-        formatDate(
-            data.end_date
-        );
-
-}
-
-
-/* =========================
-   UPDATE PROGRESS
-========================= */
-
-function updateProgress(
-    target,
-    achieved
-){
-
-    const remaining =
-        Math.max(
-            target - achieved,
-            0
-        );
-
-
-    let percentage = 0;
-
-
-    if(target > 0){
-
-        percentage =
-            Math.round(
-                (
-                    achieved /
-                    target
-                ) * 100
-            );
-
-    }
-
-
-    document.getElementById(
-        "targetCount"
-    ).innerText =
-        target;
-
-
-    document.getElementById(
-        "achievedCount"
-    ).innerText =
-        achieved;
-
-
-    document.getElementById(
-        "remainingCount"
-    ).innerText =
-        remaining;
-
-
-    document.getElementById(
-        "progressPercent"
-    ).innerText =
-        percentage + "%";
-
-
-    document.getElementById(
-        "progressText"
-    ).innerText =
-        achieved +
-        " / " +
-        target;
-
-
-    document.getElementById(
-        "progressBar"
-    ).style.width =
-        Math.min(
-            percentage,
-            100
-        ) + "%";
-
-}
-
-
-/* =========================
-   DATE FORMAT
-========================= */
-
-function formatDate(date){
-
-    if(!date){
-
-        return "-";
-
-    }
-
-
-    const parts =
-        date.split("-");
-
 
     if(
-        parts.length !== 3
+        ADMIN_AREAS.length === 0
     ){
 
-        return date;
+        areaText.innerHTML = `
+            ⚠️ अभी इस Admin को कोई Active area assign नहीं किया गया है।
+        `;
+
+        return;
+    }
+
+    areaText.innerHTML =
+        ADMIN_AREAS
+        .map(
+            area => `
+
+                <div style="
+                    margin-bottom:8px;
+                ">
+
+                    📍
+
+                    <b>
+                        ${escapeHTML(
+                            area.block || "-"
+                        )}
+                    </b>
+
+                    →
+
+                    ${escapeHTML(
+                        area.panchayat || "-"
+                    )}
+
+                    →
+
+                    ${escapeHTML(
+                        area.village || "-"
+                    )}
+
+                </div>
+
+            `
+        )
+        .join("");
+
+}
+
+
+/* =====================================================
+   DOCUMENT URL
+===================================================== */
+
+function getDocumentUrl(path){
+
+    if(!path){
+
+        return null;
 
     }
 
+    const value =
+        String(path).trim();
+
+    if(!value){
+
+        return null;
+
+    }
+
+    /* Already a full URL */
+
+    if(
+        /^https?:\/\//i.test(value)
+    ){
+
+        return value;
+
+    }
+
+    /* Storage path */
+
+    const cleanPath =
+        value.replace(
+            /^\/+/,
+            ""
+        );
+
+    const encodedPath =
+        cleanPath
+        .split("/")
+        .map(
+            part =>
+                encodeURIComponent(part)
+        )
+        .join("/");
 
     return (
-        parts[2] +
-        "/" +
-        parts[1] +
-        "/" +
-        parts[0]
+        SUPABASE_URL +
+        "/storage/v1/object/public/farmer-documents/" +
+        encodedPath
     );
 
 }
 
 
-/* =========================
+/* =====================================================
+   OPEN DOCUMENT MODAL
+===================================================== */
+
+function openDocumentModal(
+    encodedRegistrationNo
+){
+
+    const registrationNo =
+        decodeURIComponent(
+            encodedRegistrationNo
+        );
+
+    const farmer =
+        farmers.find(
+            item =>
+                item.registration_no ===
+                registrationNo
+        );
+
+    if(!farmer){
+
+        alert(
+            "Farmer record नहीं मिला।"
+        );
+
+        return;
+
+    }
+
+    document.getElementById(
+        "documentRegistrationNo"
+    ).innerText =
+        registrationNo;
+
+    const documentList =
+        document.getElementById(
+            "documentList"
+        );
+
+    const documents = [
+
+        {
+            name:"📷 Photo",
+            path:farmer.photo_url
+        },
+
+        {
+            name:"✍️ Signature",
+            path:farmer.signature_url
+        },
+
+        {
+            name:"🪪 Aadhaar",
+            path:farmer.aadhar_url
+        },
+
+        {
+            name:"📄 Application Form",
+            path:farmer.form_url
+        },
+
+        {
+            name:"📑 Land Record",
+            path:farmer.land_record_url
+        }
+
+    ];
+
+    documentList.innerHTML = "";
+
+    documents.forEach(
+        document => {
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+        item.className =
+            "document-item";
+
+        const name =
+            document.createElement(
+                "div"
+            );
+
+        name.className =
+            "document-name";
+
+        name.textContent =
+            document.name;
+
+        item.appendChild(
+            name
+        );
+
+        const url =
+            getDocumentUrl(
+                document.path
+            );
+
+        if(url){
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.className =
+                "view-document-btn";
+
+            link.href =
+                url;
+
+            link.target =
+                "_blank";
+
+            link.rel =
+                "noopener noreferrer";
+
+            link.textContent =
+                "👁️ View";
+
+            item.appendChild(
+                link
+            );
+
+        }else{
+
+            const missing =
+                document.createElement(
+                    "span"
+                );
+
+            missing.className =
+                "document-missing";
+
+            missing.textContent =
+                "Not Available";
+
+            item.appendChild(
+                missing
+            );
+
+        }
+
+        documentList.appendChild(
+            item
+        );
+
+    });
+
+    document.getElementById(
+        "documentModal"
+    ).style.display =
+        "flex";
+
+}
+
+
+/* =====================================================
+   CLOSE DOCUMENT MODAL
+===================================================== */
+
+function closeDocumentModal(){
+
+    document.getElementById(
+        "documentModal"
+    ).style.display =
+        "none";
+
+}
+
+
+/* =====================================================
    LOAD FARMERS
-========================= */
+===================================================== */
 
 async function loadFarmers(){
+
+    const table =
+        document.getElementById(
+            "farmerTable"
+        );
+
+    table.innerHTML = `
+        <tr>
+            <td
+                colspan="11"
+                class="loading">
+
+                ⏳ किसान की जानकारी लोड हो रही है...
+
+            </td>
+        </tr>
+    `;
 
     const {
         data,
@@ -841,63 +1469,49 @@ async function loadFarmers(){
             crop,
             land,
             status,
-            admin_id
+            admin_id,
+            admin_verified_at,
+            admin_verified_by,
+            admin_rejection_reason,
+            photo_url,
+            signature_url,
+            aadhar_url,
+            form_url,
+            land_record_url,
+            registered_at
         `)
         .eq(
             "admin_id",
             ADMIN_ID
         )
         .order(
-            "registration_no",
+            "registered_at",
             {
-                ascending:true
+                ascending:false
             }
         );
-
 
     if(error){
 
         console.error(
+            "Farmer Error:",
             error
         );
 
-
-        const message =
-            document.getElementById(
-                "message"
-            );
-
-
-        message.style.color =
-            "red";
-
-
-        message.innerHTML =
-            "❌ Farmer data load नहीं हो पाया।";
-
+        showMessage(
+            "❌ Farmer data load नहीं हो पाया: " +
+            error.message,
+            "red"
+        );
 
         return;
-    }
 
+    }
 
     farmers =
         data || [];
 
-
-    const message =
-        document.getElementById(
-            "message"
-        );
-
-
-    message.style.color =
-        "green";
-
-
-    message.innerHTML =
-        "कुल किसान: " +
-        farmers.length;
-
+    updateSummary();
 
     displayFarmers(
         farmers
@@ -906,9 +1520,68 @@ async function loadFarmers(){
 }
 
 
-/* =========================
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+function updateSummary(){
+
+    const total =
+        farmers.length;
+
+    const pending =
+        farmers.filter(
+            farmer =>
+                normalizeStatus(
+                    farmer.status
+                ) ===
+                "Pending Admin Verification"
+        ).length;
+
+    const verified =
+        farmers.filter(
+            farmer =>
+                normalizeStatus(
+                    farmer.status
+                ) ===
+                "Pending Officer Approval"
+        ).length;
+
+    const rejected =
+        farmers.filter(
+            farmer =>
+                normalizeStatus(
+                    farmer.status
+                ) ===
+                "Rejected by Admin"
+        ).length;
+
+    document.getElementById(
+        "totalFarmers"
+    ).innerText =
+        total;
+
+    document.getElementById(
+        "pendingFarmers"
+    ).innerText =
+        pending;
+
+    document.getElementById(
+        "verifiedFarmers"
+    ).innerText =
+        verified;
+
+    document.getElementById(
+        "rejectedFarmers"
+    ).innerText =
+        rejected;
+
+}
+
+
+/* =====================================================
    DISPLAY FARMERS
-========================= */
+===================================================== */
 
 function displayFarmers(list){
 
@@ -917,9 +1590,7 @@ function displayFarmers(list){
             "farmerTable"
         );
 
-
     table.innerHTML = "";
-
 
     if(
         list.length === 0
@@ -927,24 +1598,26 @@ function displayFarmers(list){
 
         table.innerHTML = `
             <tr>
+
                 <td
-                    colspan="10"
+                    colspan="11"
                     class="no-data">
-                    अभी इस Admin के नाम से कोई किसान registered नहीं है।
+
+                    अभी इस Admin के assigned area में
+                    कोई farmer application नहीं है।
+
                 </td>
+
             </tr>
         `;
-
 
         return;
 
     }
 
-
     list.forEach(
         function(
-            farmer,
-            index
+            farmer
         ){
 
         const row =
@@ -952,15 +1625,188 @@ function displayFarmers(list){
                 "tr"
             );
 
+        const status =
+            normalizeStatus(
+                farmer.status
+            );
+
+        let statusClass =
+            "pending";
+
+        if(
+            status ===
+            "Pending Officer Approval"
+        ){
+
+            statusClass =
+                "verified";
+
+        }
+
+        if(
+            status ===
+            "Rejected by Admin"
+        ){
+
+            statusClass =
+                "rejected";
+
+        }
+
+        if(
+            status ===
+            "Final Approved"
+        ){
+
+            statusClass =
+                "approved";
+
+        }
+
+        let actionHTML = "";
+
+        if(
+            status ===
+            "Pending Admin Verification"
+        ){
+
+            actionHTML = `
+
+                <button
+                    class="verify-btn"
+                    onclick="
+                        verifyFarmer(
+                            '${encodeURIComponent(
+                                farmer.registration_no
+                            )}'
+                        )
+                    ">
+
+                    ✅ Verify
+
+                </button>
+
+                <button
+                    class="reject-btn"
+                    onclick="
+                        openRejectModal(
+                            '${encodeURIComponent(
+                                farmer.registration_no
+                            )}'
+                        )
+                    ">
+
+                    ❌ Reject
+
+                </button>
+
+            `;
+
+        }
+
+        else if(
+            status ===
+            "Pending Officer Approval"
+        ){
+
+            actionHTML = `
+
+                <button
+                    class="disabled-btn"
+                    disabled>
+
+                    ⏳ Officer Approval Pending
+
+                </button>
+
+            `;
+
+        }
+
+        else if(
+            status ===
+            "Rejected by Admin"
+        ){
+
+            actionHTML = `
+
+                <button
+                    class="disabled-btn"
+                    disabled>
+
+                    ❌ Rejected
+
+                </button>
+
+            `;
+
+        }
+
+        else if(
+            status ===
+            "Final Approved"
+        ){
+
+            actionHTML = `
+
+                <button
+                    class="disabled-btn"
+                    disabled>
+
+                    ✅ Final Approved
+
+                </button>
+
+            `;
+
+        }
+
+        else{
+
+            actionHTML = `
+
+                <button
+                    class="disabled-btn"
+                    disabled>
+
+                    ${escapeHTML(
+                        farmer.status || "-"
+                    )}
+
+                </button>
+
+            `;
+
+        }
+
+        const documentButton = `
+
+            <button
+                class="documents-btn"
+                onclick="
+                    openDocumentModal(
+                        '${encodeURIComponent(
+                            farmer.registration_no
+                        )}'
+                    )
+                ">
+
+                📄 View Documents
+
+            </button>
+
+        `;
 
         row.innerHTML = `
 
             <td>
+
                 <b>
                     ${escapeHTML(
                         farmer.registration_no || "-"
                     )}
                 </b>
+
             </td>
 
             <td>
@@ -1006,88 +1852,51 @@ function displayFarmers(list){
             </td>
 
             <td>
+                ${documentButton}
+            </td>
 
-                <select
-                    class="status-select"
-                    id="status-${index}"
-                >
+            <td>
 
-                    <option
-                        value="Pending"
-                        ${
-                            getStatus(
-                                farmer.status
-                            ) === "Pending"
-                            ? "selected"
-                            : ""
-                        }
-                    >
-                        Pending
-                    </option>
+                <span
+                    class="status-badge ${statusClass}">
 
-                    <option
-                        value="Verified"
-                        ${
-                            getStatus(
-                                farmer.status
-                            ) === "Verified"
-                            ? "selected"
-                            : ""
-                        }
-                    >
-                        Verified
-                    </option>
+                    ${escapeHTML(
+                        farmer.status || "-"
+                    )}
 
-                    <option
-                        value="Approved"
-                        ${
-                            getStatus(
-                                farmer.status
-                            ) === "Approved"
-                            ? "selected"
-                            : ""
-                        }
-                    >
-                        Approved
-                    </option>
-
-                    <option
-                        value="Rejected"
-                        ${
-                            getStatus(
-                                farmer.status
-                            ) === "Rejected"
-                            ? "selected"
-                            : ""
-                        }
-                    >
-                        Rejected
-                    </option>
-
-                </select>
+                </span>
 
             </td>
 
             <td>
 
-                <button
-                    class="save-btn"
-                    onclick="
-                        updateStatus(
-                            '${encodeURIComponent(
-                                farmer.registration_no
-                            )}',
-                            ${index}
-                        )
-                    "
-                >
-                    Save
-                </button>
+                ${actionHTML}
+
+                ${
+                    farmer.admin_rejection_reason
+                    ?
+                    `
+                    <div style="
+                        margin-top:7px;
+                        color:#842029;
+                        font-size:12px;
+                        max-width:220px;
+                    ">
+
+                        Reason:
+                        ${escapeHTML(
+                            farmer.admin_rejection_reason
+                        )}
+
+                    </div>
+                    `
+                    :
+                    ""
+                }
 
             </td>
 
         `;
-
 
         table.appendChild(
             row
@@ -1098,31 +1907,12 @@ function displayFarmers(list){
 }
 
 
-/* =========================
-   STATUS
-========================= */
+/* =====================================================
+   VERIFY FARMER
+===================================================== */
 
-function getStatus(status){
-
-    if(!status){
-
-        return "Pending";
-
-    }
-
-
-    return status;
-
-}
-
-
-/* =========================
-   UPDATE STATUS
-========================= */
-
-async function updateStatus(
-    encodedRegistrationNo,
-    index
+async function verifyFarmer(
+    encodedRegistrationNo
 ){
 
     const registrationNo =
@@ -1130,33 +1920,60 @@ async function updateStatus(
             encodedRegistrationNo
         );
 
-
-    const newStatus =
-        document.getElementById(
-            "status-" + index
-        ).value;
-
-
-    const message =
-        document.getElementById(
-            "message"
+    const farmer =
+        farmers.find(
+            item =>
+                item.registration_no ===
+                registrationNo
         );
 
+    if(!farmer){
 
-    message.style.color =
-        "#198754";
+        showMessage(
+            "❌ Farmer record नहीं मिला।",
+            "red"
+        );
 
+        return;
 
-    message.innerHTML =
-        "⏳ Status update हो रहा है...";
+    }
 
+    const confirmVerify =
+        confirm(
+            "क्या आप " +
+            registrationNo +
+            " को Verify करना चाहते हैं?"
+        );
+
+    if(!confirmVerify){
+
+        return;
+
+    }
+
+    showMessage(
+        "⏳ Farmer verification हो रहा है...",
+        "#198754"
+    );
 
     const {
         error
     } = await db
         .from("farmer")
         .update({
-            status:newStatus
+
+            status:
+                "Pending Officer Approval",
+
+            admin_verified_at:
+                new Date().toISOString(),
+
+            admin_verified_by:
+                ADMIN_ID,
+
+            admin_rejection_reason:
+                null
+
         })
         .eq(
             "registration_no",
@@ -1165,51 +1982,196 @@ async function updateStatus(
         .eq(
             "admin_id",
             ADMIN_ID
+        )
+        .eq(
+            "status",
+            "Pending Admin Verification"
         );
-
 
     if(error){
 
         console.error(
+            "Verify error:",
             error
         );
 
-
-        message.style.color =
-            "red";
-
-
-        message.innerHTML =
-            "❌ Status update नहीं हुआ।";
-
+        showMessage(
+            "❌ Verification failed: " +
+            error.message,
+            "red"
+        );
 
         return;
 
     }
 
-
-    message.style.color =
-        "green";
-
-
-    message.innerHTML =
+    showMessage(
         "✅ " +
         registrationNo +
-        " का Status " +
-        newStatus +
-        " कर दिया गया।";
-
+        " Verify हो गया। अब Officer Final Approval करेगा।",
+        "green"
+    );
 
     await loadFarmers();
-
-    await loadTarget();
 
 }
 
 
-/* =========================
+/* =====================================================
+   OPEN REJECT MODAL
+===================================================== */
+
+function openRejectModal(
+    encodedRegistrationNo
+){
+
+    rejectRegistrationNo =
+        decodeURIComponent(
+            encodedRegistrationNo
+        );
+
+    document.getElementById(
+        "rejectRegistrationNo"
+    ).innerText =
+        rejectRegistrationNo;
+
+    document.getElementById(
+        "rejectReason"
+    ).value =
+        "";
+
+    document.getElementById(
+        "rejectModal"
+    ).style.display =
+        "flex";
+
+    document.getElementById(
+        "rejectReason"
+    ).focus();
+
+}
+
+
+/* =====================================================
+   CLOSE REJECT MODAL
+===================================================== */
+
+function closeRejectModal(){
+
+    rejectRegistrationNo =
+        null;
+
+    document.getElementById(
+        "rejectModal"
+    ).style.display =
+        "none";
+
+}
+
+
+/* =====================================================
+   CONFIRM REJECT
+===================================================== */
+
+async function confirmReject(){
+
+    if(!rejectRegistrationNo){
+
+        return;
+
+    }
+
+    const reason =
+        document.getElementById(
+            "rejectReason"
+        )
+        .value
+        .trim();
+
+    if(!reason){
+
+        alert(
+            "Reject करने का कारण लिखना जरूरी है।"
+        );
+
+        return;
+
+    }
+
+    showMessage(
+        "⏳ Farmer reject किया जा रहा है...",
+        "#dc3545"
+    );
+
+    const registrationNo =
+        rejectRegistrationNo;
+
+    const {
+        error
+    } = await db
+        .from("farmer")
+        .update({
+
+            status:
+                "Rejected by Admin",
+
+            admin_verified_at:
+                null,
+
+            admin_verified_by:
+                ADMIN_ID,
+
+            admin_rejection_reason:
+                reason
+
+        })
+        .eq(
+            "registration_no",
+            registrationNo
+        )
+        .eq(
+            "admin_id",
+            ADMIN_ID
+        )
+        .eq(
+            "status",
+            "Pending Admin Verification"
+        );
+
+    if(error){
+
+        console.error(
+            "Reject error:",
+            error
+        );
+
+        showMessage(
+            "❌ Reject नहीं हुआ: " +
+            error.message,
+            "red"
+        );
+
+        return;
+
+    }
+
+    closeRejectModal();
+
+    showMessage(
+        "✅ " +
+        registrationNo +
+        " Reject कर दिया गया।",
+        "red"
+    );
+
+    await loadFarmers();
+
+}
+
+
+/* =====================================================
    SEARCH
-========================= */
+===================================================== */
 
 function searchFarmers(){
 
@@ -1220,7 +2182,6 @@ function searchFarmers(){
         .value
         .toLowerCase()
         .trim();
-
 
     const filtered =
         farmers.filter(
@@ -1244,10 +2205,27 @@ function searchFarmers(){
                 .toLowerCase()
                 .includes(search)
 
+                ||
+
+                (
+                    farmer.village ||
+                    ""
+                )
+                .toLowerCase()
+                .includes(search)
+
+                ||
+
+                (
+                    farmer.mobile ||
+                    ""
+                )
+                .toLowerCase()
+                .includes(search)
+
             );
 
         });
-
 
     displayFarmers(
         filtered
@@ -1256,9 +2234,332 @@ function searchFarmers(){
 }
 
 
-/* =========================
+/* =====================================================
+   TARGET
+===================================================== */
+
+async function loadTarget(){
+
+    const {
+        data,
+        error
+    } = await db
+        .from("admin_targets")
+        .select(`
+            target_count,
+            period_type,
+            start_date,
+            end_date,
+            notes,
+            created_at
+        `)
+        .eq(
+            "admin_id",
+            ADMIN_ID
+        )
+        .order(
+            "created_at",
+            {
+                ascending:false
+            }
+        )
+        .limit(1)
+        .maybeSingle();
+
+    if(error){
+
+        console.error(
+            "Target Error:",
+            error
+        );
+
+        document.getElementById(
+            "periodText"
+        ).innerText =
+            "Target load नहीं हो पाया।";
+
+        return;
+
+    }
+
+    if(!data){
+
+        document.getElementById(
+            "targetCount"
+        ).innerText =
+            "0";
+
+        document.getElementById(
+            "periodText"
+        ).innerText =
+            "अभी कोई Target नहीं दिया गया है।";
+
+        updateProgress(
+            0,
+            0
+        );
+
+        return;
+
+    }
+
+    const target =
+        Number(
+            data.target_count
+        ) || 0;
+
+    const {
+        count:achieved,
+        error:countError
+    } = await db
+        .from("farmer")
+        .select(
+            "id",
+            {
+                count:"exact",
+                head:true
+            }
+        )
+        .eq(
+            "admin_id",
+            ADMIN_ID
+        );
+
+    if(countError){
+
+        console.error(
+            countError
+        );
+
+        updateProgress(
+            target,
+            0
+        );
+
+    }else{
+
+        updateProgress(
+            target,
+            achieved || 0
+        );
+
+    }
+
+    document.getElementById(
+        "periodText"
+    ).innerText =
+
+        "Period: " +
+        (
+            data.period_type || "-"
+        ) +
+        " | " +
+        formatDate(
+            data.start_date
+        ) +
+        " से " +
+        formatDate(
+            data.end_date
+        );
+
+}
+
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+
+function updateProgress(
+    target,
+    achieved
+){
+
+    const remaining =
+        Math.max(
+            target - achieved,
+            0
+        );
+
+    let percentage = 0;
+
+    if(target > 0){
+
+        percentage =
+            Math.round(
+                (
+                    achieved /
+                    target
+                ) *
+                100
+            );
+
+    }
+
+    document.getElementById(
+        "targetCount"
+    ).innerText =
+        target;
+
+    document.getElementById(
+        "achievedCount"
+    ).innerText =
+        achieved;
+
+    document.getElementById(
+        "remainingCount"
+    ).innerText =
+        remaining;
+
+    document.getElementById(
+        "progressPercent"
+    ).innerText =
+        percentage + "%";
+
+    document.getElementById(
+        "progressText"
+    ).innerText =
+        achieved +
+        " / " +
+        target;
+
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        Math.min(
+            percentage,
+            100
+        ) + "%";
+
+}
+
+
+/* =====================================================
+   DATE
+===================================================== */
+
+function formatDate(date){
+
+    if(!date){
+
+        return "-";
+
+    }
+
+    const parts =
+        date.split("-");
+
+    if(
+        parts.length !== 3
+    ){
+
+        return date;
+
+    }
+
+    return (
+        parts[2] +
+        "/" +
+        parts[1] +
+        "/" +
+        parts[0]
+    );
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function normalizeStatus(status){
+
+    if(!status){
+
+        return "";
+
+    }
+
+    return String(
+        status
+    ).trim();
+
+}
+
+
+/* =====================================================
+   MESSAGE
+===================================================== */
+
+function showMessage(
+    message,
+    color
+){
+
+    const box =
+        document.getElementById(
+            "message"
+        );
+
+    box.style.color =
+        color;
+
+    box.innerText =
+        message;
+
+    setTimeout(
+        function(){
+
+            box.innerText =
+                "";
+
+        },
+        5000
+    );
+
+}
+
+
+/* =====================================================
+   HTML SECURITY
+===================================================== */
+
+function escapeHTML(value){
+
+    return String(
+        value
+    )
+
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+
+    .replace(
+        /</g,
+        "&lt;"
+    )
+
+    .replace(
+        />/g,
+        "&gt;"
+    )
+
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+/* =====================================================
    LOGOUT
-========================= */
+===================================================== */
 
 async function logout(){
 
@@ -1270,51 +2571,14 @@ async function logout(){
 }
 
 
-/* =========================
-   HTML SECURITY
-========================= */
-
-function escapeHTML(value){
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* =========================
-   START
-========================= */
+/* =====================================================
+   START DASHBOARD
+===================================================== */
 
 async function startDashboard(){
 
     const loggedIn =
         await checkLogin();
-
 
     if(!loggedIn){
 
@@ -1322,6 +2586,7 @@ async function startDashboard(){
 
     }
 
+    await loadAdminAreas();
 
     await loadTarget();
 
@@ -1329,8 +2594,45 @@ async function startDashboard(){
 
 }
 
-
 startDashboard();
+
+
+/* =====================================================
+   CLOSE MODALS ON OUTSIDE CLICK
+===================================================== */
+
+window.onclick =
+function(event){
+
+    const rejectModal =
+        document.getElementById(
+            "rejectModal"
+        );
+
+    const documentModal =
+        document.getElementById(
+            "documentModal"
+        );
+
+    if(
+        event.target ===
+        rejectModal
+    ){
+
+        closeRejectModal();
+
+    }
+
+    if(
+        event.target ===
+        documentModal
+    ){
+
+        closeDocumentModal();
+
+    }
+
+};
 
 </script>
 
