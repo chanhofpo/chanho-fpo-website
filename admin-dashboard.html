@@ -50,6 +50,82 @@ header p{
     margin:25px auto;
 }
 
+.admin-info{
+    background:white;
+    padding:15px 20px;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    margin-bottom:20px;
+    font-size:16px;
+}
+
+.admin-info b{
+    color:#198754;
+}
+
+.target-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.target-card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    text-align:center;
+}
+
+.target-card h3{
+    margin:0 0 10px;
+    color:#666;
+    font-size:16px;
+}
+
+.target-number{
+    font-size:30px;
+    font-weight:bold;
+    color:#198754;
+}
+
+.progress-box{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+.progress-title{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+
+.progress-bg{
+    width:100%;
+    height:20px;
+    background:#e9ecef;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#198754;
+    transition:.4s;
+}
+
+.period-text{
+    margin-top:10px;
+    color:#666;
+    font-size:14px;
+}
+
 .top-box{
     background:white;
     padding:20px;
@@ -124,10 +200,6 @@ tr:hover{
     margin-left:5px;
 }
 
-.save-btn:hover{
-    background:#146c43;
-}
-
 .loading{
     text-align:center;
     padding:30px;
@@ -137,6 +209,35 @@ tr:hover{
     text-align:center;
     padding:30px;
     color:#777;
+}
+
+@media(max-width:800px){
+
+    .target-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:500px){
+
+    .target-grid{
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .target-card{
+        padding:15px 8px;
+    }
+
+    .target-number{
+        font-size:25px;
+    }
+
+    header h1{
+        font-size:20px;
+    }
+
 }
 </style>
 </head>
@@ -156,8 +257,87 @@ tr:hover{
 
 </header>
 
-
 <div class="container">
+
+    <!-- ADMIN INFORMATION -->
+
+    <div class="admin-info">
+        👨‍💼 Admin ID:
+        <b id="adminIdText">Loading...</b>
+        &nbsp; | &nbsp;
+        👤 Name:
+        <b id="adminNameText">Loading...</b>
+    </div>
+
+
+    <!-- TARGET SUMMARY -->
+
+    <div class="target-grid">
+
+        <div class="target-card">
+            <h3>🎯 कुल Target</h3>
+            <div class="target-number" id="targetCount">
+                0
+            </div>
+        </div>
+
+        <div class="target-card">
+            <h3>👨‍🌾 Achieved</h3>
+            <div class="target-number" id="achievedCount">
+                0
+            </div>
+        </div>
+
+        <div class="target-card">
+            <h3>⏳ Remaining</h3>
+            <div class="target-number" id="remainingCount">
+                0
+            </div>
+        </div>
+
+        <div class="target-card">
+            <h3>📊 Progress</h3>
+            <div class="target-number" id="progressPercent">
+                0%
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- PROGRESS -->
+
+    <div class="progress-box">
+
+        <div class="progress-title">
+
+            <span>Target Progress</span>
+
+            <span id="progressText">
+                0 / 0
+            </span>
+
+        </div>
+
+        <div class="progress-bg">
+
+            <div
+                class="progress-bar"
+                id="progressBar">
+            </div>
+
+        </div>
+
+        <div
+            class="period-text"
+            id="periodText">
+            Target information loading...
+        </div>
+
+    </div>
+
+
+    <!-- FARMER LIST -->
 
     <div class="top-box">
 
@@ -171,7 +351,10 @@ tr:hover{
             onkeyup="searchFarmers()"
         >
 
-        <div id="message" class="message"></div>
+        <div
+            id="message"
+            class="message">
+        </div>
 
     </div>
 
@@ -200,7 +383,9 @@ tr:hover{
             <tbody id="farmerTable">
 
                 <tr>
-                    <td colspan="10" class="loading">
+                    <td
+                        colspan="10"
+                        class="loading">
                         ⏳ किसान की जानकारी लोड हो रही है...
                     </td>
                 </tr>
@@ -230,19 +415,35 @@ const db = createClient(
 );
 
 
+/* =========================
+   ADMIN VARIABLES
+========================= */
+
+let ADMIN_ID = null;
+let ADMIN_NAME = null;
+
 let farmers = [];
 
 
 /* =========================
-   CHECK ADMIN LOGIN
+   CHECK LOGIN + GET ADMIN
 ========================= */
 
 async function checkLogin(){
 
-    const { data } =
-        await db.auth.getSession();
+    const {
+        data: {
+            session
+        },
+        error: sessionError
+    } = await db.auth.getSession();
 
-    if(!data.session){
+
+    if(sessionError){
+
+        console.error(
+            sessionError
+        );
 
         window.location.href =
             "admin-login.html";
@@ -250,7 +451,372 @@ async function checkLogin(){
         return false;
     }
 
+
+    if(!session){
+
+        window.location.href =
+            "admin-login.html";
+
+        return false;
+    }
+
+
+    const authUserId =
+        session.user.id;
+
+
+    /* =========================
+       GET ADMIN RECORD
+    ========================= */
+
+    const {
+        data: admin,
+        error
+    } = await db
+        .from("admins")
+        .select(`
+            admin_id,
+            name,
+            status
+        `)
+        .eq(
+            "auth_user_id",
+            authUserId
+        )
+        .single();
+
+
+    if(error){
+
+        console.error(
+            "Admin record error:",
+            error
+        );
+
+        alert(
+            "Admin record नहीं मिला।"
+        );
+
+        await db.auth.signOut();
+
+        window.location.href =
+            "admin-login.html";
+
+        return false;
+    }
+
+
+    if(!admin.admin_id){
+
+        alert(
+            "Admin ID उपलब्ध नहीं है।"
+        );
+
+        return false;
+    }
+
+
+    if(
+        admin.status &&
+        admin.status !== "Active"
+    ){
+
+        alert(
+            "यह Admin account Active नहीं है।"
+        );
+
+        await db.auth.signOut();
+
+        window.location.href =
+            "admin-login.html";
+
+        return false;
+    }
+
+
+    ADMIN_ID =
+        admin.admin_id;
+
+    ADMIN_NAME =
+        admin.name || "Admin";
+
+
+    document.getElementById(
+        "adminIdText"
+    ).innerText =
+        ADMIN_ID;
+
+
+    document.getElementById(
+        "adminNameText"
+    ).innerText =
+        ADMIN_NAME;
+
+
+    console.log(
+        "Logged in Admin:",
+        ADMIN_ID
+    );
+
+
     return true;
+
+}
+
+
+/* =========================
+   LOAD TARGET
+========================= */
+
+async function loadTarget(){
+
+    const {
+        data,
+        error
+    } = await db
+        .from("admin_targets")
+        .select(`
+            target_count,
+            period_type,
+            start_date,
+            end_date,
+            notes,
+            created_at
+        `)
+        .eq(
+            "admin_id",
+            ADMIN_ID
+        )
+        .order(
+            "created_at",
+            {
+                ascending:false
+            }
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+    if(error){
+
+        console.error(
+            "Target Error:",
+            error
+        );
+
+        document.getElementById(
+            "periodText"
+        ).innerText =
+            "Target load नहीं हो पाया।";
+
+        return;
+    }
+
+
+    if(!data){
+
+        document.getElementById(
+            "targetCount"
+        ).innerText =
+            "0";
+
+
+        document.getElementById(
+            "periodText"
+        ).innerText =
+            "अभी कोई Target नहीं दिया गया है।";
+
+
+        updateProgress(
+            0,
+            0
+        );
+
+
+        return;
+    }
+
+
+    const target =
+        Number(
+            data.target_count
+        ) || 0;
+
+
+    /* =========================
+       ACHIEVED
+       ONLY THIS ADMIN'S FARMERS
+    ========================= */
+
+    const {
+        count: achieved,
+        error: farmerCountError
+    } = await db
+        .from("farmer")
+        .select(
+            "id",
+            {
+                count:"exact",
+                head:true
+            }
+        )
+        .eq(
+            "admin_id",
+            ADMIN_ID
+        );
+
+
+    if(farmerCountError){
+
+        console.error(
+            "Achieved Error:",
+            farmerCountError
+        );
+
+        updateProgress(
+            target,
+            0
+        );
+
+    }else{
+
+        updateProgress(
+            target,
+            achieved || 0
+        );
+
+    }
+
+
+    document.getElementById(
+        "periodText"
+    ).innerText =
+
+        "Period: " +
+        (
+            data.period_type || "-"
+        ) +
+        " | " +
+        formatDate(
+            data.start_date
+        ) +
+        " से " +
+        formatDate(
+            data.end_date
+        );
+
+}
+
+
+/* =========================
+   UPDATE PROGRESS
+========================= */
+
+function updateProgress(
+    target,
+    achieved
+){
+
+    const remaining =
+        Math.max(
+            target - achieved,
+            0
+        );
+
+
+    let percentage = 0;
+
+
+    if(target > 0){
+
+        percentage =
+            Math.round(
+                (
+                    achieved /
+                    target
+                ) * 100
+            );
+
+    }
+
+
+    document.getElementById(
+        "targetCount"
+    ).innerText =
+        target;
+
+
+    document.getElementById(
+        "achievedCount"
+    ).innerText =
+        achieved;
+
+
+    document.getElementById(
+        "remainingCount"
+    ).innerText =
+        remaining;
+
+
+    document.getElementById(
+        "progressPercent"
+    ).innerText =
+        percentage + "%";
+
+
+    document.getElementById(
+        "progressText"
+    ).innerText =
+        achieved +
+        " / " +
+        target;
+
+
+    document.getElementById(
+        "progressBar"
+    ).style.width =
+        Math.min(
+            percentage,
+            100
+        ) + "%";
+
+}
+
+
+/* =========================
+   DATE FORMAT
+========================= */
+
+function formatDate(date){
+
+    if(!date){
+
+        return "-";
+
+    }
+
+
+    const parts =
+        date.split("-");
+
+
+    if(
+        parts.length !== 3
+    ){
+
+        return date;
+
+    }
+
+
+    return (
+        parts[2] +
+        "/" +
+        parts[1] +
+        "/" +
+        parts[0]
+    );
+
 }
 
 
@@ -260,18 +826,10 @@ async function checkLogin(){
 
 async function loadFarmers(){
 
-    const loggedIn =
-        await checkLogin();
-
-    if(!loggedIn) return;
-
-
-    const message =
-        document.getElementById("message");
-
-
-    const { data, error } =
-        await db
+    const {
+        data,
+        error
+    } = await db
         .from("farmer")
         .select(`
             registration_no,
@@ -282,34 +840,69 @@ async function loadFarmers(){
             panchayat,
             crop,
             land,
-            status
+            status,
+            admin_id
         `)
-        .order("registration_no", {
-            ascending:true
-        });
+        .eq(
+            "admin_id",
+            ADMIN_ID
+        )
+        .order(
+            "registration_no",
+            {
+                ascending:true
+            }
+        );
 
 
     if(error){
 
-        console.error(error);
+        console.error(
+            error
+        );
 
-        message.style.color="red";
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+
+        message.style.color =
+            "red";
+
 
         message.innerHTML =
             "❌ Farmer data load नहीं हो पाया।";
+
 
         return;
     }
 
 
-    farmers = data || [];
+    farmers =
+        data || [];
 
-    message.style.color="green";
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    message.style.color =
+        "green";
+
 
     message.innerHTML =
-        "कुल किसान: " + farmers.length;
+        "कुल किसान: " +
+        farmers.length;
 
-    displayFarmers(farmers);
+
+    displayFarmers(
+        farmers
+    );
+
 }
 
 
@@ -320,63 +913,96 @@ async function loadFarmers(){
 function displayFarmers(list){
 
     const table =
-        document.getElementById("farmerTable");
+        document.getElementById(
+            "farmerTable"
+        );
+
 
     table.innerHTML = "";
 
 
-    if(list.length === 0){
+    if(
+        list.length === 0
+    ){
 
         table.innerHTML = `
             <tr>
-                <td colspan="10" class="no-data">
-                    कोई किसान नहीं मिला।
+                <td
+                    colspan="10"
+                    class="no-data">
+                    अभी इस Admin के नाम से कोई किसान registered नहीं है।
                 </td>
             </tr>
         `;
 
+
         return;
+
     }
 
 
-    list.forEach(function(farmer, index){
+    list.forEach(
+        function(
+            farmer,
+            index
+        ){
 
         const row =
-            document.createElement("tr");
+            document.createElement(
+                "tr"
+            );
 
 
         row.innerHTML = `
 
             <td>
-                <b>${escapeHTML(farmer.registration_no || "-")}</b>
+                <b>
+                    ${escapeHTML(
+                        farmer.registration_no || "-"
+                    )}
+                </b>
             </td>
 
             <td>
-                ${escapeHTML(farmer.name || "-")}
+                ${escapeHTML(
+                    farmer.name || "-"
+                )}
             </td>
 
             <td>
-                ${escapeHTML(farmer.father_name || "-")}
+                ${escapeHTML(
+                    farmer.father_name || "-"
+                )}
             </td>
 
             <td>
-                ${escapeHTML(farmer.mobile || "-")}
+                ${escapeHTML(
+                    farmer.mobile || "-"
+                )}
             </td>
 
             <td>
-                ${escapeHTML(farmer.village || "-")}
+                ${escapeHTML(
+                    farmer.village || "-"
+                )}
             </td>
 
             <td>
-                ${escapeHTML(farmer.panchayat || "-")}
+                ${escapeHTML(
+                    farmer.panchayat || "-"
+                )}
             </td>
 
             <td>
-                ${escapeHTML(farmer.crop || "-")}
+                ${escapeHTML(
+                    farmer.crop || "-"
+                )}
             </td>
 
             <td>
-                ${escapeHTML(farmer.land || "-")}
+                ${escapeHTML(
+                    farmer.land || "-"
+                )}
             </td>
 
             <td>
@@ -386,23 +1012,55 @@ function displayFarmers(list){
                     id="status-${index}"
                 >
 
-                    <option value="Pending"
-                        ${getStatus(farmer.status)==="Pending" ? "selected":""}>
+                    <option
+                        value="Pending"
+                        ${
+                            getStatus(
+                                farmer.status
+                            ) === "Pending"
+                            ? "selected"
+                            : ""
+                        }
+                    >
                         Pending
                     </option>
 
-                    <option value="Verified"
-                        ${getStatus(farmer.status)==="Verified" ? "selected":""}>
+                    <option
+                        value="Verified"
+                        ${
+                            getStatus(
+                                farmer.status
+                            ) === "Verified"
+                            ? "selected"
+                            : ""
+                        }
+                    >
                         Verified
                     </option>
 
-                    <option value="Approved"
-                        ${getStatus(farmer.status)==="Approved" ? "selected":""}>
+                    <option
+                        value="Approved"
+                        ${
+                            getStatus(
+                                farmer.status
+                            ) === "Approved"
+                            ? "selected"
+                            : ""
+                        }
+                    >
                         Approved
                     </option>
 
-                    <option value="Rejected"
-                        ${getStatus(farmer.status)==="Rejected" ? "selected":""}>
+                    <option
+                        value="Rejected"
+                        ${
+                            getStatus(
+                                farmer.status
+                            ) === "Rejected"
+                            ? "selected"
+                            : ""
+                        }
+                    >
                         Rejected
                     </option>
 
@@ -414,16 +1072,26 @@ function displayFarmers(list){
 
                 <button
                     class="save-btn"
-                    onclick="updateStatus('${encodeURIComponent(farmer.registration_no)}', ${index})"
+                    onclick="
+                        updateStatus(
+                            '${encodeURIComponent(
+                                farmer.registration_no
+                            )}',
+                            ${index}
+                        )
+                    "
                 >
                     Save
                 </button>
 
             </td>
+
         `;
 
 
-        table.appendChild(row);
+        table.appendChild(
+            row
+        );
 
     });
 
@@ -437,10 +1105,14 @@ function displayFarmers(list){
 function getStatus(status){
 
     if(!status){
+
         return "Pending";
+
     }
 
+
     return status;
+
 }
 
 
@@ -448,10 +1120,16 @@ function getStatus(status){
    UPDATE STATUS
 ========================= */
 
-async function updateStatus(encodedRegistrationNo, index){
+async function updateStatus(
+    encodedRegistrationNo,
+    index
+){
 
     const registrationNo =
-        decodeURIComponent(encodedRegistrationNo);
+        decodeURIComponent(
+            encodedRegistrationNo
+        );
+
 
     const newStatus =
         document.getElementById(
@@ -460,17 +1138,22 @@ async function updateStatus(encodedRegistrationNo, index){
 
 
     const message =
-        document.getElementById("message");
+        document.getElementById(
+            "message"
+        );
 
 
-    message.style.color="#198754";
+    message.style.color =
+        "#198754";
+
 
     message.innerHTML =
         "⏳ Status update हो रहा है...";
 
 
-    const { error } =
-        await db
+    const {
+        error
+    } = await db
         .from("farmer")
         .update({
             status:newStatus
@@ -478,23 +1161,36 @@ async function updateStatus(encodedRegistrationNo, index){
         .eq(
             "registration_no",
             registrationNo
+        )
+        .eq(
+            "admin_id",
+            ADMIN_ID
         );
 
 
     if(error){
 
-        console.error(error);
+        console.error(
+            error
+        );
 
-        message.style.color="red";
+
+        message.style.color =
+            "red";
+
 
         message.innerHTML =
             "❌ Status update नहीं हुआ।";
 
+
         return;
+
     }
 
 
-    message.style.color="green";
+    message.style.color =
+        "green";
+
 
     message.innerHTML =
         "✅ " +
@@ -505,6 +1201,9 @@ async function updateStatus(encodedRegistrationNo, index){
 
 
     await loadFarmers();
+
+    await loadTarget();
+
 }
 
 
@@ -515,31 +1214,45 @@ async function updateStatus(encodedRegistrationNo, index){
 function searchFarmers(){
 
     const search =
-        document.getElementById("search")
+        document.getElementById(
+            "search"
+        )
         .value
         .toLowerCase()
         .trim();
 
 
     const filtered =
-        farmers.filter(function(farmer){
+        farmers.filter(
+            function(farmer){
 
             return (
-                (farmer.registration_no || "")
-                    .toLowerCase()
-                    .includes(search)
+
+                (
+                    farmer.registration_no ||
+                    ""
+                )
+                .toLowerCase()
+                .includes(search)
 
                 ||
 
-                (farmer.name || "")
-                    .toLowerCase()
-                    .includes(search)
+                (
+                    farmer.name ||
+                    ""
+                )
+                .toLowerCase()
+                .includes(search)
+
             );
 
         });
 
 
-    displayFarmers(filtered);
+    displayFarmers(
+        filtered
+    );
+
 }
 
 
@@ -553,6 +1266,7 @@ async function logout(){
 
     window.location.href =
         "admin-login.html";
+
 }
 
 
@@ -563,11 +1277,32 @@ async function logout(){
 function escapeHTML(value){
 
     return String(value)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
 }
 
 
@@ -575,7 +1310,27 @@ function escapeHTML(value){
    START
 ========================= */
 
-loadFarmers();
+async function startDashboard(){
+
+    const loggedIn =
+        await checkLogin();
+
+
+    if(!loggedIn){
+
+        return;
+
+    }
+
+
+    await loadTarget();
+
+    await loadFarmers();
+
+}
+
+
+startDashboard();
 
 </script>
 
