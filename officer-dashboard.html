@@ -777,12 +777,25 @@ function getDocumentUrl(path){
 async function loadOfficer(){
 
     const {
-        data:sessionData
-    } =
-    await db.auth.getSession();
+        data: sessionData,
+        error: sessionError
+    } = await db.auth.getSession();
+
+    if(sessionError){
+
+        showError(
+            "Session error: " + sessionError.message
+        );
+
+        return false;
+    }
 
     const session =
-        sessionData.session;
+        sessionData &&
+        sessionData.session
+        ? sessionData.session
+        : null;
+
 
     if(!session){
 
@@ -793,23 +806,40 @@ async function loadOfficer(){
     }
 
 
+    const userId =
+        session.user.id;
+
+
+    console.log(
+        "Logged-in Auth User ID:",
+        userId
+    );
+
+
     const {
         data,
         error
-    } =
-    await db
-    .from("officers")
-    .select("*")
-    .eq(
-        "auth_user_id",
-        session.user.id
-    )
-    .maybeSingle();
+    } = await db
+        .from("officers")
+        .select("*")
+        .eq(
+            "auth_user_id",
+            userId
+        )
+        .maybeSingle();
 
 
     if(error){
 
-        showError(error.message);
+        console.error(
+            "Officer profile query error:",
+            error
+        );
+
+        showError(
+            "Officer profile error: " +
+            error.message
+        );
 
         return false;
     }
@@ -817,8 +847,14 @@ async function loadOfficer(){
 
     if(!data){
 
+        console.error(
+            "Officer profile not found for Auth ID:",
+            userId
+        );
+
         showError(
-            "Officer profile not found."
+            "Officer profile not found for Auth ID: " +
+            userId
         );
 
         return false;
