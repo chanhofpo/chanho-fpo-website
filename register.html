@@ -367,6 +367,7 @@ const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const form = document.getElementById("farmerForm");
+const ADMIN_ID = "ADM/2026/01";
 const submitBtn = document.getElementById("submitBtn");
 const message = document.getElementById("message");
 
@@ -487,7 +488,8 @@ form.addEventListener("submit", async function(e){
                 p_signature_url: signature_url,
                 p_aadhar_url: aadhar_url,
                 p_form_url: form_url,
-                p_land_record_url: land_record_url
+                p_land_record_url: land_record_url,
+                p_admin_id: ADMIN_ID
             }
         );
 
@@ -520,6 +522,547 @@ form.addEventListener("submit", async function(e){
         submitBtn.textContent = "Submit Farmer Registration";
 
     }
+
+});
+
+<script>
+
+const SUPABASE_URL = "https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const form = document.getElementById("farmerForm");
+const submitBtn = document.getElementById("submitBtn");
+const message = document.getElementById("message");
+
+let ADMIN_ID = null;
+
+
+/* =========================
+   MESSAGE
+========================= */
+
+function showMessage(text, type){
+
+    message.style.display = "block";
+    message.className = type;
+    message.innerHTML = text;
+
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+}
+
+
+/* =========================
+   GET VALUE
+========================= */
+
+function getValue(id){
+
+    return document.getElementById(id).value.trim();
+
+}
+
+
+/* =========================
+   FIND LOGGED-IN ADMIN
+========================= */
+
+async function loadAdmin(){
+
+    const {
+        data: { session },
+        error: sessionError
+    } = await db.auth.getSession();
+
+
+    if(sessionError){
+
+        throw new Error(
+            "Admin session check failed: " +
+            sessionError.message
+        );
+
+    }
+
+
+    if(!session){
+
+        throw new Error(
+            "Farmer Registration के लिए पहले Admin Login करें।"
+        );
+
+    }
+
+
+    const authUserId = session.user.id;
+
+
+    const {
+        data,
+        error
+    } = await db
+        .from("admins")
+        .select("admin_id,name,status")
+        .eq("auth_user_id", authUserId)
+        .single();
+
+
+    if(error){
+
+        throw new Error(
+            "Admin record नहीं मिला: " +
+            error.message
+        );
+
+    }
+
+
+    if(!data.admin_id){
+
+        throw new Error(
+            "इस Admin की Admin ID उपलब्ध नहीं है।"
+        );
+
+    }
+
+
+    if(data.status && data.status !== "Active"){
+
+        throw new Error(
+            "यह Admin account Active नहीं है।"
+        );
+
+    }
+
+
+    ADMIN_ID = data.admin_id;
+
+
+    console.log(
+        "Logged-in Admin:",
+        ADMIN_ID
+    );
+
+}
+
+
+/* =========================
+   FILE UPLOAD
+========================= */
+
+async function uploadFile(file, folder){
+
+    if(!file) return null;
+
+
+    const extension =
+        file.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+
+    const randomPart =
+        Date.now() +
+        "_" +
+        Math.random()
+        .toString(36)
+        .substring(2,10);
+
+
+    const filePath =
+        folder +
+        "/" +
+        randomPart +
+        "." +
+        extension;
+
+
+    const { error } = await db.storage
+        .from("farmer-documents")
+        .upload(
+            filePath,
+            file,
+            {
+                cacheControl: "3600",
+                upsert: false
+            }
+        );
+
+
+    if(error){
+
+        throw new Error(
+            "Document upload failed: " +
+            error.message
+        );
+
+    }
+
+
+    return filePath;
+
+}
+
+
+/* =========================
+   FORM SUBMIT
+========================= */
+
+form.addEventListener(
+    "submit",
+    async function(e){
+
+        e.preventDefault();
+
+
+        submitBtn.disabled = true;
+
+        submitBtn.textContent =
+            "Submitting...";
+
+
+        message.style.display =
+            "none";
+
+
+        try{
+
+
+            /* =====================
+               CHECK ADMIN
+            ===================== */
+
+            if(!ADMIN_ID){
+
+                await loadAdmin();
+
+            }
+
+
+            console.log(
+                "Farmer assigned to Admin:",
+                ADMIN_ID
+            );
+
+
+            /* =====================
+               AADHAAR
+            ===================== */
+
+            const aadhar =
+                getValue("aadhar_number");
+
+
+            if(!/^[0-9]{12}$/.test(aadhar)){
+
+                throw new Error(
+                    "Aadhaar number 12 digit का होना चाहिए।"
+                );
+
+            }
+
+
+            /* =====================
+               MOBILE
+            ===================== */
+
+            const mobile =
+                getValue("mobile");
+
+
+            if(!/^[0-9]{10}$/.test(mobile)){
+
+                throw new Error(
+                    "Mobile number 10 digit का होना चाहिए।"
+                );
+
+            }
+
+
+            /* =====================
+               FILES
+            ===================== */
+
+            const files = {
+
+                photo:
+                    document.getElementById(
+                        "photo"
+                    ).files[0],
+
+                signature:
+                    document.getElementById(
+                        "signature"
+                    ).files[0],
+
+                aadhar_file:
+                    document.getElementById(
+                        "aadhar_file"
+                    ).files[0],
+
+                form_file:
+                    document.getElementById(
+                        "form_file"
+                    ).files[0],
+
+                land_record:
+                    document.getElementById(
+                        "land_record"
+                    ).files[0]
+
+            };
+
+
+            for(const key in files){
+
+                if(!files[key]){
+
+                    throw new Error(
+                        "सभी documents upload करना जरूरी है।"
+                    );
+
+                }
+
+            }
+
+
+            /* =====================
+               UPLOAD DOCUMENTS
+            ===================== */
+
+            const photo_url =
+                await uploadFile(
+                    files.photo,
+                    "photo"
+                );
+
+
+            const signature_url =
+                await uploadFile(
+                    files.signature,
+                    "signature"
+                );
+
+
+            const aadhar_url =
+                await uploadFile(
+                    files.aadhar_file,
+                    "aadhar"
+                );
+
+
+            const form_url =
+                await uploadFile(
+                    files.form_file,
+                    "form"
+                );
+
+
+            const land_record_url =
+                await uploadFile(
+                    files.land_record,
+                    "land-record"
+                );
+
+
+            /* =====================
+               REGISTER FARMER
+            ===================== */
+
+            const {
+                data,
+                error
+            } = await db.rpc(
+                "register_farmer",
+                {
+
+                    p_name:
+                        getValue("name"),
+
+                    p_father_name:
+                        getValue("father_name"),
+
+                    p_date_of_birth:
+                        getValue("date_of_birth"),
+
+                    p_aadhar_number:
+                        aadhar,
+
+                    p_mobile:
+                        mobile,
+
+                    p_gender:
+                        getValue("gender"),
+
+                    p_village:
+                        getValue("village"),
+
+                    p_panchayat:
+                        getValue("panchayat"),
+
+                    p_block:
+                        getValue("block"),
+
+                    p_district:
+                        "Ranchi",
+
+                    p_state:
+                        "Jharkhand",
+
+                    p_crop:
+                        getValue("crop"),
+
+                    p_land:
+                        getValue("land"),
+
+                    p_category:
+                        getValue("category"),
+
+                    p_address:
+                        getValue("address"),
+
+                    p_bank_name:
+                        getValue("bank_name"),
+
+                    p_bank_branch:
+                        getValue("bank_branch"),
+
+                    p_account_number:
+                        getValue("account_number"),
+
+                    p_ifsc_code:
+                        getValue("ifsc_code")
+                        .toUpperCase(),
+
+                    p_payment_mode:
+                        getValue("payment_mode"),
+
+                    p_photo_url:
+                        photo_url,
+
+                    p_signature_url:
+                        signature_url,
+
+                    p_aadhar_url:
+                        aadhar_url,
+
+                    p_form_url:
+                        form_url,
+
+                    p_land_record_url:
+                        land_record_url,
+
+                    /* IMPORTANT */
+                    p_admin_id:
+                        ADMIN_ID
+
+                }
+            );
+
+
+            /* =====================
+               RPC ERROR
+            ===================== */
+
+            if(error){
+
+                throw new Error(
+                    error.message
+                );
+
+            }
+
+
+            /* =====================
+               SUCCESS
+            ===================== */
+
+            showMessage(
+
+                "Registration Successful!" +
+
+                "<div class='registration'>" +
+
+                data +
+
+                "</div>" +
+
+                "<br>" +
+
+                "Admin ID: " +
+
+                ADMIN_ID +
+
+                "<br><br>" +
+
+                "कृपया अपना Registration Number सुरक्षित रखें।",
+
+                "success"
+
+            );
+
+
+            form.reset();
+
+
+        }
+        catch(error){
+
+            console.error(error);
+
+
+            showMessage(
+
+                "Registration failed:<br>" +
+
+                error.message,
+
+                "error"
+
+            );
+
+        }
+        finally{
+
+            submitBtn.disabled =
+                false;
+
+            submitBtn.textContent =
+                "Submit Farmer Registration";
+
+        }
+
+    }
+);
+
+
+/* =========================
+   PAGE LOAD
+========================= */
+
+loadAdmin()
+.then(() => {
+
+    console.log(
+        "Admin Registration Ready:",
+        ADMIN_ID
+    );
+
+})
+.catch(error => {
+
+    console.error(error);
+
+    showMessage(
+        error.message,
+        "error"
+    );
 
 });
 
