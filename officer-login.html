@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Officer Login - Chanho FPO</title>
 
 <style>
+
 *{
     box-sizing:border-box;
     margin:0;
@@ -56,6 +59,7 @@ h1{
     text-align:center;
     color:#666;
     margin-bottom:25px;
+    line-height:1.5;
 }
 
 label{
@@ -95,10 +99,16 @@ button:hover{
     background:#07542d;
 }
 
+button:disabled{
+    background:#999;
+    cursor:not-allowed;
+}
+
 #message{
     text-align:center;
     margin-top:15px;
     font-weight:bold;
+    line-height:1.5;
 }
 
 .back{
@@ -118,110 +128,344 @@ button:hover{
     color:#0b6b3a;
     font-size:13px;
 }
+
 </style>
+
 </head>
 
 <body>
 
+
 <div class="login-box">
 
-    <div class="logo">CB</div>
+    <div class="logo">
+        CB
+    </div>
 
-    <h1>Officer Login</h1>
+
+    <h1>
+        Officer Login
+    </h1>
+
 
     <div class="subtitle">
-        Chanho Birsa Munda Sangathan Producer Company Limited
+        Chanho Birsa Munda Sangathan
+        Producer Company Limited
     </div>
+
 
     <form id="loginForm">
 
-        <label>Officer ID / Email</label>
+        <label>
+            Officer Email
+        </label>
+
         <input
-            type="text"
+            type="email"
             id="email"
             placeholder="Officer Email डालें"
+            autocomplete="username"
             required
         >
 
-        <label>Password</label>
+
+        <label>
+            Password
+        </label>
+
         <input
             type="password"
             id="password"
             placeholder="Password डालें"
+            autocomplete="current-password"
             required
         >
 
-        <button type="submit">Login</button>
+
+        <button
+            type="submit"
+            id="loginButton"
+        >
+            Login
+        </button>
+
 
         <div id="message"></div>
 
     </form>
 
+
     <div class="officer-id">
-        Officer ID: <b>CBMS/OFF/7643970915</b>
+
+        Officer ID:
+        <b>CBMS/OFF/7643970915</b>
+
     </div>
 
-    <a href="index.html" class="back">← वापस Home पर जाएँ</a>
+
+    <a
+        href="index.html"
+        class="back"
+    >
+        ← वापस Home पर जाएँ
+    </a>
 
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
 <script>
 
 const SUPABASE_URL =
-"https://unqihzayhrpmtdxrjiyy.supabase.co";
+    "https://unqihzayhrpmtdxrjiyy.supabase.co";
+
 
 const SUPABASE_KEY =
-"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+    "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 
-const db = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+
+const db =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+/* =========================
+   LOGIN
+========================= */
+
+document
+.getElementById("loginForm")
+.addEventListener(
+    "submit",
+    async function(e){
+
+        e.preventDefault();
+
+
+        const email =
+            document
+            .getElementById("email")
+            .value
+            .trim();
+
+
+        const password =
+            document
+            .getElementById("password")
+            .value;
+
+
+        const message =
+            document
+            .getElementById("message");
+
+
+        const button =
+            document
+            .getElementById("loginButton");
+
+
+        message.style.color =
+            "#333";
+
+        message.textContent =
+            "Login हो रहा है...";
+
+
+        button.disabled = true;
+
+
+        try{
+
+
+            /* AUTH LOGIN */
+
+            const {
+                data,
+                error
+            } =
+            await db.auth.signInWithPassword({
+
+                email:email,
+
+                password:password
+
+            });
+
+
+            if(error){
+
+                throw error;
+
+            }
+
+
+            if(
+                !data ||
+                !data.user
+            ){
+
+                throw new Error(
+                    "Login session नहीं बनी."
+                );
+
+            }
+
+
+            /*
+             * Auth user ID
+             */
+
+            const authUserId =
+                data.user.id;
+
+
+            /*
+             * Officer profile check
+             */
+
+            const {
+                data:officer,
+                error:officerError
+            } =
+            await db
+            .from("officers")
+            .select(
+                "officer_id,name,status,auth_user_id"
+            )
+            .eq(
+                "auth_user_id",
+                authUserId
+            )
+            .maybeSingle();
+
+
+            if(officerError){
+
+                await db.auth.signOut();
+
+                throw officerError;
+
+            }
+
+
+            if(!officer){
+
+                await db.auth.signOut();
+
+                throw new Error(
+                    "इस Email का Officer profile database में नहीं मिला."
+                );
+
+            }
+
+
+            /*
+             * Check Officer status
+             */
+
+            if(
+                String(
+                    officer.status || ""
+                )
+                .trim()
+                .toLowerCase()
+                !==
+                "active"
+            ){
+
+                await db.auth.signOut();
+
+                throw new Error(
+                    "Officer account Active नहीं है."
+                );
+
+            }
+
+
+            /*
+             * Login successful
+             */
+
+            message.style.color =
+                "green";
+
+            message.textContent =
+                "Login successful. Dashboard खुल रहा है...";
+
+
+            setTimeout(
+                function(){
+
+                    window.location.href =
+                        "officer-dashboard.html";
+
+                },
+                500
+            );
+
+
+        }
+        catch(error){
+
+            console.error(
+                "Officer Login Error:",
+                error
+            );
+
+
+            message.style.color =
+                "red";
+
+            message.textContent =
+                "Login failed: " +
+                (
+                    error.message ||
+                    "Unknown error"
+                );
+
+
+            button.disabled = false;
+
+        }
+
+    }
 );
 
-document.getElementById("loginForm").addEventListener("submit", async function(e){
 
-    e.preventDefault();
+/* =========================
+   IF ALREADY LOGGED IN
+========================= */
 
-    const email =
-        document.getElementById("email").value.trim();
+async function checkExistingSession(){
 
-    const password =
-        document.getElementById("password").value;
+    const {
+        data
+    } =
+    await db.auth.getSession();
 
-    const message =
-        document.getElementById("message");
 
-    message.style.color = "#333";
-    message.textContent = "Login हो रहा है...";
+    if(
+        data &&
+        data.session
+    ){
 
-    const { data, error } =
-        await db.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
+        /*
+         * Already logged in.
+         * Do not automatically redirect here.
+         * User can login again normally.
+         */
 
-    if(error){
-
-        message.style.color = "red";
-        message.textContent =
-            "Login failed: " + error.message;
-
-        return;
     }
 
-    message.style.color = "green";
-    message.textContent = "Login successful...";
+}
 
-    setTimeout(function(){
 
-        window.location.href =
-            "officer-dashboard.html";
-
-    },800);
-
-});
+checkExistingSession();
 
 </script>
 
