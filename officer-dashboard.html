@@ -104,6 +104,12 @@ body{
     gap:15px;
 }
 
+.filters{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:12px;
+}
+
 label{
     font-size:13px;
     font-weight:bold;
@@ -336,6 +342,10 @@ th{
         grid-template-columns:1fr;
     }
 
+    .filters{
+        grid-template-columns:1fr;
+    }
+
 }
 
 @media(max-width:600px){
@@ -426,7 +436,6 @@ th{
                 </select>
             </div>
 
-
             <div>
                 <label>Block</label>
 
@@ -434,7 +443,6 @@ th{
                     <option value="">Select Block</option>
                 </select>
             </div>
-
 
             <div>
                 <label>Panchayat</label>
@@ -444,7 +452,6 @@ th{
                 </select>
             </div>
 
-
             <div>
                 <label>Village</label>
 
@@ -452,7 +459,6 @@ th{
                     <option value="">Select Village</option>
                 </select>
             </div>
-
 
             <div>
                 <label>Target Count</label>
@@ -464,7 +470,6 @@ th{
                     min="0"
                 >
             </div>
-
 
             <div style="display:flex;align-items:end">
 
@@ -546,6 +551,67 @@ th{
     </div>
 
 
+    <!-- SEARCH FARMERS -->
+
+    <div class="section">
+
+        <h2>Search Farmers</h2>
+
+        <div class="filters">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search name, registration no, mobile, Aadhaar..."
+                oninput="applyFilters()"
+            >
+
+            <select
+                id="statusFilter"
+                onchange="applyFilters()"
+            >
+
+                <option value="">All Status</option>
+
+                <option value="Pending Admin Verification">
+                    Pending Admin Verification
+                </option>
+
+                <option value="Pending Officer Approval">
+                    Pending Officer Approval
+                </option>
+
+                <option value="Verified">
+                    Verified
+                </option>
+
+                <option value="Approved">
+                    Approved
+                </option>
+
+                <option value="Rejected">
+                    Rejected
+                </option>
+
+            </select>
+
+
+            <select
+                id="villageFilter"
+                onchange="applyFilters()"
+            >
+
+                <option value="">
+                    All Villages
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
     <!-- FARMERS -->
 
     <div class="section">
@@ -560,17 +626,17 @@ th{
 
                     <tr>
                         <th>Registration No</th>
-<th>Farmer Name</th>
-<th>Mobile</th>
-<th>Aadhaar</th>
-<th>Block</th>
-<th>Panchayat</th>
-<th>Village</th>
-<th>Admin ID</th>
-<th>Status</th>
-<th>Registered At</th>
-<th>Documents</th>
-<th>Action</th>
+                        <th>Farmer Name</th>
+                        <th>Mobile</th>
+                        <th>Aadhaar</th>
+                        <th>Block</th>
+                        <th>Panchayat</th>
+                        <th>Village</th>
+                        <th>Admin ID</th>
+                        <th>Status</th>
+                        <th>Registered At</th>
+                        <th>Documents</th>
+                        <th>Action</th>
                     </tr>
 
                 </thead>
@@ -747,9 +813,7 @@ function getDocumentUrl(path){
         return null;
     }
 
-    if(
-        /^https?:\/\//i.test(value)
-    ){
+    if(/^https?:\/\//i.test(value)){
         return value;
     }
 
@@ -784,7 +848,8 @@ async function loadOfficer(){
     if(sessionError){
 
         showError(
-            "Session error: " + sessionError.message
+            "Session error: " +
+            sessionError.message
         );
 
         return false;
@@ -796,7 +861,6 @@ async function loadOfficer(){
         ? sessionData.session
         : null;
 
-
     if(!session){
 
         window.location.href =
@@ -805,16 +869,13 @@ async function loadOfficer(){
         return false;
     }
 
-
     const userId =
         session.user.id;
-
 
     console.log(
         "Logged-in Auth User ID:",
         userId
     );
-
 
     const {
         data,
@@ -827,7 +888,6 @@ async function loadOfficer(){
             userId
         )
         .maybeSingle();
-
 
     if(error){
 
@@ -844,7 +904,6 @@ async function loadOfficer(){
         return false;
     }
 
-
     if(!data){
 
         console.error(
@@ -860,9 +919,7 @@ async function loadOfficer(){
         return false;
     }
 
-
     currentOfficer = data;
-
 
     document.getElementById(
         "officerInfo"
@@ -877,7 +934,6 @@ async function loadOfficer(){
             data.name ||
             "Officer"
         );
-
 
     return true;
 }
@@ -909,7 +965,6 @@ async function loadAdmins(){
         }
     );
 
-
     if(error){
 
         showError(error.message);
@@ -917,16 +972,13 @@ async function loadAdmins(){
         return;
     }
 
-
     const select =
         document.getElementById(
             "adminSelect"
         );
 
-
     select.innerHTML =
         '<option value="">Select Admin</option>';
-
 
     (data || []).forEach(function(admin){
 
@@ -968,14 +1020,12 @@ async function loadBlocks(){
     .select("block")
     .eq("status","Active");
 
-
     if(error){
 
         showError(error.message);
 
         return;
     }
-
 
     const blocks =
         [
@@ -987,16 +1037,13 @@ async function loadBlocks(){
         ]
         .sort();
 
-
     const select =
         document.getElementById(
             "blockSelect"
         );
 
-
     select.innerHTML =
         '<option value="">Select Block</option>';
-
 
     blocks.forEach(function(block){
 
@@ -1035,18 +1082,15 @@ async function loadPanchayats(){
             "blockSelect"
         ).value;
 
-
     const panchayatSelect =
         document.getElementById(
             "panchayatSelect"
         );
 
-
     const villageSelect =
         document.getElementById(
             "villageSelect"
         );
-
 
     panchayatSelect.innerHTML =
         '<option value="">Select Panchayat</option>';
@@ -1054,11 +1098,9 @@ async function loadPanchayats(){
     villageSelect.innerHTML =
         '<option value="">Select Village</option>';
 
-
     if(!block){
         return;
     }
-
 
     const {
         data,
@@ -1070,14 +1112,12 @@ async function loadPanchayats(){
     .eq("block",block)
     .eq("status","Active");
 
-
     if(error){
 
         showError(error.message);
 
         return;
     }
-
 
     const panchayats =
         [
@@ -1088,7 +1128,6 @@ async function loadPanchayats(){
             )
         ]
         .sort();
-
 
     panchayats.forEach(function(value){
 
@@ -1129,22 +1168,18 @@ async function loadVillages(){
             "blockSelect"
         ).value;
 
-
     const panchayat =
         document.getElementById(
             "panchayatSelect"
         ).value;
-
 
     const villageSelect =
         document.getElementById(
             "villageSelect"
         );
 
-
     villageSelect.innerHTML =
         '<option value="">Select Village</option>';
-
 
     if(
         !block ||
@@ -1152,7 +1187,6 @@ async function loadVillages(){
     ){
         return;
     }
-
 
     const {
         data,
@@ -1165,14 +1199,12 @@ async function loadVillages(){
     .eq("panchayat",panchayat)
     .eq("status","Active");
 
-
     if(error){
 
         showError(error.message);
 
         return;
     }
-
 
     const villages =
         [
@@ -1183,7 +1215,6 @@ async function loadVillages(){
             )
         ]
         .sort();
-
 
     villages.forEach(function(value){
 
@@ -1216,24 +1247,20 @@ async function assignArea(){
             "adminSelect"
         ).value;
 
-
     const block =
         document.getElementById(
             "blockSelect"
         ).value;
-
 
     const panchayat =
         document.getElementById(
             "panchayatSelect"
         ).value;
 
-
     const village =
         document.getElementById(
             "villageSelect"
         ).value;
-
 
     const target =
         Number(
@@ -1241,7 +1268,6 @@ async function assignArea(){
                 "targetCount"
             ).value || 0
         );
-
 
     if(
         !adminId ||
@@ -1257,13 +1283,11 @@ async function assignArea(){
         return;
     }
 
-
     const officerId =
         currentOfficer &&
         currentOfficer.officer_id
         ? currentOfficer.officer_id
         : "CBMS/OFF/7643970915";
-
 
     const {
         data,
@@ -1281,14 +1305,12 @@ async function assignArea(){
         }
     );
 
-
     if(error){
 
         showError(error.message);
 
         return;
     }
-
 
     if(
         data &&
@@ -1303,11 +1325,9 @@ async function assignArea(){
         return;
     }
 
-
     showSuccess(
         "Area assigned successfully."
     );
-
 
     await loadAssignments();
     await loadFarmers();
@@ -1336,7 +1356,6 @@ async function loadAssignments(){
         }
     );
 
-
     if(error){
 
         showError(error.message);
@@ -1344,15 +1363,12 @@ async function loadAssignments(){
         return;
     }
 
-
     const tbody =
         document.getElementById(
             "assignmentTable"
         );
 
-
     tbody.innerHTML = "";
-
 
     if(!data || data.length === 0){
 
@@ -1362,12 +1378,10 @@ async function loadAssignments(){
         return;
     }
 
-
     data.forEach(function(row){
 
         const tr =
             document.createElement("tr");
-
 
         const date =
             row.created_at
@@ -1377,7 +1391,6 @@ async function loadAssignments(){
                 "en-IN"
             )
             : "-";
-
 
         tr.innerHTML = `
 
@@ -1400,7 +1413,6 @@ async function loadAssignments(){
             <td>${date}</td>
 
         `;
-
 
         tbody.appendChild(tr);
 
@@ -1431,14 +1443,12 @@ async function loadPerformance(){
         }
     );
 
-
     if(error){
 
         showError(error.message);
 
         return;
     }
-
 
     const {
         data:farmers
@@ -1449,15 +1459,12 @@ async function loadPerformance(){
         "admin_id,status"
     );
 
-
     const tbody =
         document.getElementById(
             "performanceTable"
         );
 
-
     tbody.innerHTML = "";
-
 
     (admins || []).forEach(function(admin){
 
@@ -1469,7 +1476,6 @@ async function loadPerformance(){
                     admin.admin_id
             );
 
-
         const verified =
             list.filter(
                 f =>
@@ -1480,14 +1486,8 @@ async function loadPerformance(){
                     "verified"
             ).length;
 
-
-        const assignments =
-            [];
-
-
         const row =
             document.createElement("tr");
-
 
         row.innerHTML = `
 
@@ -1502,7 +1502,6 @@ async function loadPerformance(){
             <td>${verified}</td>
 
         `;
-
 
         tbody.appendChild(row);
 
@@ -1531,7 +1530,6 @@ async function loadFarmers(){
         }
     );
 
-
     if(error){
 
         showError(error.message);
@@ -1539,10 +1537,11 @@ async function loadFarmers(){
         return;
     }
 
-
     officerFarmers =
         data || [];
 
+
+    /* SUMMARY */
 
     document.getElementById(
         "totalFarmers"
@@ -1603,6 +1602,262 @@ async function loadFarmers(){
         ).length;
 
 
+    /* SEARCH VILLAGES */
+
+    populateVillageFilter();
+
+    /* FIRST RENDER */
+
+    applyFilters();
+
+}
+
+
+/* =========================
+   POPULATE VILLAGE FILTER
+========================= */
+
+function populateVillageFilter(){
+
+    const select =
+        document.getElementById(
+            "villageFilter"
+        );
+
+    if(!select){
+        return;
+    }
+
+    const currentValue =
+        select.value;
+
+    const villages =
+        [
+            ...new Set(
+                officerFarmers
+                .map(
+                    farmer =>
+                        String(
+                            farmer.village || ""
+                        ).trim()
+                )
+                .filter(Boolean)
+            )
+        ]
+        .sort(
+            (a,b) =>
+                a.localeCompare(
+                    b,
+                    "en"
+                )
+        );
+
+
+    select.innerHTML =
+        '<option value="">All Villages</option>';
+
+
+    villages.forEach(function(village){
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            village;
+
+        option.textContent =
+            village;
+
+        select.appendChild(option);
+
+    });
+
+
+    if(
+        villages.includes(
+            currentValue
+        )
+    ){
+
+        select.value =
+            currentValue;
+
+    }
+
+}
+
+
+/* =========================
+   SEARCH + FILTER
+========================= */
+
+function applyFilters(){
+
+    const searchInput =
+        document.getElementById(
+            "searchInput"
+        );
+
+    const statusFilter =
+        document.getElementById(
+            "statusFilter"
+        );
+
+    const villageFilter =
+        document.getElementById(
+            "villageFilter"
+        );
+
+
+    const search =
+        String(
+            searchInput
+            ? searchInput.value
+            : ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const selectedStatus =
+        String(
+            statusFilter
+            ? statusFilter.value
+            : ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const selectedVillage =
+        String(
+            villageFilter
+            ? villageFilter.value
+            : ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const filtered =
+        officerFarmers.filter(
+            function(farmer){
+
+                const searchableText = [
+
+                    farmer.registration_no,
+                    farmer.name,
+                    farmer.father_name,
+                    farmer.mobile,
+                    farmer.aadhar_number,
+                    farmer.village,
+                    farmer.panchayat,
+                    farmer.block
+
+                ]
+                .map(
+                    value =>
+                        String(
+                            value || ""
+                        ).toLowerCase()
+                )
+                .join(" ");
+
+
+                const matchesSearch =
+                    !search ||
+                    searchableText.includes(
+                        search
+                    );
+
+
+                const farmerStatus =
+                    String(
+                        farmer.status || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                let matchesStatus = true;
+
+
+                if(selectedStatus){
+
+                    if(
+                        selectedStatus ===
+                        "rejected"
+                    ){
+
+                        matchesStatus =
+                            farmerStatus.includes(
+                                "rejected"
+                            );
+
+                    }
+                    else if(
+                        selectedStatus ===
+                        "pending officer approval"
+                    ){
+
+                        matchesStatus =
+                            farmerStatus ===
+                            "verified" ||
+                            farmerStatus.includes(
+                                "pending officer"
+                            );
+
+                    }
+                    else{
+
+                        matchesStatus =
+                            farmerStatus ===
+                            selectedStatus;
+
+                    }
+
+                }
+
+
+                const farmerVillage =
+                    String(
+                        farmer.village || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                const matchesVillage =
+                    !selectedVillage ||
+                    farmerVillage ===
+                    selectedVillage;
+
+
+                return (
+                    matchesSearch &&
+                    matchesStatus &&
+                    matchesVillage
+                );
+
+            }
+        );
+
+
+    renderOfficerFarmers(
+        filtered
+    );
+
+}
+
+
+/* =========================
+   RENDER FILTERED FARMERS
+========================= */
+
+function renderOfficerFarmers(farmers){
+
     const tbody =
         document.getElementById(
             "farmerTable"
@@ -1613,18 +1868,33 @@ async function loadFarmers(){
 
 
     if(
-        officerFarmers.length === 0
+        !farmers ||
+        farmers.length === 0
     ){
 
         tbody.innerHTML =
-            '<tr><td colspan="11" class="empty">No farmer applications found.</td></tr>';
+            '<tr><td colspan="12" class="empty">No farmer applications found.</td></tr>';
 
         return;
     }
 
 
-    officerFarmers.forEach(
-        function(farmer,index){
+    farmers.forEach(
+        function(farmer){
+
+            /*
+             * IMPORTANT:
+             * Keep original index from officerFarmers.
+             * This makes Profile / Documents /
+             * Approve / Reject work correctly
+             * after searching.
+             */
+
+            const index =
+                officerFarmers.indexOf(
+                    farmer
+                );
+
 
             const status =
                 String(
@@ -1660,12 +1930,6 @@ async function loadFarmers(){
 
             }
 
-
-            /*
-             * IMPORTANT:
-             * Verified farmer is also
-             * ready for Officer decision.
-             */
 
             const canDecide =
                 statusLower ===
@@ -1784,22 +2048,22 @@ async function loadFarmers(){
                 </td>
 
                 <td>
-    ${escapeHtml(
-        farmer.mobile || "-"
-    )}
-</td>
+                    ${escapeHtml(
+                        farmer.mobile || "-"
+                    )}
+                </td>
 
-<td>
-    ${escapeHtml(
-        farmer.aadhar_number || "-"
-    )}
-</td>
+                <td>
+                    ${escapeHtml(
+                        farmer.aadhar_number || "-"
+                    )}
+                </td>
 
-<td>
-    ${escapeHtml(
-        farmer.block || "-"
-    )}
-</td>
+                <td>
+                    ${escapeHtml(
+                        farmer.block || "-"
+                    )}
+                </td>
 
                 <td>
                     ${escapeHtml(
@@ -1908,10 +2172,11 @@ function openProfileByIndex(index){
                 "Mobile",
                 farmer.mobile
             )}
-${profileItem(
-    "Aadhaar",
-    farmer.aadhar_number
-)}
+
+            ${profileItem(
+                "Aadhaar",
+                farmer.aadhar_number
+            )}
 
             ${profileItem(
                 "Gender",
