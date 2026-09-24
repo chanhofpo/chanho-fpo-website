@@ -3,24 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Officer Dashboard - Chanho FPO</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 *{
     box-sizing:border-box;
 }
 
 body{
     margin:0;
-    font-family:Arial, sans-serif;
-    background:#f1f8f3;
-    color:#17351f;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f3f7f3;
+    color:#222;
 }
 
-header{
-    background:#16803a;
+.header{
+    background:#138a4b;
     color:white;
     padding:18px 25px;
     display:flex;
@@ -30,20 +32,20 @@ header{
     gap:10px;
 }
 
-header h1{
+.header h1{
     margin:0;
     font-size:24px;
 }
 
-header p{
+.header p{
     margin:5px 0 0;
-    font-size:13px;
+    font-size:14px;
 }
 
-.logout{
+.logout-btn{
     background:white;
-    color:#16803a;
-    border:none;
+    color:#138a4b;
+    border:0;
     padding:10px 18px;
     border-radius:7px;
     cursor:pointer;
@@ -51,16 +53,16 @@ header p{
 }
 
 .container{
-    max-width:1400px;
-    margin:auto;
-    padding:20px;
+    max-width:1450px;
+    margin:25px auto;
+    padding:0 15px;
 }
 
 .cards{
     display:grid;
     grid-template-columns:repeat(4,1fr);
     gap:15px;
-    margin-bottom:20px;
+    margin-bottom:25px;
 }
 
 .card{
@@ -71,87 +73,71 @@ header p{
 }
 
 .card h3{
-    margin:0 0 8px;
+    margin:0;
     font-size:14px;
     color:#666;
 }
 
 .card .number{
+    margin-top:10px;
     font-size:28px;
     font-weight:bold;
-    color:#16803a;
+    color:#138a4b;
 }
 
 .section{
     background:white;
     border-radius:12px;
     padding:20px;
-    margin-bottom:20px;
+    margin-bottom:25px;
     box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 .section h2{
     margin-top:0;
-    color:#16803a;
-    font-size:20px;
+    color:#138a4b;
 }
 
 .form-grid{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:12px;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
 }
 
-.form-group label{
-    display:block;
+label{
     font-size:13px;
     font-weight:bold;
-    margin-bottom:5px;
+    display:block;
+    margin-bottom:6px;
 }
 
-input,select,textarea{
+input,
+select,
+textarea{
     width:100%;
-    padding:10px;
+    padding:11px;
     border:1px solid #ccc;
-    border-radius:6px;
+    border-radius:7px;
     font-size:14px;
 }
 
 textarea{
-    min-height:90px;
+    min-height:100px;
     resize:vertical;
 }
 
-.btn{
-    border:none;
-    padding:10px 16px;
+.primary-btn{
+    background:#138a4b;
+    color:white;
+    border:0;
+    padding:11px 20px;
     border-radius:7px;
     cursor:pointer;
     font-weight:bold;
 }
 
-.btn-primary{
-    background:#16803a;
-    color:white;
-}
-
-.btn-primary:hover{
-    background:#11662e;
-}
-
-.btn-danger{
-    background:#c62828;
-    color:white;
-}
-
-.btn-success{
-    background:#16803a;
-    color:white;
-}
-
-.btn-secondary{
-    background:#777;
-    color:white;
+.primary-btn:hover{
+    background:#0e6f3c;
 }
 
 .table-wrap{
@@ -162,23 +148,21 @@ textarea{
 table{
     width:100%;
     border-collapse:collapse;
-    min-width:1150px;
+    min-width:1100px;
 }
 
-th,td{
-    border:1px solid #ddd;
-    padding:9px;
+th,
+td{
+    padding:11px 10px;
+    border-bottom:1px solid #eee;
     text-align:left;
     font-size:13px;
+    white-space:nowrap;
 }
 
 th{
-    background:#e6f4e9;
-    color:#155d2c;
-}
-
-tr:nth-child(even){
-    background:#fafafa;
+    background:#f0f7f2;
+    color:#145d38;
 }
 
 .badge{
@@ -194,23 +178,18 @@ tr:nth-child(even){
     color:#856404;
 }
 
-.badge-verified{
+.badge-approved{
     background:#d4edda;
     color:#155724;
 }
 
-.badge-approved{
-    background:#c8e6c9;
-    color:#1b5e20;
-}
-
 .badge-rejected{
-    background:#ffcdd2;
-    color:#b71c1c;
+    background:#f8d7da;
+    color:#721c24;
 }
 
 .action-btn{
-    border:none;
+    border:0;
     padding:7px 10px;
     border-radius:6px;
     cursor:pointer;
@@ -219,45 +198,51 @@ tr:nth-child(even){
     margin:2px;
 }
 
-.view-btn{
-    background:#1976d2;
+.profile-btn{
+    background:#0d6efd;
     color:white;
 }
 
-.doc-btn{
-    background:#6a1b9a;
+.document-btn{
+    background:#6f42c1;
     color:white;
 }
 
 .approve-btn{
-    background:#16803a;
+    background:#198754;
     color:white;
 }
 
 .reject-btn{
-    background:#c62828;
+    background:#dc3545;
     color:white;
 }
 
 .disabled-btn{
-    background:#aaa;
+    background:#999;
     color:white;
     cursor:not-allowed;
 }
 
+.empty{
+    text-align:center;
+    padding:25px;
+    color:#777;
+}
+
 .message{
     padding:12px;
-    margin-bottom:15px;
     border-radius:7px;
+    margin-bottom:15px;
     display:none;
 }
 
-.success-message{
+.success{
     background:#d4edda;
     color:#155724;
 }
 
-.error-message{
+.error{
     background:#f8d7da;
     color:#721c24;
 }
@@ -270,25 +255,30 @@ tr:nth-child(even){
     top:0;
     width:100%;
     height:100%;
-    background:rgba(0,0,0,.65);
+    background:rgba(0,0,0,.55);
     overflow:auto;
 }
 
-.modal-content{
+.modal-box{
     background:white;
     width:92%;
-    max-width:900px;
-    margin:40px auto;
+    max-width:850px;
+    margin:50px auto;
     border-radius:12px;
     padding:22px;
     position:relative;
+}
+
+.modal-box h2{
+    margin-top:0;
+    color:#138a4b;
 }
 
 .close{
     position:absolute;
     right:18px;
     top:12px;
-    font-size:30px;
+    font-size:28px;
     cursor:pointer;
     color:#555;
 }
@@ -296,12 +286,11 @@ tr:nth-child(even){
 .profile-grid{
     display:grid;
     grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-top:15px;
+    gap:12px;
 }
 
 .profile-item{
-    background:#f6faf7;
+    background:#f7f9f7;
     padding:10px;
     border-radius:7px;
 }
@@ -310,130 +299,92 @@ tr:nth-child(even){
     display:block;
     font-size:12px;
     color:#666;
-    margin-bottom:3px;
+    margin-bottom:4px;
 }
 
-.profile-item span{
-    font-size:14px;
-}
-
-.document-grid{
+.document-list{
     display:grid;
     grid-template-columns:repeat(2,1fr);
-    gap:15px;
+    gap:12px;
+}
+
+.document-card{
+    border:1px solid #ddd;
+    padding:15px;
+    border-radius:8px;
+}
+
+.document-card a{
+    display:inline-block;
+    margin-top:8px;
+    color:#138a4b;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+.reject-box{
     margin-top:15px;
 }
 
-.document-box{
-    border:1px solid #ddd;
-    border-radius:8px;
-    padding:12px;
-    background:#fafafa;
-}
+@media(max-width:900px){
 
-.document-box h4{
-    margin:0 0 8px;
-    color:#16803a;
-}
-
-.document-preview{
-    width:100%;
-    max-height:250px;
-    object-fit:contain;
-    border:1px solid #ddd;
-    background:white;
-    border-radius:5px;
-    margin-bottom:8px;
-}
-
-.doc-link{
-    display:inline-block;
-    background:#1976d2;
-    color:white;
-    text-decoration:none;
-    padding:7px 10px;
-    border-radius:5px;
-    font-size:12px;
-}
-
-.decision-box{
-    margin-top:20px;
-    padding:15px;
-    background:#f1f8f3;
-    border-radius:8px;
-}
-
-.decision-buttons{
-    display:flex;
-    gap:10px;
-    margin-top:12px;
-    flex-wrap:wrap;
-}
-
-.loading{
-    text-align:center;
-    padding:20px;
-    color:#777;
-}
-
-.empty{
-    text-align:center;
-    padding:25px;
-    color:#777;
-}
-
-@media(max-width:1000px){
     .cards{
         grid-template-columns:repeat(2,1fr);
     }
 
     .form-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
-}
-
-@media(max-width:600px){
-    .cards{
         grid-template-columns:1fr;
     }
 
-    .form-grid{
+}
+
+@media(max-width:600px){
+
+    .cards{
         grid-template-columns:1fr;
     }
 
     .profile-grid,
-    .document-grid{
+    .document-list{
         grid-template-columns:1fr;
     }
 
-    header{
+    .header{
         padding:15px;
     }
 
-    .container{
-        padding:10px;
+    .header h1{
+        font-size:20px;
     }
+
 }
+
 </style>
 </head>
 
 <body>
 
-<header>
+<header class="header">
+
     <div>
         <h1>Chanho FPO - Officer Dashboard</h1>
-        <p>Officer ID: CBMS/OFF/7643970915</p>
+        <p id="officerInfo">Loading officer...</p>
     </div>
 
-    <button class="logout" onclick="logout()">Logout</button>
+    <button class="logout-btn" onclick="logout()">
+        Logout
+    </button>
+
 </header>
+
 
 <div class="container">
 
-    <div id="successMessage" class="message success-message"></div>
-    <div id="errorMessage" class="message error-message"></div>
+    <div id="message" class="message"></div>
+
 
     <!-- SUMMARY -->
+
     <div class="cards">
 
         <div class="card">
@@ -443,7 +394,7 @@ tr:nth-child(even){
 
         <div class="card">
             <h3>Pending Admin Verification</h3>
-            <div class="number" id="pendingFarmers">0</div>
+            <div class="number" id="pendingAdmin">0</div>
         </div>
 
         <div class="card">
@@ -458,52 +409,81 @@ tr:nth-child(even){
 
     </div>
 
+
     <!-- AREA ASSIGNMENT -->
+
     <div class="section">
 
         <h2>Assign Admin Area</h2>
 
         <div class="form-grid">
 
-            <div class="form-group">
-                <label>Select Admin</label>
+            <div>
+                <label>Admin</label>
+
                 <select id="adminSelect">
                     <option value="">Select Admin</option>
                 </select>
             </div>
 
-            <div class="form-group">
+
+            <div>
                 <label>Block</label>
+
                 <select id="blockSelect">
                     <option value="">Select Block</option>
                 </select>
             </div>
 
-            <div class="form-group">
+
+            <div>
                 <label>Panchayat</label>
+
                 <select id="panchayatSelect">
                     <option value="">Select Panchayat</option>
                 </select>
             </div>
 
-            <div class="form-group">
+
+            <div>
                 <label>Village</label>
+
                 <select id="villageSelect">
                     <option value="">Select Village</option>
                 </select>
             </div>
 
+
+            <div>
+                <label>Target Count</label>
+
+                <input
+                    type="number"
+                    id="targetCount"
+                    value="0"
+                    min="0"
+                >
+            </div>
+
+
+            <div style="display:flex;align-items:end">
+
+                <button
+                    class="primary-btn"
+                    onclick="assignArea()"
+                >
+                    Assign Area
+                </button>
+
+            </div>
+
         </div>
-
-        <br>
-
-        <button class="btn btn-primary" onclick="assignArea()">
-            Assign Area
-        </button>
 
     </div>
 
+
     <!-- ASSIGNED AREAS -->
+
     <div class="section">
 
         <h2>Assigned Areas</h2>
@@ -511,25 +491,22 @@ tr:nth-child(even){
         <div class="table-wrap">
 
             <table>
+
                 <thead>
+
                     <tr>
                         <th>Admin ID</th>
-                        <th>Admin Name</th>
                         <th>Block</th>
                         <th>Panchayat</th>
                         <th>Village</th>
+                        <th>Target</th>
                         <th>Status</th>
-                        <th>Assigned By</th>
+                        <th>Assigned Date</th>
                     </tr>
+
                 </thead>
 
-                <tbody id="assignmentTable">
-                    <tr>
-                        <td colspan="7" class="loading">
-                            Loading...
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="assignmentTable"></tbody>
 
             </table>
 
@@ -537,7 +514,9 @@ tr:nth-child(even){
 
     </div>
 
-    <!-- PERFORMANCE -->
+
+    <!-- ADMIN PERFORMANCE -->
+
     <div class="section">
 
         <h2>Admin Performance</h2>
@@ -545,25 +524,20 @@ tr:nth-child(even){
         <div class="table-wrap">
 
             <table>
+
                 <thead>
+
                     <tr>
                         <th>Admin ID</th>
-                        <th>Admin Name</th>
-                        <th>Area</th>
+                        <th>Name</th>
+                        <th>Assigned Area</th>
                         <th>Total Farmers</th>
-                        <th>Pending</th>
                         <th>Verified</th>
-                        <th>Rejected</th>
                     </tr>
+
                 </thead>
 
-                <tbody id="performanceTable">
-                    <tr>
-                        <td colspan="7" class="loading">
-                            Loading...
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="performanceTable"></tbody>
 
             </table>
 
@@ -571,7 +545,9 @@ tr:nth-child(even){
 
     </div>
 
-    <!-- FARMER APPLICATIONS -->
+
+    <!-- FARMERS -->
+
     <div class="section">
 
         <h2>Farmer Applications</h2>
@@ -581,6 +557,7 @@ tr:nth-child(even){
             <table>
 
                 <thead>
+
                     <tr>
                         <th>Registration No</th>
                         <th>Farmer Name</th>
@@ -594,15 +571,10 @@ tr:nth-child(even){
                         <th>Documents</th>
                         <th>Action</th>
                     </tr>
+
                 </thead>
 
-                <tbody id="farmerTable">
-                    <tr>
-                        <td colspan="11" class="loading">
-                            Loading...
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="farmerTable"></tbody>
 
             </table>
 
@@ -613,17 +585,17 @@ tr:nth-child(even){
 </div>
 
 
-<!-- FARMER PROFILE MODAL -->
+<!-- PROFILE MODAL -->
 
-<div id="profileModal" class="modal">
+<div class="modal" id="profileModal">
 
-    <div class="modal-content">
+    <div class="modal-box">
 
-        <span class="close" onclick="closeProfile()">×</span>
+        <span class="close" onclick="closeModal('profileModal')">
+            ×
+        </span>
 
-        <h2 style="color:#16803a;">
-            Farmer Profile
-        </h2>
+        <h2>Farmer Profile</h2>
 
         <div id="profileContent"></div>
 
@@ -634,15 +606,15 @@ tr:nth-child(even){
 
 <!-- DOCUMENT MODAL -->
 
-<div id="documentModal" class="modal">
+<div class="modal" id="documentModal">
 
-    <div class="modal-content">
+    <div class="modal-box">
 
-        <span class="close" onclick="closeDocuments()">×</span>
+        <span class="close" onclick="closeModal('documentModal')">
+            ×
+        </span>
 
-        <h2 style="color:#16803a;">
-            Farmer Documents
-        </h2>
+        <h2>Farmer Documents</h2>
 
         <div id="documentContent"></div>
 
@@ -653,49 +625,37 @@ tr:nth-child(even){
 
 <!-- REJECT MODAL -->
 
-<div id="rejectModal" class="modal">
+<div class="modal" id="rejectModal">
 
-    <div class="modal-content" style="max-width:600px;">
+    <div class="modal-box">
 
-        <span class="close" onclick="closeReject()">×</span>
+        <span class="close" onclick="closeModal('rejectModal')">
+            ×
+        </span>
 
-        <h2 style="color:#c62828;">
-            Reject Farmer Application
-        </h2>
+        <h2>Reject Farmer</h2>
 
-        <p>
-            Registration No:
-            <strong id="rejectRegistrationNo"></strong>
-        </p>
+        <p id="rejectFarmerInfo"></p>
 
-        <label>
-            Rejection Reason
-        </label>
+        <div class="reject-box">
 
-        <textarea
-            id="rejectionReason"
-            placeholder="Enter reason for rejection..."
-        ></textarea>
+            <label>Rejection Reason</label>
+
+            <textarea
+                id="rejectReason"
+                placeholder="Enter rejection reason"
+            ></textarea>
+
+        </div>
 
         <br>
 
-        <div class="decision-buttons">
-
-            <button
-                class="btn btn-danger"
-                onclick="confirmReject()"
-            >
-                Confirm Reject
-            </button>
-
-            <button
-                class="btn btn-secondary"
-                onclick="closeReject()"
-            >
-                Cancel
-            </button>
-
-        </div>
+        <button
+            class="reject-btn action-btn"
+            onclick="confirmReject()"
+        >
+            Confirm Rejection
+        </button>
 
     </div>
 
@@ -716,31 +676,43 @@ const db =
         SUPABASE_KEY
     );
 
-const OFFICER_ID =
-    "CBMS/OFF/7643970915";
 
+let currentOfficer = null;
 let officerFarmers = [];
-let selectedRejectRegistration = null;
+let rejectRegistrationNo = null;
 
 
 /* =========================
-   LOGIN CHECK
+   MESSAGE
 ========================= */
 
-function checkLogin(){
+function showMessage(message,type){
 
-    const officerLogged =
-        localStorage.getItem("officerLoggedIn");
+    const box =
+        document.getElementById("message");
 
-    if(officerLogged === "false"){
+    box.textContent = message;
 
-        window.location.href =
-            "officer-login.html";
+    box.className =
+        "message " + type;
 
-        return false;
-    }
+    box.style.display = "block";
 
-    return true;
+    setTimeout(function(){
+
+        box.style.display = "none";
+
+    },5000);
+}
+
+
+function showSuccess(message){
+    showMessage(message,"success");
+}
+
+
+function showError(message){
+    showMessage(message,"error");
 }
 
 
@@ -748,76 +720,12 @@ function checkLogin(){
    LOGOUT
 ========================= */
 
-function logout(){
+async function logout(){
 
-    localStorage.setItem(
-        "officerLoggedIn",
-        "false"
-    );
+    await db.auth.signOut();
 
     window.location.href =
         "officer-login.html";
-}
-
-
-/* =========================
-   MESSAGE
-========================= */
-
-function showSuccess(message){
-
-    const box =
-        document.getElementById("successMessage");
-
-    box.textContent = message;
-    box.style.display = "block";
-
-    document.getElementById(
-        "errorMessage"
-    ).style.display = "none";
-
-    setTimeout(()=>{
-        box.style.display = "none";
-    },4000);
-}
-
-
-function showError(message){
-
-    const box =
-        document.getElementById("errorMessage");
-
-    box.textContent = message;
-    box.style.display = "block";
-
-    document.getElementById(
-        "successMessage"
-    ).style.display = "none";
-
-    setTimeout(()=>{
-        box.style.display = "none";
-    },5000);
-}
-
-
-/* =========================
-   HTML ESCAPE
-========================= */
-
-function escapeHtml(value){
-
-    if(value === null ||
-       value === undefined){
-
-        return "";
-    }
-
-    return String(value)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
 }
 
 
@@ -838,20 +746,103 @@ function getDocumentUrl(path){
         return null;
     }
 
-    if(/^https?:\/\//i.test(value)){
+    if(
+        /^https?:\/\//i.test(value)
+    ){
         return value;
     }
 
-    const { data } =
+    const result =
         db.storage
-          .from("farmer-documents")
-          .getPublicUrl(value);
+        .from("farmer-documents")
+        .getPublicUrl(value);
 
-    if(data && data.publicUrl){
-        return data.publicUrl;
+    if(
+        result &&
+        result.data &&
+        result.data.publicUrl
+    ){
+        return result.data.publicUrl;
     }
 
     return null;
+}
+
+
+/* =========================
+   LOAD CURRENT OFFICER
+========================= */
+
+async function loadOfficer(){
+
+    const {
+        data:sessionData
+    } =
+    await db.auth.getSession();
+
+    const session =
+        sessionData.session;
+
+    if(!session){
+
+        window.location.href =
+            "officer-login.html";
+
+        return false;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("officers")
+    .select("*")
+    .eq(
+        "auth_user_id",
+        session.user.id
+    )
+    .maybeSingle();
+
+
+    if(error){
+
+        showError(error.message);
+
+        return false;
+    }
+
+
+    if(!data){
+
+        showError(
+            "Officer profile not found."
+        );
+
+        return false;
+    }
+
+
+    currentOfficer = data;
+
+
+    document.getElementById(
+        "officerInfo"
+    ).textContent =
+        "Officer ID: " +
+        (
+            data.officer_id ||
+            "-"
+        ) +
+        " | " +
+        (
+            data.name ||
+            "Officer"
+        );
+
+
+    return true;
 }
 
 
@@ -864,48 +855,64 @@ async function loadAdmins(){
     const {
         data,
         error
-    } = await db
-        .from("admins")
-        .select(
-            "admin_id,name,status"
-        )
-        .eq("status","Active")
-        .order("admin_id");
+    } =
+    await db
+    .from("admins")
+    .select(
+        "admin_id,name,status"
+    )
+    .eq(
+        "status",
+        "Active"
+    )
+    .order(
+        "admin_id",
+        {
+            ascending:true
+        }
+    );
+
+
+    if(error){
+
+        showError(error.message);
+
+        return;
+    }
+
 
     const select =
         document.getElementById(
             "adminSelect"
         );
 
+
     select.innerHTML =
         '<option value="">Select Admin</option>';
 
-    if(error){
 
-        console.error(error);
-        showError(
-            "Unable to load Admins"
-        );
-
-        return;
-    }
-
-    (data || []).forEach(admin => {
+    (data || []).forEach(function(admin){
 
         const option =
-            document.createElement("option");
+            document.createElement(
+                "option"
+            );
 
         option.value =
             admin.admin_id;
 
         option.textContent =
-            admin.name
-            ? `${admin.admin_id} - ${admin.name}`
-            : admin.admin_id;
+            admin.admin_id +
+            " - " +
+            (
+                admin.name ||
+                "Admin"
+            );
 
         select.appendChild(option);
 
     });
+
 }
 
 
@@ -913,49 +920,62 @@ async function loadAdmins(){
    LOAD BLOCKS
 ========================= */
 
-async function loadAssignmentBlocks(){
+async function loadBlocks(){
 
     const {
         data,
         error
-    } = await db
-        .from("location_master")
-        .select("block")
-        .eq("status","Active")
-        .order("block");
+    } =
+    await db
+    .from("location_master")
+    .select("block")
+    .eq("status","Active");
+
 
     if(error){
 
-        console.error(error);
+        showError(error.message);
+
         return;
     }
 
+
     const blocks =
-        [...new Set(
-            (data || [])
-            .map(x => x.block)
-            .filter(Boolean)
-        )];
+        [
+            ...new Set(
+                (data || [])
+                .map(x => x.block)
+                .filter(Boolean)
+            )
+        ]
+        .sort();
+
 
     const select =
         document.getElementById(
             "blockSelect"
         );
 
+
     select.innerHTML =
         '<option value="">Select Block</option>';
 
-    blocks.forEach(block => {
+
+    blocks.forEach(function(block){
 
         const option =
-            document.createElement("option");
+            document.createElement(
+                "option"
+            );
 
         option.value = block;
+
         option.textContent = block;
 
         select.appendChild(option);
 
     });
+
 }
 
 
@@ -963,22 +983,33 @@ async function loadAssignmentBlocks(){
    BLOCK CHANGE
 ========================= */
 
-document
-.getElementById("blockSelect")
-.addEventListener("change",
-async function(){
+document.getElementById(
+    "blockSelect"
+).addEventListener(
+    "change",
+    loadPanchayats
+);
 
-    const block = this.value;
+
+async function loadPanchayats(){
+
+    const block =
+        document.getElementById(
+            "blockSelect"
+        ).value;
+
 
     const panchayatSelect =
         document.getElementById(
             "panchayatSelect"
         );
 
+
     const villageSelect =
         document.getElementById(
             "villageSelect"
         );
+
 
     panchayatSelect.innerHTML =
         '<option value="">Select Panchayat</option>';
@@ -986,114 +1017,155 @@ async function(){
     villageSelect.innerHTML =
         '<option value="">Select Village</option>';
 
+
     if(!block){
         return;
     }
 
+
     const {
         data,
         error
-    } = await db
-        .from("location_master")
-        .select("panchayat")
-        .eq("block",block)
-        .eq("status","Active")
-        .order("panchayat");
+    } =
+    await db
+    .from("location_master")
+    .select("panchayat")
+    .eq("block",block)
+    .eq("status","Active");
+
 
     if(error){
 
-        console.error(error);
+        showError(error.message);
+
         return;
     }
 
-    const list =
-        [...new Set(
-            (data || [])
-            .map(x => x.panchayat)
-            .filter(Boolean)
-        )];
 
-    list.forEach(item => {
+    const panchayats =
+        [
+            ...new Set(
+                (data || [])
+                .map(x => x.panchayat)
+                .filter(Boolean)
+            )
+        ]
+        .sort();
+
+
+    panchayats.forEach(function(value){
 
         const option =
-            document.createElement("option");
+            document.createElement(
+                "option"
+            );
 
-        option.value = item;
-        option.textContent = item;
+        option.value = value;
 
-        panchayatSelect.appendChild(option);
+        option.textContent = value;
+
+        panchayatSelect.appendChild(
+            option
+        );
 
     });
 
-});
+}
 
 
 /* =========================
    PANCHAYAT CHANGE
 ========================= */
 
-document
-.getElementById("panchayatSelect")
-.addEventListener("change",
-async function(){
+document.getElementById(
+    "panchayatSelect"
+).addEventListener(
+    "change",
+    loadVillages
+);
+
+
+async function loadVillages(){
 
     const block =
         document.getElementById(
             "blockSelect"
         ).value;
 
+
     const panchayat =
-        this.value;
+        document.getElementById(
+            "panchayatSelect"
+        ).value;
+
 
     const villageSelect =
         document.getElementById(
             "villageSelect"
         );
 
+
     villageSelect.innerHTML =
         '<option value="">Select Village</option>';
 
-    if(!block || !panchayat){
+
+    if(
+        !block ||
+        !panchayat
+    ){
         return;
     }
+
 
     const {
         data,
         error
-    } = await db
-        .from("location_master")
-        .select("village")
-        .eq("block",block)
-        .eq("panchayat",panchayat)
-        .eq("status","Active")
-        .order("village");
+    } =
+    await db
+    .from("location_master")
+    .select("village")
+    .eq("block",block)
+    .eq("panchayat",panchayat)
+    .eq("status","Active");
+
 
     if(error){
 
-        console.error(error);
+        showError(error.message);
+
         return;
     }
 
-    const list =
-        [...new Set(
-            (data || [])
-            .map(x => x.village)
-            .filter(Boolean)
-        )];
 
-    list.forEach(item => {
+    const villages =
+        [
+            ...new Set(
+                (data || [])
+                .map(x => x.village)
+                .filter(Boolean)
+            )
+        ]
+        .sort();
+
+
+    villages.forEach(function(value){
 
         const option =
-            document.createElement("option");
+            document.createElement(
+                "option"
+            );
 
-        option.value = item;
-        option.textContent = item;
+        option.value = value;
 
-        villageSelect.appendChild(option);
+        option.textContent = value;
+
+        villageSelect.appendChild(
+            option
+        );
 
     });
 
-});
+}
 
 
 /* =========================
@@ -1102,76 +1174,103 @@ async function(){
 
 async function assignArea(){
 
-    const admin_id =
+    const adminId =
         document.getElementById(
             "adminSelect"
         ).value;
+
 
     const block =
         document.getElementById(
             "blockSelect"
         ).value;
 
+
     const panchayat =
         document.getElementById(
             "panchayatSelect"
         ).value;
+
 
     const village =
         document.getElementById(
             "villageSelect"
         ).value;
 
-    if(!admin_id ||
-       !block ||
-       !panchayat ||
-       !village){
+
+    const target =
+        Number(
+            document.getElementById(
+                "targetCount"
+            ).value || 0
+        );
+
+
+    if(
+        !adminId ||
+        !block ||
+        !panchayat ||
+        !village
+    ){
 
         showError(
-            "Please select Admin, Block, Panchayat and Village"
+            "Please select Admin, Block, Panchayat and Village."
         );
 
         return;
     }
+
+
+    const officerId =
+        currentOfficer &&
+        currentOfficer.officer_id
+        ? currentOfficer.officer_id
+        : "CBMS/OFF/7643970915";
+
 
     const {
         data,
         error
-    } = await db.rpc(
+    } =
+    await db.rpc(
         "assign_admin_area",
         {
-            p_admin_id: admin_id,
-            p_block: block,
-            p_panchayat: panchayat,
-            p_village: village
+            p_admin_id:adminId,
+            p_block:block,
+            p_panchayat:panchayat,
+            p_village:village,
+            p_target_count:target,
+            p_officer_id:officerId
         }
     );
 
+
     if(error){
 
-        console.error(error);
+        showError(error.message);
+
+        return;
+    }
+
+
+    if(
+        data &&
+        data.success === false
+    ){
 
         showError(
-            error.message
+            data.message ||
+            "Area assignment failed."
         );
 
         return;
     }
 
-    if(!data || !data.success){
-
-        showError(
-            data?.message ||
-            "Area assignment failed"
-        );
-
-        return;
-    }
 
     showSuccess(
-        data.message ||
-        "Area assigned successfully"
+        "Area assigned successfully."
     );
+
 
     await loadAssignments();
     await loadFarmers();
@@ -1186,119 +1285,89 @@ async function assignArea(){
 
 async function loadAssignments(){
 
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("admin_area_assignments")
+    .select("*")
+    .order(
+        "created_at",
+        {
+            ascending:false
+        }
+    );
+
+
+    if(error){
+
+        showError(error.message);
+
+        return;
+    }
+
+
     const tbody =
         document.getElementById(
             "assignmentTable"
         );
 
-    const {
-        data,
-        error
-    } = await db
-        .from("admin_area_assignments")
-        .select(
-            "admin_id,block,panchayat,village,status,assigned_by_officer_id"
-        )
-        .order("created_at",
-               {ascending:false});
 
-    if(error){
+    tbody.innerHTML = "";
 
-        console.error(error);
-
-        tbody.innerHTML =
-            `<tr>
-                <td colspan="7"
-                    class="empty">
-                    Unable to load assignments
-                </td>
-             </tr>`;
-
-        return;
-    }
 
     if(!data || data.length === 0){
 
         tbody.innerHTML =
-            `<tr>
-                <td colspan="7"
-                    class="empty">
-                    No assigned areas found
-                </td>
-             </tr>`;
+            '<tr><td colspan="7" class="empty">No assigned areas found.</td></tr>';
 
         return;
     }
 
-    const adminIds =
-        [...new Set(
-            data.map(x => x.admin_id)
-        )];
 
-    let adminMap = {};
+    data.forEach(function(row){
 
-    if(adminIds.length){
+        const tr =
+            document.createElement("tr");
 
-        const {
-            data: admins
-        } = await db
-            .from("admins")
-            .select("admin_id,name")
-            .in("admin_id",adminIds);
 
-        (admins || []).forEach(a => {
-            adminMap[a.admin_id] =
-                a.name || "";
-        });
-    }
+        const date =
+            row.created_at
+            ? new Date(
+                row.created_at
+            ).toLocaleDateString(
+                "en-IN"
+            )
+            : "-";
 
-    tbody.innerHTML =
-        data.map(row => {
 
-            const status =
-                String(row.status || "");
+        tr.innerHTML = `
 
-            return `
-            <tr>
+            <td>${escapeHtml(row.admin_id || "-")}</td>
 
-                <td>
-                    ${escapeHtml(row.admin_id)}
-                </td>
+            <td>${escapeHtml(row.block || "-")}</td>
 
-                <td>
-                    ${escapeHtml(
-                        adminMap[row.admin_id] || "-"
-                    )}
-                </td>
+            <td>${escapeHtml(row.panchayat || "-")}</td>
 
-                <td>
-                    ${escapeHtml(row.block)}
-                </td>
+            <td>${escapeHtml(row.village || "-")}</td>
 
-                <td>
-                    ${escapeHtml(row.panchayat)}
-                </td>
+            <td>${escapeHtml(String(row.target_count ?? 0))}</td>
 
-                <td>
-                    ${escapeHtml(row.village)}
-                </td>
+            <td>
+                <span class="badge badge-approved">
+                    ${escapeHtml(row.status || "-")}
+                </span>
+            </td>
 
-                <td>
-                    <span class="badge badge-verified">
-                        ${escapeHtml(status)}
-                    </span>
-                </td>
+            <td>${date}</td>
 
-                <td>
-                    ${escapeHtml(
-                        row.assigned_by_officer_id || "-"
-                    )}
-                </td>
+        `;
 
-            </tr>
-            `;
 
-        }).join("");
+        tbody.appendChild(tr);
+
+    });
 
 }
 
@@ -1309,150 +1378,98 @@ async function loadAssignments(){
 
 async function loadPerformance(){
 
+    const {
+        data:admins,
+        error
+    } =
+    await db
+    .from("admins")
+    .select(
+        "admin_id,name,status"
+    )
+    .order(
+        "admin_id",
+        {
+            ascending:true
+        }
+    );
+
+
+    if(error){
+
+        showError(error.message);
+
+        return;
+    }
+
+
+    const {
+        data:farmers
+    } =
+    await db
+    .from("farmer")
+    .select(
+        "admin_id,status"
+    );
+
+
     const tbody =
         document.getElementById(
             "performanceTable"
         );
 
-    const {
-        data: assignments,
-        error: assignmentError
-    } = await db
-        .from("admin_area_assignments")
-        .select(
-            "admin_id,block,panchayat,village,status"
-        )
-        .eq("status","Active");
 
-    if(assignmentError){
+    tbody.innerHTML = "";
 
-        console.error(
-            assignmentError
-        );
 
-        return;
-    }
+    (admins || []).forEach(function(admin){
 
-    const {
-        data: admins,
-        error: adminError
-    } = await db
-        .from("admins")
-        .select("admin_id,name,status");
-
-    if(adminError){
-
-        console.error(adminError);
-        return;
-    }
-
-    const {
-        data: farmers,
-        error: farmerError
-    } = await db
-        .from("farmer")
-        .select(
-            "admin_id,status"
-        );
-
-    if(farmerError){
-
-        console.error(farmerError);
-        return;
-    }
-
-    const rows = [];
-
-    (admins || [])
-    .filter(a => a.status === "Active")
-    .forEach(admin => {
-
-        const areas =
-            (assignments || [])
-            .filter(
-                x => x.admin_id === admin.admin_id
-            );
-
-        const adminFarmers =
+        const list =
             (farmers || [])
             .filter(
-                x => x.admin_id === admin.admin_id
+                f =>
+                    f.admin_id ===
+                    admin.admin_id
             );
 
-        const total =
-            adminFarmers.length;
-
-        const pending =
-            adminFarmers.filter(
-                x =>
-                    String(x.status || "")
-                    .toLowerCase()
-                    .includes("pending")
-            ).length;
 
         const verified =
-            adminFarmers.filter(
-                x =>
-                    String(x.status || "")
-                    .toLowerCase()
-                    .includes("verified")
+            list.filter(
+                f =>
+                    String(
+                        f.status || ""
+                    )
+                    .toLowerCase() ===
+                    "verified"
             ).length;
 
-        const rejected =
-            adminFarmers.filter(
-                x =>
-                    String(x.status || "")
-                    .toLowerCase()
-                    .includes("rejected")
-            ).length;
 
-        const areaText =
-            areas.length
-            ? areas.map(
-                x =>
-                `${x.block} / ${x.panchayat} / ${x.village}`
-              ).join("<br>")
-            : "-";
+        const assignments =
+            [];
 
-        rows.push(`
-            <tr>
 
-                <td>
-                    ${escapeHtml(admin.admin_id)}
-                </td>
+        const row =
+            document.createElement("tr");
 
-                <td>
-                    ${escapeHtml(
-                        admin.name || "-"
-                    )}
-                </td>
 
-                <td>
-                    ${areaText}
-                </td>
+        row.innerHTML = `
 
-                <td>${total}</td>
+            <td>${escapeHtml(admin.admin_id || "-")}</td>
 
-                <td>${pending}</td>
+            <td>${escapeHtml(admin.name || "-")}</td>
 
-                <td>${verified}</td>
+            <td>${escapeHtml(admin.status || "-")}</td>
 
-                <td>${rejected}</td>
+            <td>${list.length}</td>
 
-            </tr>
-        `);
+            <td>${verified}</td>
+
+        `;
+
+
+        tbody.appendChild(row);
 
     });
-
-    tbody.innerHTML =
-        rows.length
-        ? rows.join("")
-        : `<tr>
-             <td colspan="7"
-                 class="empty">
-                 No active Admin found
-             </td>
-           </tr>`;
 
 }
 
@@ -1463,300 +1480,344 @@ async function loadPerformance(){
 
 async function loadFarmers(){
 
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("farmer")
+    .select("*")
+    .order(
+        "registered_at",
+        {
+            ascending:false
+        }
+    );
+
+
+    if(error){
+
+        showError(error.message);
+
+        return;
+    }
+
+
+    officerFarmers =
+        data || [];
+
+
+    document.getElementById(
+        "totalFarmers"
+    ).textContent =
+        officerFarmers.length;
+
+
+    document.getElementById(
+        "pendingAdmin"
+    ).textContent =
+        officerFarmers.filter(
+            f =>
+                String(
+                    f.status || ""
+                )
+                .toLowerCase()
+                .includes(
+                    "pending admin"
+                )
+        ).length;
+
+
+    document.getElementById(
+        "pendingOfficer"
+    ).textContent =
+        officerFarmers.filter(
+            f => {
+
+                const s =
+                    String(
+                        f.status || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+                return (
+                    s === "verified" ||
+                    s.includes(
+                        "pending officer"
+                    )
+                );
+
+            }
+        ).length;
+
+
+    document.getElementById(
+        "approvedFarmers"
+    ).textContent =
+        officerFarmers.filter(
+            f =>
+                String(
+                    f.status || ""
+                )
+                .trim()
+                .toLowerCase() ===
+                "approved"
+        ).length;
+
+
     const tbody =
         document.getElementById(
             "farmerTable"
         );
 
-    const {
-        data,
-        error
-    } = await db
-        .from("farmer")
-        .select(`
-            id,
-            registration_no,
-            name,
-            father_name,
-            mobile,
-            gender,
-            date_of_birth,
-            village,
-            panchayat,
-            block,
-            district,
-            state,
-            crop,
-            land,
-            category,
-            address,
-            status,
-            aadhar_number,
-            bank_name,
-            bank_branch,
-            account_number,
-            ifsc_code,
-            payment_mode,
-            photo_url,
-            signature_url,
-            aadhar_url,
-            form_url,
-            land_record_url,
-            admin_id,
-            registered_at,
-            admin_verified_at,
-            admin_verified_by,
-            admin_rejection_reason,
-            officer_decision_at,
-            officer_decision_by,
-            officer_rejection_reason
-        `)
-        .order(
-            "registered_at",
-            {ascending:false}
-        );
 
-    if(error){
+    tbody.innerHTML = "";
 
-        console.error(error);
+
+    if(
+        officerFarmers.length === 0
+    ){
 
         tbody.innerHTML =
-            `<tr>
-                <td colspan="11"
-                    class="empty">
-                    ${escapeHtml(error.message)}
-                </td>
-             </tr>`;
+            '<tr><td colspan="11" class="empty">No farmer applications found.</td></tr>';
 
         return;
     }
 
-    officerFarmers =
-        data || [];
 
-    updateSummary(
-        officerFarmers
-    );
+    officerFarmers.forEach(
+        function(farmer,index){
 
-    if(officerFarmers.length === 0){
+            const status =
+                String(
+                    farmer.status || ""
+                ).trim();
 
-        tbody.innerHTML =
-            `<tr>
-                <td colspan="11"
-                    class="empty">
-                    No farmer applications found
-                </td>
-             </tr>`;
 
-        return;
-    }
+            const statusLower =
+                status.toLowerCase();
 
-    tbody.innerHTML =
-        officerFarmers.map(
-            (farmer,index) => {
 
-                const status =
-                    String(
-                        farmer.status || ""
-                    );
+            let badgeClass =
+                "badge-pending";
 
-                let badge =
-                    "badge-pending";
 
-                if(
-                    status.toLowerCase()
-                    .includes("approved") ||
-                    status.toLowerCase()
-                    .includes("verified")
-                ){
-                    badge =
-                        "badge-approved";
-                }
+            if(
+                statusLower ===
+                "approved"
+            ){
 
-                if(
-                    status.toLowerCase()
-                    .includes("rejected")
-                ){
-                    badge =
-                        "badge-rejected";
-                }
+                badgeClass =
+                    "badge-approved";
 
-                const canDecide =
-                    status.toLowerCase()
-                    .includes(
-                        "pending officer"
-                    );
+            }
+            else if(
+                statusLower.includes(
+                    "rejected"
+                )
+            ){
 
-                const registered =
-                    farmer.registered_at
-                    ? new Date(
-                        farmer.registered_at
-                      ).toLocaleString("en-IN")
-                    : "-";
+                badgeClass =
+                    "badge-rejected";
 
-                return `
-                <tr>
+            }
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(
-                                farmer.registration_no
-                            )}
-                        </strong>
-                    </td>
 
-                    <td>
-                        ${escapeHtml(
-                            farmer.name
-                        )}
-                    </td>
+            /*
+             * IMPORTANT:
+             * Verified farmer is also
+             * ready for Officer decision.
+             */
 
-                    <td>
-                        ${escapeHtml(
-                            farmer.mobile
-                        )}
-                    </td>
+            const canDecide =
+                statusLower ===
+                "verified" ||
+                statusLower.includes(
+                    "pending officer"
+                );
 
-                    <td>
-                        ${escapeHtml(
-                            farmer.block
-                        )}
-                    </td>
 
-                    <td>
-                        ${escapeHtml(
-                            farmer.panchayat
-                        )}
-                    </td>
+            let actionHtml = "";
 
-                    <td>
-                        ${escapeHtml(
-                            farmer.village
-                        )}
-                    </td>
 
-                    <td>
-                        ${escapeHtml(
-                            farmer.admin_id || "-"
-                        )}
-                    </td>
+            if(canDecide){
 
-                    <td>
-                        <span class="badge ${badge}">
-                            ${escapeHtml(status || "-")}
-                        </span>
-                    </td>
+                actionHtml = `
 
-                    <td>
-                        ${escapeHtml(registered)}
-                    </td>
+                    <button
+                        class="action-btn approve-btn"
+                        onclick="approveFarmerByIndex(${index})"
+                    >
+                        Approve
+                    </button>
 
-                    <td>
-                        <button
-                            class="action-btn doc-btn"
-                            onclick="openDocumentsByIndex(${index})"
-                        >
-                            Documents
-                        </button>
-                    </td>
+                    <button
+                        class="action-btn reject-btn"
+                        onclick="openRejectByIndex(${index})"
+                    >
+                        Reject
+                    </button>
 
-                    <td>
-
-                        <button
-                            class="action-btn view-btn"
-                            onclick="openProfileByIndex(${index})"
-                        >
-                            View Profile
-                        </button>
-
-                        ${
-                            canDecide
-                            ?
-                            `
-                            <button
-                                class="action-btn approve-btn"
-                                onclick="approveFarmerByIndex(${index})"
-                            >
-                                Approve
-                            </button>
-
-                            <button
-                                class="action-btn reject-btn"
-                                onclick="openRejectByIndex(${index})"
-                            >
-                                Reject
-                            </button>
-                            `
-                            :
-                            `
-                            <button
-                                class="action-btn disabled-btn"
-                                disabled
-                            >
-                                Decision Done
-                            </button>
-                            `
-                        }
-
-                    </td>
-
-                </tr>
                 `;
 
             }
-        ).join("");
+            else if(
+                statusLower ===
+                "approved"
+            ){
 
-}
+                actionHtml = `
+
+                    <button
+                        class="action-btn disabled-btn"
+                        disabled
+                    >
+                        Approved
+                    </button>
+
+                `;
+
+            }
+            else if(
+                statusLower.includes(
+                    "rejected"
+                )
+            ){
+
+                actionHtml = `
+
+                    <button
+                        class="action-btn disabled-btn"
+                        disabled
+                    >
+                        Rejected
+                    </button>
+
+                `;
+
+            }
+            else{
+
+                actionHtml = `
+
+                    <button
+                        class="action-btn disabled-btn"
+                        disabled
+                    >
+                        Waiting
+                    </button>
+
+                `;
+
+            }
 
 
-/* =========================
-   SUMMARY
-========================= */
+            const registered =
+                farmer.registered_at
+                ? new Date(
+                    farmer.registered_at
+                ).toLocaleString(
+                    "en-IN"
+                )
+                : "-";
 
-function updateSummary(farmers){
 
-    document.getElementById(
-        "totalFarmers"
-    ).textContent =
-        farmers.length;
+            const tr =
+                document.createElement(
+                    "tr"
+                );
 
-    const pending =
-        farmers.filter(
-            x =>
-            String(x.status || "")
-            .toLowerCase()
-            .includes("pending admin")
-        ).length;
 
-    const pendingOfficer =
-        farmers.filter(
-            x =>
-            String(x.status || "")
-            .toLowerCase()
-            .includes("pending officer")
-        ).length;
+            tr.innerHTML = `
 
-    const approved =
-        farmers.filter(
-            x =>
-            String(x.status || "")
-            .toLowerCase() === "approved"
-        ).length;
+                <td>
+                    <strong>
+                        ${escapeHtml(
+                            farmer.registration_no ||
+                            "-"
+                        )}
+                    </strong>
+                </td>
 
-    document.getElementById(
-        "pendingFarmers"
-    ).textContent =
-        pending;
+                <td>
+                    ${escapeHtml(
+                        farmer.name || "-"
+                    )}
+                </td>
 
-    document.getElementById(
-        "pendingOfficer"
-    ).textContent =
-        pendingOfficer;
+                <td>
+                    ${escapeHtml(
+                        farmer.mobile || "-"
+                    )}
+                </td>
 
-    document.getElementById(
-        "approvedFarmers"
-    ).textContent =
-        approved;
+                <td>
+                    ${escapeHtml(
+                        farmer.block || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        farmer.panchayat || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        farmer.village || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        farmer.admin_id || "-"
+                    )}
+                </td>
+
+                <td>
+                    <span class="badge ${badgeClass}">
+                        ${escapeHtml(
+                            status || "-"
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${registered}
+                </td>
+
+                <td>
+
+                    <button
+                        class="action-btn profile-btn"
+                        onclick="openProfileByIndex(${index})"
+                    >
+                        Profile
+                    </button>
+
+                    <button
+                        class="action-btn document-btn"
+                        onclick="openDocumentsByIndex(${index})"
+                    >
+                        Documents
+                    </button>
+
+                </td>
+
+                <td>
+                    ${actionHtml}
+                </td>
+
+            `;
+
+
+            tbody.appendChild(tr);
+
+        }
+    );
+
 }
 
 
@@ -1769,359 +1830,198 @@ function openProfileByIndex(index){
     const farmer =
         officerFarmers[index];
 
+
     if(!farmer){
         return;
     }
 
-    const registered =
-        farmer.registered_at
-        ? new Date(
-            farmer.registered_at
-          ).toLocaleString("en-IN")
-        : "-";
 
-    const adminVerified =
-        farmer.admin_verified_at
-        ? new Date(
-            farmer.admin_verified_at
-          ).toLocaleString("en-IN")
-        : "-";
+    const content =
+        document.getElementById(
+            "profileContent"
+        );
 
-    const officerDecision =
-        farmer.officer_decision_at
-        ? new Date(
-            farmer.officer_decision_at
-          ).toLocaleString("en-IN")
-        : "-";
 
-    document.getElementById(
-        "profileContent"
-    ).innerHTML = `
+    content.innerHTML = `
 
         <div class="profile-grid">
 
-            <div class="profile-item">
-                <strong>Registration No</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.registration_no
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Registration No",
+                farmer.registration_no
+            )}
 
-            <div class="profile-item">
-                <strong>Status</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.status || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Name",
+                farmer.name
+            )}
 
-            <div class="profile-item">
-                <strong>Farmer Name</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.name
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Father / Husband",
+                farmer.father_name
+            )}
 
-            <div class="profile-item">
-                <strong>Father / Husband Name</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.father_name
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Mobile",
+                farmer.mobile
+            )}
 
-            <div class="profile-item">
-                <strong>Mobile</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.mobile
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Gender",
+                farmer.gender
+            )}
 
-            <div class="profile-item">
-                <strong>Gender</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.gender || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Date of Birth",
+                farmer.date_of_birth
+            )}
 
-            <div class="profile-item">
-                <strong>Date of Birth</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.date_of_birth || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Block",
+                farmer.block
+            )}
 
-            <div class="profile-item">
-                <strong>Aadhaar Number</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.aadhar_number || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Panchayat",
+                farmer.panchayat
+            )}
 
-            <div class="profile-item">
-                <strong>Block</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.block
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Village",
+                farmer.village
+            )}
 
-            <div class="profile-item">
-                <strong>Panchayat</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.panchayat
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "District",
+                farmer.district
+            )}
 
-            <div class="profile-item">
-                <strong>Village</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.village
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "State",
+                farmer.state
+            )}
 
-            <div class="profile-item">
-                <strong>District</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.district || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Crop",
+                farmer.crop
+            )}
 
-            <div class="profile-item">
-                <strong>State</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.state || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Land",
+                farmer.land
+            )}
 
-            <div class="profile-item">
-                <strong>Crop</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.crop || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Category",
+                farmer.category
+            )}
 
-            <div class="profile-item">
-                <strong>Land</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.land || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Bank",
+                farmer.bank_name
+            )}
 
-            <div class="profile-item">
-                <strong>Category</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.category || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Bank Branch",
+                farmer.bank_branch
+            )}
 
-            <div class="profile-item">
-                <strong>Bank Name</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.bank_name || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Account No",
+                farmer.account_number
+            )}
 
-            <div class="profile-item">
-                <strong>Bank Branch</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.bank_branch || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "IFSC",
+                farmer.ifsc_code
+            )}
 
-            <div class="profile-item">
-                <strong>Account Number</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.account_number || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Payment Mode",
+                farmer.payment_mode
+            )}
 
-            <div class="profile-item">
-                <strong>IFSC</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.ifsc_code || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Admin ID",
+                farmer.admin_id
+            )}
 
-            <div class="profile-item">
-                <strong>Payment Mode</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.payment_mode || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Admin Verified By",
+                farmer.admin_verified_by
+            )}
 
-            <div class="profile-item">
-                <strong>Admin ID</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.admin_id || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Admin Verified At",
+                farmer.admin_verified_at
+                    ? new Date(
+                        farmer.admin_verified_at
+                    ).toLocaleString("en-IN")
+                    : "-"
+            )}
 
-            <div class="profile-item">
-                <strong>Registered At</strong>
-                <span>
-                    ${escapeHtml(
-                        registered
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Officer Decision By",
+                farmer.officer_decision_by
+            )}
 
-            <div class="profile-item">
-                <strong>Admin Verified By</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.admin_verified_by || "-"
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Officer Decision At",
+                farmer.officer_decision_at
+                    ? new Date(
+                        farmer.officer_decision_at
+                    ).toLocaleString("en-IN")
+                    : "-"
+            )}
 
-            <div class="profile-item">
-                <strong>Admin Verified At</strong>
-                <span>
-                    ${escapeHtml(
-                        adminVerified
-                    )}
-                </span>
-            </div>
+            ${profileItem(
+                "Status",
+                farmer.status
+            )}
 
-            <div class="profile-item">
-                <strong>Officer Decision By</strong>
-                <span>
-                    ${escapeHtml(
-                        farmer.officer_decision_by || "-"
-                    )}
-                </span>
-            </div>
-
-            <div class="profile-item">
-                <strong>Officer Decision At</strong>
-                <span>
-                    ${escapeHtml(
-                        officerDecision
-                    )}
-                </span>
-            </div>
-
-            <div class="profile-item"
-                 style="grid-column:1/-1;">
-
-                <strong>Address</strong>
-
-                <span>
-                    ${escapeHtml(
-                        farmer.address || "-"
-                    )}
-                </span>
-
-            </div>
-
-            ${
-                farmer.admin_rejection_reason
-                ?
-                `
-                <div class="profile-item"
-                     style="grid-column:1/-1;">
-
-                    <strong>
-                        Admin Rejection Reason
-                    </strong>
-
-                    <span>
-                        ${escapeHtml(
-                            farmer.admin_rejection_reason
-                        )}
-                    </span>
-
-                </div>
-                `
-                :
-                ""
-            }
-
-            ${
+            ${profileItem(
+                "Officer Rejection Reason",
                 farmer.officer_rejection_reason
-                ?
-                `
-                <div class="profile-item"
-                     style="grid-column:1/-1;">
-
-                    <strong>
-                        Officer Rejection Reason
-                    </strong>
-
-                    <span>
-                        ${escapeHtml(
-                            farmer.officer_rejection_reason
-                        )}
-                    </span>
-
-                </div>
-                `
-                :
-                ""
-            }
+            )}
 
         </div>
 
     `;
 
-    document.getElementById(
-        "profileModal"
-    ).style.display = "block";
+
+    openModal("profileModal");
 
 }
 
 
 /* =========================
-   CLOSE PROFILE
+   PROFILE ITEM
 ========================= */
 
-function closeProfile(){
+function profileItem(label,value){
 
-    document.getElementById(
-        "profileModal"
-    ).style.display = "none";
+    return `
+
+        <div class="profile-item">
+
+            <strong>
+                ${escapeHtml(label)}
+            </strong>
+
+            <span>
+                ${escapeHtml(
+                    value === null ||
+                    value === undefined ||
+                    value === ""
+                    ? "-"
+                    : String(value)
+                )}
+            </span>
+
+        </div>
+
+    `;
+
 }
 
 
@@ -2134,9 +2034,11 @@ function openDocumentsByIndex(index){
     const farmer =
         officerFarmers[index];
 
+
     if(!farmer){
         return;
     }
+
 
     const documents = [
 
@@ -2156,7 +2058,7 @@ function openDocumentsByIndex(index){
         },
 
         {
-            name:"Application Form",
+            name:"Form",
             path:farmer.form_url
         },
 
@@ -2167,145 +2069,90 @@ function openDocumentsByIndex(index){
 
     ];
 
-    const available =
-        documents.filter(
-            x => x.path
+
+    const content =
+        document.getElementById(
+            "documentContent"
         );
 
-    if(available.length === 0){
 
-        document.getElementById(
-            "documentContent"
-        ).innerHTML =
-            `<div class="empty">
-                No documents available
-             </div>`;
+    content.innerHTML =
+        '<div class="document-list"></div>';
 
-    }else{
 
-        document.getElementById(
-            "documentContent"
-        ).innerHTML = `
+    const list =
+        content.querySelector(
+            ".document-list"
+        );
 
-            <p>
-                Registration No:
+
+    documents.forEach(function(doc){
+
+        const url =
+            getDocumentUrl(
+                doc.path
+            );
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "document-card";
+
+
+        if(url){
+
+            card.innerHTML = `
+
                 <strong>
-                    ${escapeHtml(
-                        farmer.registration_no
-                    )}
+                    ${escapeHtml(doc.name)}
                 </strong>
-            </p>
 
-            <div class="document-grid">
+                <br>
 
-                ${
-                    available.map(doc => {
+                <a
+                    href="${url}"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    Open Document
+                </a>
 
-                        const url =
-                            getDocumentUrl(
-                                doc.path
-                            );
+            `;
 
-                        if(!url){
+        }
+        else{
 
-                            return `
-                            <div class="document-box">
+            card.innerHTML = `
 
-                                <h4>
-                                    ${escapeHtml(
-                                        doc.name
-                                    )}
-                                </h4>
+                <strong>
+                    ${escapeHtml(doc.name)}
+                </strong>
 
-                                <p>
-                                    Document URL not available
-                                </p>
+                <br>
 
-                            </div>
-                            `;
+                <span style="color:#999">
+                    Not uploaded
+                </span>
 
-                        }
+            `;
 
-                        const lower =
-                            String(
-                                doc.path
-                            ).toLowerCase();
+        }
 
-                        const isImage =
-                            /\.(jpg|jpeg|png|webp|gif)$/i
-                            .test(lower);
 
-                        return `
+        list.appendChild(card);
 
-                        <div class="document-box">
+    });
 
-                            <h4>
-                                ${escapeHtml(
-                                    doc.name
-                                )}
-                            </h4>
 
-                            ${
-                                isImage
-                                ?
-                                `
-                                <img
-                                    src="${escapeHtml(url)}"
-                                    class="document-preview"
-                                    alt="${escapeHtml(doc.name)}"
-                                >
-                                `
-                                :
-                                `
-                                <div style="
-                                    padding:40px 10px;
-                                    text-align:center;
-                                    background:white;
-                                    border:1px solid #ddd;
-                                    margin-bottom:8px;
-                                ">
-                                    Document
-                                </div>
-                                `
-                            }
-
-                            <a
-                                href="${escapeHtml(url)}"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="doc-link"
-                            >
-                                Open Document
-                            </a>
-
-                        </div>
-
-                        `;
-
-                    }).join("")
-                }
-
-            </div>
-        `;
-
-    }
-
-    document.getElementById(
+    openModal(
         "documentModal"
-    ).style.display = "block";
+    );
 
-}
-
-
-/* =========================
-   CLOSE DOCUMENTS
-========================= */
-
-function closeDocuments(){
-
-    document.getElementById(
-        "documentModal"
-    ).style.display = "none";
 }
 
 
@@ -2318,18 +2165,30 @@ async function approveFarmerByIndex(index){
     const farmer =
         officerFarmers[index];
 
+
     if(!farmer){
         return;
     }
 
+
+    const registrationNo =
+        farmer.registration_no;
+
+
     const status =
         String(
             farmer.status || ""
-        ).toLowerCase();
+        )
+        .trim()
+        .toLowerCase();
 
-    if(!status.includes(
-        "pending officer"
-    )){
+
+    if(
+        status !== "verified" &&
+        !status.includes(
+            "pending officer"
+        )
+    ){
 
         showError(
             "This farmer is not pending Officer approval."
@@ -2338,23 +2197,36 @@ async function approveFarmerByIndex(index){
         return;
     }
 
-    const confirmApprove =
+
+    const confirmed =
         confirm(
-            `Are you sure you want to approve ${farmer.registration_no}?`
+            "Approve farmer " +
+            registrationNo +
+            "?"
         );
 
-    if(!confirmApprove){
+
+    if(!confirmed){
         return;
     }
+
+
+    const officerId =
+        currentOfficer &&
+        currentOfficer.officer_id
+        ? currentOfficer.officer_id
+        : "CBMS/OFF/7643970915";
+
 
     const {
         data,
         error
-    } = await db.rpc(
+    } =
+    await db.rpc(
         "officer_farmer_decision",
         {
             p_registration_no:
-                farmer.registration_no,
+                registrationNo,
 
             p_decision:
                 "approved",
@@ -2363,13 +2235,12 @@ async function approveFarmerByIndex(index){
                 null,
 
             p_officer_id:
-                OFFICER_ID
+                officerId
         }
     );
 
-    if(error){
 
-        console.error(error);
+    if(error){
 
         showError(
             error.message
@@ -2378,19 +2249,25 @@ async function approveFarmerByIndex(index){
         return;
     }
 
-    if(!data || !data.success){
+
+    if(
+        data &&
+        data.success === false
+    ){
 
         showError(
-            data?.message ||
-            "Approval failed"
+            data.message ||
+            "Approval failed."
         );
 
         return;
     }
 
+
     showSuccess(
         "Farmer approved successfully."
     );
+
 
     await loadFarmers();
     await loadPerformance();
@@ -2407,19 +2284,26 @@ function openRejectByIndex(index){
     const farmer =
         officerFarmers[index];
 
+
     if(!farmer){
         return;
     }
 
+
     const status =
         String(
             farmer.status || ""
-        ).toLowerCase();
+        )
+        .trim()
+        .toLowerCase();
+
 
     if(
-    !status.includes("pending officer") &&
-    status !== "verified"
-){
+        status !== "verified" &&
+        !status.includes(
+            "pending officer"
+        )
+    ){
 
         showError(
             "This farmer is not pending Officer approval."
@@ -2428,37 +2312,35 @@ function openRejectByIndex(index){
         return;
     }
 
-    selectedRejectRegistration =
+
+    rejectRegistrationNo =
         farmer.registration_no;
 
+
     document.getElementById(
-        "rejectRegistrationNo"
+        "rejectFarmerInfo"
     ).textContent =
-        farmer.registration_no;
+        "Registration No: " +
+        (
+            farmer.registration_no ||
+            "-"
+        ) +
+        " | Farmer: " +
+        (
+            farmer.name ||
+            "-"
+        );
+
 
     document.getElementById(
-        "rejectionReason"
+        "rejectReason"
     ).value = "";
 
-    document.getElementById(
+
+    openModal(
         "rejectModal"
-    ).style.display = "block";
+    );
 
-}
-
-
-/* =========================
-   CLOSE REJECT
-========================= */
-
-function closeReject(){
-
-    document.getElementById(
-        "rejectModal"
-    ).style.display = "none";
-
-    selectedRejectRegistration =
-        null;
 }
 
 
@@ -2468,37 +2350,48 @@ function closeReject(){
 
 async function confirmReject(){
 
-    if(!selectedRejectRegistration){
-
-        showError(
-            "Farmer registration not selected."
-        );
-
-        return;
-    }
-
     const reason =
         document.getElementById(
-            "rejectionReason"
+            "rejectReason"
         ).value.trim();
+
 
     if(!reason){
 
         showError(
-            "Please enter rejection reason."
+            "Rejection reason is required."
         );
 
         return;
     }
 
+
+    if(!rejectRegistrationNo){
+
+        showError(
+            "Farmer registration number not found."
+        );
+
+        return;
+    }
+
+
+    const officerId =
+        currentOfficer &&
+        currentOfficer.officer_id
+        ? currentOfficer.officer_id
+        : "CBMS/OFF/7643970915";
+
+
     const {
         data,
         error
-    } = await db.rpc(
+    } =
+    await db.rpc(
         "officer_farmer_decision",
         {
             p_registration_no:
-                selectedRejectRegistration,
+                rejectRegistrationNo,
 
             p_decision:
                 "rejected",
@@ -2507,13 +2400,12 @@ async function confirmReject(){
                 reason,
 
             p_officer_id:
-                OFFICER_ID
+                officerId
         }
     );
 
-    if(error){
 
-        console.error(error);
+    if(error){
 
         showError(
             error.message
@@ -2522,21 +2414,33 @@ async function confirmReject(){
         return;
     }
 
-    if(!data || !data.success){
+
+    if(
+        data &&
+        data.success === false
+    ){
 
         showError(
-            data?.message ||
-            "Rejection failed"
+            data.message ||
+            "Rejection failed."
         );
 
         return;
     }
 
-    closeReject();
+
+    closeModal(
+        "rejectModal"
+    );
+
 
     showSuccess(
         "Farmer rejected successfully."
     );
+
+
+    rejectRegistrationNo = null;
+
 
     await loadFarmers();
     await loadPerformance();
@@ -2545,55 +2449,100 @@ async function confirmReject(){
 
 
 /* =========================
-   MODAL OUTSIDE CLICK
+   MODAL
 ========================= */
 
-window.onclick =
-function(event){
+function openModal(id){
 
-    const profileModal =
-        document.getElementById(
-            "profileModal"
-        );
+    document.getElementById(
+        id
+    ).style.display = "block";
 
-    const documentModal =
-        document.getElementById(
-            "documentModal"
-        );
+}
 
-    const rejectModal =
-        document.getElementById(
-            "rejectModal"
-        );
 
-    if(event.target === profileModal){
-        closeProfile();
+function closeModal(id){
+
+    document.getElementById(
+        id
+    ).style.display = "none";
+
+}
+
+
+window.addEventListener(
+    "click",
+    function(event){
+
+        if(
+            event.target.classList.contains(
+                "modal"
+            )
+        ){
+
+            event.target.style.display =
+                "none";
+
+        }
+
     }
-
-    if(event.target === documentModal){
-        closeDocuments();
-    }
-
-    if(event.target === rejectModal){
-        closeReject();
-    }
-
-};
+);
 
 
 /* =========================
-   INITIAL LOAD
+   ESCAPE HTML
+========================= */
+
+function escapeHtml(value){
+
+    return String(
+        value === null ||
+        value === undefined
+        ? ""
+        : value
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+/* =========================
+   INITIALIZE
 ========================= */
 
 async function initialize(){
 
-    if(!checkLogin()){
+    const officerLoaded =
+        await loadOfficer();
+
+
+    if(!officerLoaded){
         return;
     }
 
+
     await loadAdmins();
 
-    await loadAssignmentBlocks();
+    await loadBlocks();
 
     await loadAssignments();
 
@@ -2603,8 +2552,6 @@ async function initialize(){
 
 }
 
-
-/* START */
 
 initialize();
 
