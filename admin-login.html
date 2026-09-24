@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -10,126 +11,192 @@
 
 <style>
 
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
     font-family:Arial,sans-serif;
     background:#eef7f0;
+    min-height:100vh;
 }
 
 header{
     background:#198754;
     color:white;
     text-align:center;
-    padding:22px;
+    padding:25px 15px;
 }
 
 header h1{
     margin:0;
-    font-size:28px;
+    font-size:27px;
 }
 
 header p{
-    margin:6px 0 0;
+    margin:7px 0 0;
+    font-size:15px;
 }
 
 .box{
-    width:90%;
+    width:92%;
     max-width:450px;
     margin:50px auto;
     background:white;
-    padding:28px;
+    padding:30px;
     border-radius:15px;
-    box-shadow:0 4px 18px rgba(0,0,0,0.12);
+    box-shadow:0 4px 20px rgba(0,0,0,.12);
+}
+
+.logo{
+    text-align:center;
+    font-size:48px;
+    margin-bottom:5px;
 }
 
 h2{
     text-align:center;
     color:#198754;
+    margin:10px 0 25px;
 }
 
 label{
     display:block;
     margin-top:18px;
     font-weight:bold;
+    color:#333;
 }
 
 input{
     width:100%;
-    box-sizing:border-box;
     padding:13px;
     margin-top:7px;
     border:1px solid #ccc;
     border-radius:8px;
     font-size:16px;
+    outline:none;
 }
 
-button{
+input:focus{
+    border-color:#198754;
+}
+
+.login-btn{
     width:100%;
-    padding:13px;
-    margin-top:24px;
+    padding:14px;
+    margin-top:25px;
     border:0;
     border-radius:8px;
     background:#198754;
     color:white;
     font-size:17px;
+    font-weight:bold;
     cursor:pointer;
 }
 
-button:hover{
+.login-btn:hover{
     background:#146c43;
+}
+
+.login-btn:disabled{
+    background:#8abda2;
+    cursor:not-allowed;
 }
 
 #message{
     text-align:center;
     margin-top:18px;
     font-weight:bold;
+    line-height:1.5;
+}
+
+.success{
+    color:#198754;
+}
+
+.error{
+    color:#dc3545;
 }
 
 .back{
     display:block;
     text-align:center;
-    margin-top:20px;
+    margin-top:22px;
     color:#198754;
     text-decoration:none;
+    font-weight:bold;
+}
+
+.back:hover{
+    text-decoration:underline;
 }
 
 </style>
+
 </head>
 
 <body>
 
+
 <header>
-    <h1>Chanho FPO</h1>
-    <p>Admin Panel</p>
+
+    <h1>Chanho Birsa Munda Sangathan</h1>
+
+    <p>Producer Company Limited</p>
+
 </header>
+
 
 <div class="box">
 
-    <h2>🔐 Admin Login</h2>
+    <div class="logo">
+        🔐
+    </div>
 
-    <label>Admin Email</label>
+    <h2>Admin Login</h2>
+
+
+    <label for="email">
+        Admin Email
+    </label>
 
     <input
         type="email"
         id="email"
-        placeholder="Admin Email"
+        placeholder="Admin Email डालें"
+        autocomplete="username"
     >
 
-    <label>Password</label>
+
+    <label for="password">
+        Password
+    </label>
 
     <input
         type="password"
         id="password"
-        placeholder="Password"
+        placeholder="Password डालें"
+        autocomplete="current-password"
     >
 
-    <button onclick="adminLogin()">
+
+    <button
+        class="login-btn"
+        id="loginButton"
+        onclick="adminLogin()"
+    >
         Login करें
     </button>
 
+
     <div id="message"></div>
 
-    <a class="back" href="index.html">
+
+    <a
+        class="back"
+        href="index.html"
+    >
         ← मुख्य वेबसाइट पर वापस जाएँ
     </a>
 
@@ -138,86 +205,448 @@ button:hover{
 
 <script>
 
+
+/* =========================================
+   SUPABASE CONFIGURATION
+========================================= */
+
 const SUPABASE_URL =
-"https://unqihzayhrpmtdxrjiyy.supabase.co";
+    "https://unqihzayhrpmtdxrjiyy.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+    "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 
-const { createClient } = supabase;
 
-const db = createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+const db =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+function showMessage(
+    message,
+    type
+){
+
+    const box =
+        document.getElementById(
+            "message"
+        );
+
+    box.className =
+        type;
+
+    box.innerHTML =
+        message;
+
+}
+
+
+/* =========================================
+   ADMIN LOGIN
+========================================= */
 
 async function adminLogin(){
 
     const email =
-        document.getElementById("email").value.trim();
+        document
+        .getElementById("email")
+        .value
+        .trim();
 
     const password =
-        document.getElementById("password").value;
-
-    const message =
-        document.getElementById("message");
-
-
-    message.innerHTML = "";
+        document
+        .getElementById("password")
+        .value;
 
 
-    if(email === "" || password === ""){
+    const button =
+        document
+        .getElementById("loginButton");
 
-        message.style.color = "red";
 
-        message.innerHTML =
-            "❌ Email और Password डालें।";
+    /* Validation */
+
+    if(!email){
+
+        showMessage(
+            "❌ Admin Email डालें।",
+            "error"
+        );
 
         return;
     }
 
 
-    message.style.color = "#198754";
+    if(!password){
 
-    message.innerHTML =
+        showMessage(
+            "❌ Password डालें।",
+            "error"
+        );
+
+        return;
+    }
+
+
+    button.disabled =
+        true;
+
+    button.textContent =
         "⏳ Login हो रहा है...";
 
 
-    const { data, error } =
+    showMessage(
+        "⏳ कृपया प्रतीक्षा करें...",
+        "success"
+    );
+
+
+    try{
+
+        /* =================================
+           SUPABASE AUTH LOGIN
+        ================================= */
+
+        const {
+            data,
+            error
+        } =
         await db.auth.signInWithPassword({
-            email: email,
-            password: password
+
+            email:
+                email,
+
+            password:
+                password
+
         });
 
 
-    if(error){
+        if(error){
 
-        console.error(error);
+            console.error(
+                "Login Error:",
+                error
+            );
 
-        message.style.color = "red";
+            showMessage(
+                "❌ Email या Password गलत है।<br>कृपया दोबारा कोशिश करें।",
+                "error"
+            );
 
-        message.innerHTML =
-            "❌ Email या Password गलत है।";
+            button.disabled =
+                false;
 
-        return;
+            button.textContent =
+                "Login करें";
+
+            return;
+        }
+
+
+        /* =================================
+           AUTH SESSION CHECK
+        ================================= */
+
+        if(
+            !data ||
+            !data.user
+        ){
+
+            showMessage(
+                "❌ Login session नहीं बना।",
+                "error"
+            );
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Login करें";
+
+            return;
+        }
+
+
+        const authUserId =
+            data.user.id;
+
+
+        /* =================================
+           ADMIN TABLE CHECK
+        ================================= */
+
+        const {
+            data: admin,
+            error: adminError
+        } =
+        await db
+        .from("admins")
+        .select(`
+            id,
+            admin_id,
+            auth_user_id,
+            name,
+            status,
+            block,
+            panchayat,
+            village
+        `)
+        .eq(
+            "auth_user_id",
+            authUserId
+        )
+        .maybeSingle();
+
+
+        if(adminError){
+
+            console.error(
+                "Admin Check Error:",
+                adminError
+            );
+
+            await db.auth.signOut();
+
+            showMessage(
+                "❌ Admin information verify नहीं हो पाई।",
+                "error"
+            );
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Login करें";
+
+            return;
+        }
+
+
+        /* =================================
+           ADMIN RECORD NOT FOUND
+        ================================= */
+
+        if(!admin){
+
+            await db.auth.signOut();
+
+            showMessage(
+                "❌ यह Email किसी Admin account से जुड़ा नहीं है।",
+                "error"
+            );
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Login करें";
+
+            return;
+        }
+
+
+        /* =================================
+           ADMIN STATUS CHECK
+        ================================= */
+
+        if(
+            String(
+                admin.status || ""
+            )
+            .toLowerCase()
+            !==
+            "active"
+        ){
+
+            await db.auth.signOut();
+
+            showMessage(
+                "❌ आपका Admin account Active नहीं है।",
+                "error"
+            );
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Login करें";
+
+            return;
+        }
+
+
+        /* =================================
+           SAVE LOGIN INFORMATION
+        ================================= */
+
+        localStorage.setItem(
+            "adminId",
+            admin.admin_id || ""
+        );
+
+        localStorage.setItem(
+            "adminName",
+            admin.name || ""
+        );
+
+        localStorage.setItem(
+            "adminLoggedIn",
+            "true"
+        );
+
+
+        /* =================================
+           SUCCESS
+        ================================= */
+
+        showMessage(
+            "✅ Login सफल हुआ।<br>Dashboard खोला जा रहा है...",
+            "success"
+        );
+
+
+        setTimeout(
+            function(){
+
+                window.location.href =
+                    "admin-dashboard.html";
+
+            },
+            700
+        );
+
+
+    }
+    catch(error){
+
+        console.error(
+            "Unexpected Error:",
+            error
+        );
+
+        showMessage(
+            "❌ कुछ समस्या हुई। Internet connection और login details check करें।",
+            "error"
+        );
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "Login करें";
+
     }
 
-
-    message.style.color = "green";
-
-    message.innerHTML =
-        "✅ Login सफल हुआ।";
+}
 
 
-    setTimeout(function(){
+/* =========================================
+   ENTER KEY LOGIN
+========================================= */
 
-        window.location.href =
-            "admin-dashboard.html";
+document
+.getElementById("password")
+.addEventListener(
+    "keydown",
+    function(event){
 
-    },1000);
+        if(
+            event.key === "Enter"
+        ){
+
+            adminLogin();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   CHECK EXISTING SESSION
+========================================= */
+
+async function checkExistingSession(){
+
+    const {
+        data
+    } =
+    await db.auth.getSession();
+
+
+    if(
+        data &&
+        data.session
+    ){
+
+        /*
+           Session already available.
+           Dashboard directly open nahi kar rahe,
+           pehle Admin record verify hoga.
+        */
+
+        const authUserId =
+            data.session.user.id;
+
+
+        const {
+            data: admin
+        } =
+        await db
+        .from("admins")
+        .select(`
+            admin_id,
+            name,
+            status
+        `)
+        .eq(
+            "auth_user_id",
+            authUserId
+        )
+        .maybeSingle();
+
+
+        if(
+            admin &&
+            String(
+                admin.status || ""
+            )
+            .toLowerCase()
+            ===
+            "active"
+        ){
+
+            localStorage.setItem(
+                "adminId",
+                admin.admin_id || ""
+            );
+
+            localStorage.setItem(
+                "adminName",
+                admin.name || ""
+            );
+
+            localStorage.setItem(
+                "adminLoggedIn",
+                "true"
+            );
+
+        }
+
+    }
 
 }
+
+
+checkExistingSession();
+
 
 </script>
 
