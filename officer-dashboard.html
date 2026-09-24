@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Officer Dashboard - Chanho FPO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f1f8f4;
+    color:#222;
+}
+
+.header{
+    background:#087443;
+    color:white;
+    padding:18px 25px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+.header h1{
+    margin:0;
+    font-size:24px;
+}
+
+.header p{
+    margin:5px 0 0;
+}
+
+.logout{
+    background:#d32f2f;
+    color:white;
+    border:0;
+    padding:10px 18px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+.card-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 2px 8px #0001;
+    text-align:center;
+}
+
+.card h2{
+    margin:0;
+    color:#087443;
+    font-size:30px;
+}
+
+.card p{
+    margin:8px 0 0;
+    color:#555;
+}
+
+.section{
+    background:white;
+    padding:22px;
+    border-radius:12px;
+    box-shadow:0 2px 8px #0001;
+    margin-bottom:20px;
+}
+
+.section h2{
+    color:#087443;
+    margin-top:0;
+    border-bottom:2px solid #e5eee9;
+    padding-bottom:10px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+}
+
+.field label{
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #bbb;
+    border-radius:6px;
+    font-size:14px;
+}
+
+textarea{
+    min-height:80px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.btn{
+    background:#087443;
+    color:white;
+    border:0;
+    padding:12px 22px;
+    border-radius:7px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.btn:disabled{
+    opacity:.6;
+}
+
+.message{
+    margin-top:15px;
+    padding:12px;
+    border-radius:7px;
+    display:none;
+}
+
+.success{
+    display:block;
+    background:#e8f5e9;
+    color:#176b2c;
+}
+
+.error{
+    display:block;
+    background:#ffebee;
+    color:#c62828;
+}
+
+.registration-box{
+    margin-top:15px;
+    padding:20px;
+    background:#e8f5e9;
+    border:2px solid #087443;
+    border-radius:10px;
+    text-align:center;
+}
+
+.reg-number{
+    font-size:28px;
+    font-weight:bold;
+    color:#087443;
+    margin-top:8px;
+}
+
+.progress-box{
+    margin-top:10px;
+}
+
+.progress{
+    width:100%;
+    height:15px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#087443;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
+}
+
+th,
+td{
+    border:1px solid #ddd;
+    padding:9px;
+    text-align:left;
+}
+
+th{
+    background:#087443;
+    color:white;
+}
+
+tr:nth-child(even){
+    background:#f7f7f7;
+}
+
+.small-note{
+    color:#666;
+    font-size:13px;
+    margin-top:5px;
+}
+
+@media(max-width:900px){
+    .card-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .form-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:600px){
+    .card-grid,
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .header{
+        gap:15px;
+    }
+
+    .container{
+        padding:10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div>
+        <h1>🌾 Chanho FPO - Officer Dashboard</h1>
+        <p>Officer ID: <b>CBMS/OFF/7643970915</b></p>
+    </div>
+
+    <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+
+<div class="container">
+
+    <!-- SUMMARY -->
+
+    <div class="card-grid">
+
+        <div class="card">
+            <h2 id="totalAdmins">0</h2>
+            <p>Total Admin</p>
+        </div>
+
+        <div class="card">
+            <h2 id="totalFarmers">0</h2>
+            <p>Total Farmers</p>
+        </div>
+
+        <div class="card">
+            <h2 id="totalTarget">0</h2>
+            <p>Total Target</p>
+        </div>
+
+        <div class="card">
+            <h2 id="achievedFarmers">0</h2>
+            <p>Achieved Farmers</p>
+        </div>
+
+    </div>
+
+
+    <!-- ADMIN REGISTRATION -->
+
+    <div class="section">
+
+        <h2>👨‍💼 Admin Registration</h2>
+
+        <form id="adminForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Admin Name *</label>
+                    <input id="adminName" required>
+                </div>
+
+                <div class="field">
+                    <label>Father Name *</label>
+                    <input id="adminFatherName" required>
+                </div>
+
+                <div class="field">
+                    <label>Date of Birth *</label>
+                    <input type="date" id="adminDob" required>
+                </div>
+
+                <div class="field">
+                    <label>Gender *</label>
+                    <select id="adminGender" required>
+                        <option value="">Select</option>
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Mobile *</label>
+                    <input id="adminMobile"
+                           maxlength="10"
+                           inputmode="numeric"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" id="adminEmail">
+                </div>
+
+                <div class="field">
+                    <label>Aadhaar Number *</label>
+                    <input id="adminAadhar"
+                           maxlength="12"
+                           inputmode="numeric"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Village *</label>
+                    <input id="adminVillage" required>
+                </div>
+
+                <div class="field">
+                    <label>Panchayat *</label>
+                    <input id="adminPanchayat" required>
+                </div>
+
+                <div class="field">
+                    <label>Block *</label>
+                    <input id="adminBlock" value="Chanho" required>
+                </div>
+
+                <div class="field">
+                    <label>District *</label>
+                    <input id="adminDistrict" value="Ranchi" required>
+                </div>
+
+                <div class="field">
+                    <label>State *</label>
+                    <input id="adminState" value="Jharkhand" required>
+                </div>
+
+                <div class="field full">
+                    <label>Full Address *</label>
+                    <textarea id="adminAddress" required></textarea>
+                </div>
+
+
+                <!-- BANK -->
+
+                <div class="field">
+                    <label>Bank Name</label>
+                    <input id="adminBank">
+                </div>
+
+                <div class="field">
+                    <label>Bank Branch</label>
+                    <input id="adminBranch">
+                </div>
+
+                <div class="field">
+                    <label>Account Number</label>
+                    <input id="adminAccount">
+                </div>
+
+                <div class="field">
+                    <label>IFSC Code</label>
+                    <input id="adminIfsc">
+                </div>
+
+                <div class="field">
+                    <label>Payment Mode</label>
+                    <select id="adminPayment">
+                        <option value="">Select</option>
+                        <option>Bank Transfer</option>
+                        <option>UPI</option>
+                        <option>Cash</option>
+                    </select>
+                </div>
+
+
+                <!-- EDUCATION -->
+
+                <div class="field">
+                    <label>Qualification</label>
+                    <input id="adminQualification">
+                </div>
+
+                <div class="field">
+                    <label>Other Qualification</label>
+                    <input id="adminOtherQualification">
+                </div>
+
+                <div class="field">
+                    <label>Experience</label>
+                    <input id="adminExperience">
+                </div>
+
+                <div class="field">
+                    <label>Designation</label>
+                    <input id="adminDesignation" value="Admin">
+                </div>
+
+                <div class="field">
+                    <label>Joining Date</label>
+                    <input type="date" id="adminJoiningDate">
+                </div>
+
+                <div class="field">
+                    <label>Status</label>
+                    <select id="adminStatus">
+                        <option>Active</option>
+                        <option>Inactive</option>
+                    </select>
+                </div>
+
+
+                <!-- ASSIGNMENT -->
+
+                <div class="field">
+                    <label>Assigned Block</label>
+                    <input id="adminAssignedBlock">
+                </div>
+
+                <div class="field">
+                    <label>Assigned Panchayat</label>
+                    <input id="adminAssignedPanchayat">
+                </div>
+
+                <div class="field">
+                    <label>Assigned Village</label>
+                    <input id="adminAssignedVillage">
+                </div>
+
+
+                <!-- DOCUMENTS -->
+
+                <div class="field">
+                    <label>Aadhaar Document *</label>
+                    <input type="file"
+                           id="adminAadhaarFile"
+                           accept="image/*,.pdf"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Qualification Document *</label>
+                    <input type="file"
+                           id="adminQualificationFile"
+                           accept="image/*,.pdf"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Experience Document *</label>
+                    <input type="file"
+                           id="adminExperienceFile"
+                           accept="image/*,.pdf"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Address Proof *</label>
+                    <input type="file"
+                           id="adminAddressFile"
+                           accept="image/*,.pdf"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Bank Passbook *</label>
+                    <input type="file"
+                           id="adminBankFile"
+                           accept="image/*,.pdf"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Admin Photo *</label>
+                    <input type="file"
+                           id="adminPhoto"
+                           accept="image/*"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Admin Signature *</label>
+                    <input type="file"
+                           id="adminSignature"
+                           accept="image/*"
+                           required>
+                </div>
+
+            </div>
+
+            <br>
+
+            <button class="btn"
+                    id="adminSubmitBtn"
+                    type="submit">
+                Register Admin
+            </button>
+
+            <div id="adminMessage" class="message"></div>
+
+        </form>
+
+    </div>
+
+
+    <!-- TARGET -->
+
+    <div class="section">
+
+        <h2>🎯 Admin Target Assign करें</h2>
+
+        <form id="targetForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Select Admin</label>
+                    <select id="targetAdmin" required>
+                        <option value="">Loading Admin...</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Target Farmers</label>
+                    <input type="number"
+                           id="targetCount"
+                           min="1"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>Period</label>
+                    <select id="periodType" required>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Quarterly">Quarterly</option>
+                        <option value="Yearly">Yearly</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Start Date</label>
+                    <input type="date"
+                           id="startDate"
+                           required>
+                </div>
+
+                <div class="field">
+                    <label>End Date</label>
+                    <input type="date"
+                           id="endDate"
+                           required>
+                </div>
+
+                <div class="field full">
+                    <label>Notes</label>
+                    <textarea id="targetNotes"
+                              placeholder="Target से संबंधित जानकारी"></textarea>
+                </div>
+
+            </div>
+
+            <br>
+
+            <button class="btn" type="submit">
+                Assign Target
+            </button>
+
+            <div id="targetMessage" class="message"></div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ADMIN PERFORMANCE -->
+
+    <div class="section">
+
+        <h2>📊 Admin Performance</h2>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Admin ID</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Target</th>
+                        <th>Achieved</th>
+                        <th>Remaining</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+
+                <tbody id="performanceBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ADMIN LIST -->
+
+    <div class="section">
+
+        <h2>👨‍💼 Admin Records</h2>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Admin ID</th>
+                        <th>Name</th>
+                        <th>Father Name</th>
+                        <th>Mobile</th>
+                        <th>Village</th>
+                        <th>Panchayat</th>
+                        <th>Block</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="adminBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- FARMER RECORDS -->
+
+    <div class="section">
+
+        <h2>👨‍🌾 Farmer Records</h2>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Registration No.</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Village</th>
+                        <th>Crop</th>
+                        <th>Admin ID</th>
+                        <th>Status</th>
+                        <th>Registered At</th>
+                    </tr>
+                </thead>
+
+                <tbody id="farmerBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://unqihzayhrpmtdxrjiyy.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const db =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+const OFFICER_ID =
+"CBMS/OFF/7643970915";
+
+
+/* LOGIN CHECK */
+
+async function checkLogin(){
+
+    const {
+        data
+    } = await db.auth.getSession();
+
+    if(!data.session){
+
+        window.location.href =
+        "officer-login.html";
+
+        return false;
+    }
+
+    return true;
+}
+
+
+/* UPLOAD */
+
+async function uploadAdminFile(file, folder){
+
+    if(!file){
+        return null;
+    }
+
+    const extension =
+    file.name
+    .split(".")
+    .pop()
+    .toLowerCase();
+
+    const randomPart =
+    Date.now()
+    + "_"
+    + Math.random()
+    .toString(36)
+    .substring(2,10);
+
+    const filePath =
+    "admin/"
+    + folder
+    + "/"
+    + randomPart
+    + "."
+    + extension;
+
+    const {
+        error
+    } =
+    await db.storage
+    .from("farmer-documents")
+    .upload(
+        filePath,
+        file,
+        {
+            cacheControl:"3600",
+            upsert:false
+        }
+    );
+
+    if(error){
+
+        throw new Error(
+            "Document upload failed: "
+            + error.message
+        );
+    }
+
+    return filePath;
+}
+
+
+/* ADMIN REGISTRATION */
+
+document
+.getElementById("adminForm")
+.addEventListener(
+"submit",
+async function(e){
+
+    e.preventDefault();
+
+    const button =
+    document.getElementById(
+        "adminSubmitBtn"
+    );
+
+    const message =
+    document.getElementById(
+        "adminMessage"
+    );
+
+    button.disabled = true;
+
+    button.textContent =
+    "Admin Register हो रहा है...";
+
+    message.className =
+    "message";
+
+    message.textContent = "";
+
+
+    try{
+
+        const mobile =
+        document
+        .getElementById("adminMobile")
+        .value
+        .trim();
+
+        const aadhar =
+        document
+        .getElementById("adminAadhar")
+        .value
+        .trim();
+
+
+        if(!/^[0-9]{10}$/.test(mobile)){
+
+            throw new Error(
+                "Mobile number 10 digit का होना चाहिए।"
+            );
+        }
+
+
+        if(!/^[0-9]{12}$/.test(aadhar)){
+
+            throw new Error(
+                "Aadhaar number 12 digit का होना चाहिए।"
+            );
+        }
+
+
+        const photo =
+        document
+        .getElementById("adminPhoto")
+        .files[0];
+
+        const signature =
+        document
+        .getElementById("adminSignature")
+        .files[0];
+
+
+        if(!photo){
+
+            throw new Error(
+                "Admin photo upload करें।"
+            );
+        }
+
+
+        if(!signature){
+
+            throw new Error(
+                "Admin signature upload करें।"
+            );
+        }
+
+
+        const aadhaar_url =
+        await uploadAdminFile(
+            document
+            .getElementById(
+                "adminAadhaarFile"
+            )
+            .files[0],
+            "aadhaar"
+        );
+
+
+        const qualification_url =
+        await uploadAdminFile(
+            document
+            .getElementById(
+                "adminQualificationFile"
+            )
+            .files[0],
+            "qualification"
+        );
+
+
+        const experience_url =
+        await uploadAdminFile(
+            document
+            .getElementById(
+                "adminExperienceFile"
+            )
+            .files[0],
+            "experience"
+        );
+
+
+        const address_proof_url =
+        await uploadAdminFile(
+            document
+            .getElementById(
+                "adminAddressFile"
+            )
+            .files[0],
+            "address-proof"
+        );
+
+
+        const bank_passbook_url =
+        await uploadAdminFile(
+            document
+            .getElementById(
+                "adminBankFile"
+            )
+            .files[0],
+            "bank-passbook"
+        );
+
+
+        const photo_url =
+        await uploadAdminFile(
+            photo,
+            "photo"
+        );
+
+
+        const signature_url =
+        await uploadAdminFile(
+            signature,
+            "signature"
+        );
+
+
+        const {
+            data,
+            error
+        } =
+        await db
+        .from("admins")
+        .insert({
+
+            name:
+            document
+            .getElementById(
+                "adminName"
+            )
+            .value.trim(),
+
+            father_name:
+            document
+            .getElementById(
+                "adminFatherName"
+            )
+            .value.trim(),
+
+            date_of_birth:
+            document
+            .getElementById(
+                "adminDob"
+            )
+            .value,
+
+            gender:
+            document
+            .getElementById(
+                "adminGender"
+            )
+            .value,
+
+            mobile: mobile,
+
+            email:
+            document
+            .getElementById(
+                "adminEmail"
+            )
+            .value.trim(),
+
+            aadhar_number: aadhar,
+
+            village:
+            document
+            .getElementById(
+                "adminVillage"
+            )
+            .value.trim(),
+
+            panchayat:
+            document
+            .getElementById(
+                "adminPanchayat"
+            )
+            .value.trim(),
+
+            block:
+            document
+            .getElementById(
+                "adminBlock"
+            )
+            .value.trim(),
+
+            district:
+            document
+            .getElementById(
+                "adminDistrict"
+            )
+            .value.trim(),
+
+            state:
+            document
+            .getElementById(
+                "adminState"
+            )
+            .value.trim(),
+
+            full_address:
+            document
+            .getElementById(
+                "adminAddress"
+            )
+            .value.trim(),
+
+            bank_name:
+            document
+            .getElementById(
+                "adminBank"
+            )
+            .value.trim(),
+
+            bank_branch:
+            document
+            .getElementById(
+                "adminBranch"
+            )
+            .value.trim(),
+
+            account_number:
+            document
+            .getElementById(
+                "adminAccount"
+            )
+            .value.trim(),
+
+            ifsc_code:
+            document
+            .getElementById(
+                "adminIfsc"
+            )
+            .value
+            .trim()
+            .toUpperCase(),
+
+            payment_mode:
+            document
+            .getElementById(
+                "adminPayment"
+            )
+            .value,
+
+            qualification:
+            document
+            .getElementById(
+                "adminQualification"
+            )
+            .value.trim(),
+
+            other_qualification:
+            document
+            .getElementById(
+                "adminOtherQualification"
+            )
+            .value.trim(),
+
+            experience:
+            document
+            .getElementById(
+                "adminExperience"
+            )
+            .value.trim(),
+
+            designation:
+            document
+            .getElementById(
+                "adminDesignation"
+            )
+            .value.trim(),
+
+            joining_date:
+            document
+            .getElementById(
+                "adminJoiningDate"
+            )
+            .value || null,
+
+            assigned_block:
+            document
+            .getElementById(
+                "adminAssignedBlock"
+            )
+            .value.trim(),
+
+            assigned_panchayat:
+            document
+            .getElementById(
+                "adminAssignedPanchayat"
+            )
+            .value.trim(),
+
+            assigned_village:
+            document
+            .getElementById(
+                "adminAssignedVillage"
+            )
+            .value.trim(),
+
+            status:
+            document
+            .getElementById(
+                "adminStatus"
+            )
+            .value,
+
+            photo_url:
+            photo_url,
+
+            signature_url:
+            signature_url,
+
+            aadhaar_url:
+            aadhaar_url,
+
+            qualification_url:
+            qualification_url,
+
+            experience_url:
+            experience_url,
+
+            address_proof_url:
+            address_proof_url,
+
+            bank_passbook_url:
+            bank_passbook_url
+
+        })
+
+        .select(
+            "id,admin_id,name,mobile,status"
+        )
+
+        .single();
+
+
+        if(error){
+
+            throw new Error(
+                error.message
+            );
+        }
+
+
+        if(!data){
+
+            throw new Error(
+                "Admin record create नहीं हुआ।"
+            );
+        }
+
+
+        /* SUCCESS */
+
+        message.className =
+        "message success";
+
+        message.innerHTML = "";
+
+
+        const box =
+        document.createElement(
+            "div"
+        );
+
+        box.className =
+        "registration-box";
+
+
+        box.innerHTML =
+
+        "<div>✅ Admin Registration Successful!</div>"
+
+        +
+
+        "<div style='margin-top:10px'>"
+        +
+        "Admin Registration Number"
+        +
+        "</div>"
+
+        +
+
+        "<div class='reg-number'>"
+        +
+        data.admin_id
+        +
+        "</div>"
+
+        +
+
+        "<div style='margin-top:8px'>"
+        +
+        "इस Admin ID को सुरक्षित रखें।"
+        +
+        "</div>";
+
+
+        message.appendChild(box);
+
+
+        /* अब ही form reset होगा */
+
+        document
+        .getElementById(
+            "adminForm"
+        )
+        .reset();
+
+
+        await loadAdmins();
+
+        await loadPerformance();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        message.className =
+        "message error";
+
+        message.textContent =
+        "❌ Admin Registration Failed: "
+        +
+        error.message;
+
+    }finally{
+
+        button.disabled = false;
+
+        button.textContent =
+        "Register Admin";
+    }
+
+});
+
+
+/* LOAD ADMINS */
+
+async function loadAdmins(){
+
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("admins")
+    .select("*")
+    .order(
+        "created_at",
+        {
+            ascending:false
+        }
+    );
+
+
+    if(error){
+
+        console.error(
+            "Admin load error:",
+            error
+        );
+
+        return;
+    }
+
+
+    document
+    .getElementById(
+        "totalAdmins"
+    )
+    .textContent =
+    data.length;
+
+
+    const body =
+    document.getElementById(
+        "adminBody"
+    );
+
+    const select =
+    document.getElementById(
+        "targetAdmin"
+    );
+
+
+    body.innerHTML = "";
+
+    select.innerHTML =
+    '<option value="">Select Admin</option>';
+
+
+    data.forEach(
+    admin => {
+
+        const row =
+        document.createElement(
+            "tr"
+        );
+
+
+        row.innerHTML =
+
+        "<td>"
+        +
+        (admin.admin_id || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.name || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.father_name || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.mobile || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.village || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.panchayat || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.block || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.status || "-")
+        +
+        "</td>";
+
+
+        body.appendChild(row);
+
+
+        const option =
+        document.createElement(
+            "option"
+        );
+
+        option.value =
+        admin.admin_id || "";
+
+        option.textContent =
+        (admin.admin_id || "")
+        +
+        " - "
+        +
+        (admin.name || "Admin");
+
+
+        select.appendChild(
+            option
+        );
+
+    });
+
+}
+
+
+/* LOAD FARMERS */
+
+async function loadFarmers(){
+
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("farmer")
+    .select(
+        "registration_no,name,mobile,village,crop,admin_id,status,registered_at"
+    )
+    .order(
+        "registered_at",
+        {
+            ascending:false
+        }
+    );
+
+
+    if(error){
+
+        console.error(
+            "Farmer load error:",
+            error
+        );
+
+        return;
+    }
+
+
+    document
+    .getElementById(
+        "totalFarmers"
+    )
+    .textContent =
+    data.length;
+
+
+    document
+    .getElementById(
+        "achievedFarmers"
+    )
+    .textContent =
+    data.length;
+
+
+    const body =
+    document.getElementById(
+        "farmerBody"
+    );
+
+    body.innerHTML = "";
+
+
+    data.forEach(
+    farmer => {
+
+        const row =
+        document.createElement(
+            "tr"
+        );
+
+
+        row.innerHTML =
+
+        "<td>"
+        +
+        (farmer.registration_no || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (farmer.name || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (farmer.mobile || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (farmer.village || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (farmer.crop || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (farmer.admin_id || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (farmer.status || "Pending")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (
+            farmer.registered_at
+            ?
+            new Date(
+                farmer.registered_at
+            ).toLocaleString("en-IN")
+            :
+            "-"
+        )
+        +
+        "</td>";
+
+
+        body.appendChild(row);
+
+    });
+
+}
+
+
+/* LOAD TARGETS */
+
+async function loadTargets(){
+
+    const {
+        data,
+        error
+    } =
+    await db
+    .from("admin_targets")
+    .select("target_count");
+
+
+    if(error){
+
+        console.error(
+            "Target load error:",
+            error
+        );
+
+        return;
+    }
+
+
+    const total =
+    data.reduce(
+        (
+            sum,
+            item
+        ) =>
+        sum +
+        Number(
+            item.target_count || 0
+        ),
+        0
+    );
+
+
+    document
+    .getElementById(
+        "totalTarget"
+    )
+    .textContent =
+    total;
+
+}
+
+
+/* PERFORMANCE */
+
+async function loadPerformance(){
+
+    const {
+        data: admins,
+        error: adminError
+    } =
+    await db
+    .from("admins")
+    .select(
+        "admin_id,name,mobile"
+    );
+
+
+    if(adminError){
+
+        console.error(
+            adminError
+        );
+
+        return;
+    }
+
+
+    const {
+        data: targets,
+        error: targetError
+    } =
+    await db
+    .from("admin_targets")
+    .select(
+        "admin_id,target_count"
+    );
+
+
+    if(targetError){
+
+        console.error(
+            targetError
+        );
+
+        return;
+    }
+
+
+    const {
+        data: farmers,
+        error: farmerError
+    } =
+    await db
+    .from("farmer")
+    .select(
+        "admin_id"
+    );
+
+
+    if(farmerError){
+
+        console.error(
+            farmerError
+        );
+
+        return;
+    }
+
+
+    const targetMap = {};
+
+    targets.forEach(
+    item => {
+
+        if(!targetMap[item.admin_id]){
+            targetMap[item.admin_id] = 0;
+        }
+
+        targetMap[item.admin_id]
+        +=
+        Number(
+            item.target_count || 0
+        );
+
+    });
+
+
+    const achievedMap = {};
+
+    farmers.forEach(
+    item => {
+
+        if(!item.admin_id){
+            return;
+        }
+
+        if(!achievedMap[item.admin_id]){
+            achievedMap[item.admin_id] = 0;
+        }
+
+        achievedMap[item.admin_id]++;
+
+    });
+
+
+    const body =
+    document.getElementById(
+        "performanceBody"
+    );
+
+    body.innerHTML = "";
+
+
+    admins.forEach(
+    admin => {
+
+        const target =
+        targetMap[
+            admin.admin_id
+        ] || 0;
+
+
+        const achieved =
+        achievedMap[
+            admin.admin_id
+        ] || 0;
+
+
+        const remaining =
+        Math.max(
+            target - achieved,
+            0
+        );
+
+
+        const progress =
+        target > 0
+        ?
+        Math.min(
+            100,
+            Math.round(
+                achieved /
+                target *
+                100
+            )
+        )
+        :
+        0;
+
+
+        const row =
+        document.createElement(
+            "tr"
+        );
+
+
+        row.innerHTML =
+
+        "<td>"
+        +
+        (admin.admin_id || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.name || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        (admin.mobile || "-")
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        target
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        achieved
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        remaining
+        +
+        "</td>"
+
+        +
+
+        "<td>"
+        +
+        progress
+        +
+        "%"
+        +
+        "</td>";
+
+
+        body.appendChild(
+            row
+        );
+
+    });
+
+}
+
+
+/* TARGET SUBMIT */
+
+document
+.getElementById("targetForm")
+.addEventListener(
+"submit",
+async function(e){
+
+    e.preventDefault();
+
+
+    const message =
+    document.getElementById(
+        "targetMessage"
+    );
+
+
+    message.className =
+    "message";
+
+    message.textContent = "";
+
+
+    try{
+
+        const adminId =
+        document
+        .getElementById(
+            "targetAdmin"
+        )
+        .value;
+
+
+        if(!adminId){
+
+            throw new Error(
+                "Admin select करें।"
+            );
+        }
+
+
+        const targetCount =
+        Number(
+            document
+            .getElementById(
+                "targetCount"
+            )
+            .value
+        );
+
+
+        const {
+            error
+        } =
+        await db
+        .from("admin_targets")
+        .insert({
+
+            admin_id:
+            adminId,
+
+            target_count:
+            targetCount,
+
+            period_type:
+            document
+            .getElementById(
+                "periodType"
+            )
+            .value,
+
+            start_date:
+            document
+            .getElementById(
+                "startDate"
+            )
+            .value,
+
+            end_date:
+            document
+            .getElementById(
+                "endDate"
+            )
+            .value,
+
+            created_by_officer_id:
+            OFFICER_ID,
+
+            notes:
+            document
+            .getElementById(
+                "targetNotes"
+            )
+            .value.trim()
+
+        });
+
+
+        if(error){
+
+            throw new Error(
+                error.message
+            );
+        }
+
+
+        message.className =
+        "message success";
+
+        message.textContent =
+        "✅ Target Successfully Assign हो गया।";
+
+
+        document
+        .getElementById(
+            "targetForm"
+        )
+        .reset();
+
+
+        await loadTargets();
+
+        await loadPerformance();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        message.className =
+        "message error";
+
+        message.textContent =
+        "❌ Target Failed: "
+        +
+        error.message;
+
+    }
+
+});
+
+
+/* LOGOUT */
+
+async function logout(){
+
+    await db.auth.signOut();
+
+    window.location.href =
+    "officer-login.html";
+}
+
+
+/* START */
+
+async function startDashboard(){
+
+    const loggedIn =
+    await checkLogin();
+
+    if(!loggedIn){
+        return;
+    }
+
+    await loadAdmins();
+
+    await loadFarmers();
+
+    await loadTargets();
+
+    await loadPerformance();
+
+}
+
+
+startDashboard();
+
+</script>
+
+</body>
+</html>
