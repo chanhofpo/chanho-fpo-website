@@ -1020,7 +1020,9 @@ function renderFarmers(farmers) {
 
                     <th>Mobile</th>
 
-                    <th>Village</th>
+		    <th>Aadhaar</th>
+
+		    <th>Village</th>
 
                     <th>Panchayat</th>
 
@@ -1067,16 +1069,22 @@ function renderFarmers(farmers) {
                 </td>
 
                 <td>
-                    ${escapeHtml(
-                        farmer.mobile || "-"
-                    )}
-                </td>
+    ${escapeHtml(
+        farmer.mobile || "-"
+    )}
+</td>
 
-                <td>
-                    ${escapeHtml(
-                        farmer.village || "-"
-                    )}
-                </td>
+<td>
+    ${escapeHtml(
+        farmer.aadhar_number || "-"
+    )}
+</td>
+
+<td>
+    ${escapeHtml(
+        farmer.village || "-"
+    )}
+</td>
 
                 <td>
                     ${escapeHtml(
