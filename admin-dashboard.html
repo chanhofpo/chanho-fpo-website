@@ -8,6 +8,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Excel Library -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- PDF Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
 <style>
 *{
     box-sizing:border-box;
@@ -137,6 +144,63 @@ textarea{
     resize:vertical;
 }
 
+/* =========================
+   DOWNLOAD SECTION
+========================= */
+
+.download-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+    margin-top:15px;
+}
+
+.download-card{
+    border:1px solid #ddd;
+    border-radius:10px;
+    padding:16px;
+    background:#fafafa;
+}
+
+.download-card h3{
+    margin:0 0 12px;
+    color:#126b3a;
+    font-size:17px;
+}
+
+.download-buttons{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.btn-excel{
+    background:#198754;
+    color:white;
+}
+
+.btn-pdf{
+    background:#dc3545;
+    color:white;
+}
+
+.download-btn{
+    border:0;
+    padding:9px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.download-btn:hover{
+    opacity:.9;
+}
+
+/* =========================
+   TABLE
+========================= */
+
 .table-wrapper{
     overflow-x:auto;
 }
@@ -258,7 +322,9 @@ tr:hover{
     color:#777;
 }
 
-/* Modal */
+/* =========================
+   MODAL
+========================= */
 
 .modal-overlay{
     position:fixed;
@@ -349,6 +415,10 @@ tr:hover{
     }
 
     .filters{
+        grid-template-columns:1fr;
+    }
+
+    .download-grid{
         grid-template-columns:1fr;
     }
 }
@@ -456,6 +526,103 @@ tr:hover{
             <div class="stat">
                 <h3>Rejected</h3>
                 <p id="rejectedCount">0</p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DOWNLOAD LISTS -->
+
+    <div class="card">
+
+        <h2>Download Farmer Lists</h2>
+
+        <p style="color:#666;margin-top:-5px;">
+            Apne assigned farmers ki Approved, Reject aur Pending list download karein.
+        </p>
+
+        <div class="download-grid">
+
+            <!-- APPROVED -->
+
+            <div class="download-card">
+
+                <h3>Approved List</h3>
+
+                <div class="download-buttons">
+
+                    <button
+                        class="download-btn btn-excel"
+                        onclick="downloadFarmerList('approved','excel')"
+                    >
+                        📊 Excel
+                    </button>
+
+                    <button
+                        class="download-btn btn-pdf"
+                        onclick="downloadFarmerList('approved','pdf')"
+                    >
+                        📄 PDF
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- REJECTED -->
+
+            <div class="download-card">
+
+                <h3>Reject List</h3>
+
+                <div class="download-buttons">
+
+                    <button
+                        class="download-btn btn-excel"
+                        onclick="downloadFarmerList('rejected','excel')"
+                    >
+                        📊 Excel
+                    </button>
+
+                    <button
+                        class="download-btn btn-pdf"
+                        onclick="downloadFarmerList('rejected','pdf')"
+                    >
+                        📄 PDF
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- PENDING -->
+
+            <div class="download-card">
+
+                <h3>Pending List</h3>
+
+                <div class="download-buttons">
+
+                    <button
+                        class="download-btn btn-excel"
+                        onclick="downloadFarmerList('pending','excel')"
+                    >
+                        📊 Excel
+                    </button>
+
+                    <button
+                        class="download-btn btn-pdf"
+                        onclick="downloadFarmerList('pending','pdf')"
+                    >
+                        📄 PDF
+                    </button>
+
+                </div>
+
             </div>
 
         </div>
@@ -1020,9 +1187,9 @@ function renderFarmers(farmers) {
 
                     <th>Mobile</th>
 
-		    <th>Aadhaar</th>
+                    <th>Aadhaar</th>
 
-		    <th>Village</th>
+                    <th>Village</th>
 
                     <th>Panchayat</th>
 
@@ -1069,22 +1236,22 @@ function renderFarmers(farmers) {
                 </td>
 
                 <td>
-    ${escapeHtml(
-        farmer.mobile || "-"
-    )}
-</td>
+                    ${escapeHtml(
+                        farmer.mobile || "-"
+                    )}
+                </td>
 
-<td>
-    ${escapeHtml(
-        farmer.aadhar_number || "-"
-    )}
-</td>
+                <td>
+                    ${escapeHtml(
+                        farmer.aadhar_number || "-"
+                    )}
+                </td>
 
-<td>
-    ${escapeHtml(
-        farmer.village || "-"
-    )}
-</td>
+                <td>
+                    ${escapeHtml(
+                        farmer.village || "-"
+                    )}
+                </td>
 
                 <td>
                     ${escapeHtml(
@@ -1214,6 +1381,607 @@ function getStatusBadge(status) {
             ${escapeHtml(value)}
         </span>
     `;
+}
+
+
+/* =====================================================
+   DOWNLOAD LIST FUNCTIONS
+===================================================== */
+
+
+/* =========================
+   GET DOWNLOAD FARMERS
+========================= */
+
+function getDownloadFarmers(type) {
+
+    return allFarmers.filter(farmer => {
+
+        const status =
+            String(farmer.status || "")
+                .trim()
+                .toLowerCase();
+
+
+        /* APPROVED */
+
+        if (type === "approved") {
+
+            return status === "approved";
+        }
+
+
+        /* REJECTED */
+
+        if (type === "rejected") {
+
+            return status.includes("rejected");
+        }
+
+
+        /* PENDING */
+
+        if (type === "pending") {
+
+            return (
+                status.includes("pending") ||
+                status === "verified" ||
+                status === ""
+            );
+        }
+
+
+        return false;
+    });
+}
+
+
+/* =========================
+   LIST TITLE
+========================= */
+
+function getListTitle(type) {
+
+    if (type === "approved") {
+
+        return "APPROVED FARMER LIST";
+    }
+
+
+    if (type === "rejected") {
+
+        return "REJECTED FARMER LIST";
+    }
+
+
+    return "PENDING FARMER LIST";
+}
+
+
+/* =========================
+   DOWNLOAD MAIN
+========================= */
+
+function downloadFarmerList(type, format) {
+
+    const farmers =
+        getDownloadFarmers(type);
+
+
+    if (!farmers.length) {
+
+        alert(
+            "Is category me koi farmer nahi mila."
+        );
+
+        return;
+    }
+
+
+    if (format === "excel") {
+
+        downloadExcelList(
+            farmers,
+            type
+        );
+
+        return;
+    }
+
+
+    if (format === "pdf") {
+
+        downloadPDFList(
+            farmers,
+            type
+        );
+
+        return;
+    }
+}
+
+
+/* =========================
+   EXCEL DATA
+========================= */
+
+function getExcelData(farmers) {
+
+    return farmers.map(
+        (f, index) => ({
+
+            "S.No.": index + 1,
+
+            "Registration No.":
+                f.registration_no || "",
+
+            "Farmer Name":
+                f.name || "",
+
+            "Father/Husband Name":
+                f.father_name || "",
+
+            "Mobile":
+                f.mobile || "",
+
+            "Aadhaar":
+                f.aadhar_number || "",
+
+            "Block":
+                f.block || "",
+
+            "Panchayat":
+                f.panchayat || "",
+
+            "Village":
+                f.village || "",
+
+            "Crop":
+                f.crop || "",
+
+            "Land":
+                f.land || "",
+
+            "Category":
+                f.category || "",
+
+            "Admin ID":
+                f.admin_id || "",
+
+            "Status":
+                f.status || "",
+
+            "Registered At":
+                formatDownloadDate(
+                    f.registered_at
+                )
+        })
+    );
+}
+
+
+/* =========================
+   EXCEL DOWNLOAD
+========================= */
+
+function downloadExcelList(
+    farmers,
+    type
+) {
+
+    if (
+        typeof XLSX === "undefined"
+    ) {
+
+        alert(
+            "Excel library load nahi hui. Internet connection check karein."
+        );
+
+        return;
+    }
+
+
+    const title =
+        getListTitle(type);
+
+
+    const rows =
+        getExcelData(farmers);
+
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    const worksheet =
+        XLSX.utils.aoa_to_sheet([
+
+            [
+                "CHANHO BIRSA MUNDA SANGATAN PRODUCER COMAPANY"
+            ],
+
+            [
+                title
+            ],
+
+            [
+                "Date: " +
+                new Date()
+                    .toLocaleDateString("en-IN")
+            ],
+
+            []
+
+        ]);
+
+
+    XLSX.utils.sheet_add_json(
+        worksheet,
+        rows,
+        {
+            origin:"A5",
+            skipHeader:false
+        }
+    );
+
+
+    /* Column Width */
+
+    worksheet["!cols"] = [
+
+        { wch:8 },
+
+        { wch:20 },
+
+        { wch:25 },
+
+        { wch:25 },
+
+        { wch:15 },
+
+        { wch:18 },
+
+        { wch:15 },
+
+        { wch:20 },
+
+        { wch:20 },
+
+        { wch:20 },
+
+        { wch:12 },
+
+        { wch:15 },
+
+        { wch:20 },
+
+        { wch:25 },
+
+        { wch:22 }
+
+    ];
+
+
+    /* Merge Company Heading */
+
+    worksheet["!merges"] = [
+
+        {
+            s:{r:0,c:0},
+            e:{r:0,c:14}
+        },
+
+        {
+            s:{r:1,c:0},
+            e:{r:1,c:14}
+        },
+
+        {
+            s:{r:2,c:0},
+            e:{r:2,c:14}
+        }
+
+    ];
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        title.substring(0,31)
+    );
+
+
+    let filename;
+
+
+    if(type === "approved") {
+
+        filename =
+            "Approved_Farmer_List.xlsx";
+    }
+
+    else if(type === "rejected") {
+
+        filename =
+            "Rejected_Farmer_List.xlsx";
+    }
+
+    else {
+
+        filename =
+            "Pending_Farmer_List.xlsx";
+    }
+
+
+    XLSX.writeFile(
+        workbook,
+        filename
+    );
+}
+
+
+/* =========================
+   PDF DOWNLOAD
+========================= */
+
+function downloadPDFList(
+    farmers,
+    type
+) {
+
+    if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ) {
+
+        alert(
+            "PDF library load nahi hui. Internet connection check karein."
+        );
+
+        return;
+    }
+
+
+    const {
+        jsPDF
+    } = window.jspdf;
+
+
+    const doc =
+        new jsPDF({
+
+            orientation:"landscape",
+
+            unit:"mm",
+
+            format:"a4"
+
+        });
+
+
+    const title =
+        getListTitle(type);
+
+
+    /* Company Heading */
+
+    doc.setFontSize(16);
+
+    doc.setFont(undefined,"bold");
+
+
+    doc.text(
+
+        "CHANHO BIRSA MUNDA SANGATAN PRODUCER COMAPANY",
+
+        148,
+
+        14,
+
+        {
+            align:"center"
+        }
+
+    );
+
+
+    /* List Heading */
+
+    doc.setFontSize(13);
+
+
+    doc.text(
+
+        title,
+
+        148,
+
+        22,
+
+        {
+            align:"center"
+        }
+
+    );
+
+
+    /* Date */
+
+    doc.setFontSize(9);
+
+    doc.setFont(undefined,"normal");
+
+
+    doc.text(
+
+        "Date: " +
+        new Date()
+            .toLocaleDateString("en-IN"),
+
+        10,
+
+        30
+
+    );
+
+
+    /* Total */
+
+    doc.text(
+
+        "Total Farmers: " +
+        farmers.length,
+
+        287,
+
+        30,
+
+        {
+            align:"right"
+        }
+
+    );
+
+
+    const tableData =
+        farmers.map(
+            (f,index) => [
+
+                index + 1,
+
+                f.registration_no || "",
+
+                f.name || "",
+
+                f.father_name || "",
+
+                f.mobile || "",
+
+                f.aadhar_number || "",
+
+                f.block || "",
+
+                f.panchayat || "",
+
+                f.village || "",
+
+                f.status || ""
+
+            ]
+        );
+
+
+    doc.autoTable({
+
+        startY:35,
+
+        head:[[
+
+            "S.No.",
+
+            "Registration No.",
+
+            "Farmer Name",
+
+            "Father/Husband",
+
+            "Mobile",
+
+            "Aadhaar",
+
+            "Block",
+
+            "Panchayat",
+
+            "Village",
+
+            "Status"
+
+        ]],
+
+        body:tableData,
+
+        theme:"grid",
+
+        styles:{
+
+            fontSize:7,
+
+            cellPadding:2,
+
+            overflow:"linebreak"
+
+        },
+
+        headStyles:{
+
+            fontStyle:"bold"
+
+        },
+
+        margin:{
+
+            left:8,
+
+            right:8
+
+        }
+
+    });
+
+
+    let filename;
+
+
+    if(type === "approved") {
+
+        filename =
+            "Approved_Farmer_List.pdf";
+    }
+
+    else if(type === "rejected") {
+
+        filename =
+            "Rejected_Farmer_List.pdf";
+    }
+
+    else {
+
+        filename =
+            "Pending_Farmer_List.pdf";
+    }
+
+
+    doc.save(filename);
+}
+
+
+/* =========================
+   DOWNLOAD DATE
+========================= */
+
+function formatDownloadDate(value) {
+
+    if(!value) return "";
+
+
+    const date =
+        new Date(value);
+
+
+    if(
+        isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return String(value);
+    }
+
+
+    return date.toLocaleString(
+        "en-IN"
+    );
 }
 
 
@@ -1407,9 +2175,10 @@ function viewFarmer(id) {
    DETAIL HELPER
 ========================= */
 
-function detail(label, value) {
+function detail(label,value) {
 
     return `
+
         <div class="detail">
 
             <strong>
@@ -1423,6 +2192,7 @@ function detail(label, value) {
             </span>
 
         </div>
+
     `;
 }
 
@@ -1443,7 +2213,6 @@ function getDocumentUrl(path) {
     if (!value) return null;
 
 
-    // Already a full URL
     if (
         value.startsWith("http://") ||
         value.startsWith("https://")
@@ -1453,9 +2222,8 @@ function getDocumentUrl(path) {
     }
 
 
-    // Remove starting slash
     value =
-        value.replace(/^\/+/, "");
+        value.replace(/^\/+/,"");
 
 
     return (
@@ -1501,28 +2269,28 @@ function openDocuments(farmer) {
     const documents = [
 
         {
-            title: "Farmer Photo",
-            path: farmer.photo_url
+            title:"Farmer Photo",
+            path:farmer.photo_url
         },
 
         {
-            title: "Signature",
-            path: farmer.signature_url
+            title:"Signature",
+            path:farmer.signature_url
         },
 
         {
-            title: "Aadhaar",
-            path: farmer.aadhar_url
+            title:"Aadhaar",
+            path:farmer.aadhar_url
         },
 
         {
-            title: "Application Form",
-            path: farmer.form_url
+            title:"Application Form",
+            path:farmer.form_url
         },
 
         {
-            title: "Land Record",
-            path: farmer.land_record_url
+            title:"Land Record",
+            path:farmer.land_record_url
         }
 
     ];
@@ -1625,6 +2393,7 @@ function openDocuments(farmer) {
                 </a>
 
             `;
+
         }
 
 
@@ -1633,6 +2402,7 @@ function openDocuments(farmer) {
             </div>
 
         `;
+
     });
 
 
@@ -1652,6 +2422,7 @@ function openDocuments(farmer) {
             </div>
 
         </div>
+
     `;
 
 
@@ -1682,6 +2453,7 @@ async function verifyFarmer(id) {
             "Kya aap is farmer application ko verify karna chahte hain?"
         )
     ) {
+
         return;
     }
 
@@ -1705,7 +2477,7 @@ async function verifyFarmer(id) {
                 null
 
         })
-        .eq("id", id)
+        .eq("id",id)
         .eq(
             "admin_id",
             currentAdmin.admin_id
@@ -1759,6 +2531,7 @@ async function rejectFarmer(id) {
         reason === null ||
         !reason.trim()
     ) {
+
         return;
     }
 
@@ -1769,7 +2542,7 @@ async function rejectFarmer(id) {
         .from("farmer")
         .update({
 
-            status: "Rejected",
+            status:"Rejected",
 
             admin_verified_at:
                 new Date().toISOString(),
@@ -1781,7 +2554,7 @@ async function rejectFarmer(id) {
                 reason.trim()
 
         })
-        .eq("id", id)
+        .eq("id",id)
         .eq(
             "admin_id",
             currentAdmin.admin_id
@@ -1820,6 +2593,7 @@ function closeModal(event) {
         event &&
         event.target !== event.currentTarget
     ) {
+
         return;
     }
 
@@ -1848,9 +2622,19 @@ async function logout() {
 
     await db.auth.signOut();
 
-    localStorage.removeItem("adminId");
-    localStorage.removeItem("adminName");
-    localStorage.removeItem("adminLoggedIn");
+
+    localStorage.removeItem(
+        "adminId"
+    );
+
+    localStorage.removeItem(
+        "adminName"
+    );
+
+    localStorage.removeItem(
+        "adminLoggedIn"
+    );
+
 
     window.location.href =
         "admin-login.html";
@@ -1870,7 +2654,12 @@ function formatDate(value) {
         new Date(value);
 
 
-    if (isNaN(date.getTime())) {
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+
         return String(value);
     }
 
@@ -1887,18 +2676,41 @@ function formatDate(value) {
 
 function escapeHtml(value) {
 
-    if (value === null ||
-        value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
         return "";
     }
 
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
 
 
