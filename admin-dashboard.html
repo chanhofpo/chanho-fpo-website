@@ -3,699 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Admin Dashboard - Chanho FPO</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Excel Library -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<!-- PDF Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
 <style>
-*{
-    box-sizing:border-box;
+
+*{box-sizing:border-box}
+:root{
+  --blue:#0b6f9f;
+  --blue2:#168cc3;
+  --blue3:#075e88;
+  --bg:#eef3f7;
+  --line:#d7e1e8;
+  --text:#1f2937;
+  --muted:#667085;
+  --white:#fff;
+  --green:#198754;
+  --red:#dc3545;
+  --gold:#f4b400;
 }
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+.app-shell{min-height:100vh;display:flex}
+.sidebar{width:250px;background:var(--blue);color:#fff;position:fixed;left:0;top:0;bottom:0;z-index:1000;overflow-y:auto;box-shadow:2px 0 8px rgba(0,0,0,.08)}
+.sidebar-head{height:58px;background:var(--blue3);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:18px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.16)}
+.sidebar-brand{text-align:center;padding:16px 12px 14px;border-bottom:1px solid rgba(255,255,255,.14)}
+.sidebar-brand .logos{display:flex;justify-content:center;gap:10px;margin-bottom:10px}
+.sidebar-brand img{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:8px;padding:3px}
+.sidebar-brand .fpo-round{border-radius:50%}
+.sidebar-brand strong{display:block;font-size:13px;line-height:1.35}
+.sidebar-brand small{display:block;margin-top:5px;opacity:.88;font-size:11px}
+.sidebar-nav{padding:8px 0 18px}
+.sidebar-link{width:100%;border:0;background:transparent;color:#fff;text-align:left;padding:12px 14px;border-left:4px solid transparent;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px}
+.sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.12);border-left-color:#ffd24d}
+.sidebar-link .ico{width:20px;text-align:center}
+.main-shell{margin-left:250px;min-height:100vh;width:calc(100% - 250px);display:flex;flex-direction:column}
+.topbar{min-height:58px;background:var(--blue2);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:7px 14px;position:sticky;top:0;z-index:900;box-shadow:0 2px 8px rgba(0,0,0,.08);gap:12px}
+.topbar-left,.topbar-right{display:flex;align-items:center;gap:12px;min-width:0}
+.menu-toggle{border:0;background:transparent;color:#fff;font-size:22px;cursor:pointer;padding:8px;display:none}
+.topbar-title{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-logo{width:42px;height:42px;object-fit:contain;background:#fff;border-radius:6px;padding:3px}
+.user-chip{display:flex;align-items:center;gap:9px;padding:5px 9px;border-left:1px solid rgba(255,255,255,.35);border-right:1px solid rgba(255,255,255,.35)}
+.user-photo,.user-fallback{width:38px;height:38px;border-radius:50%;border:2px solid #fff;object-fit:cover;background:#0a5f87;color:#fff;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+.user-fallback{display:flex}
+.user-text{line-height:1.2;max-width:190px}
+.user-text strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-text span{display:block;font-size:10px;opacity:.9;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logout-btn{background:#fff;color:var(--blue3);border:0;padding:8px 13px;border-radius:5px;cursor:pointer;font-weight:700;font-size:12px}
+.content{flex:1;padding:12px}
+.portal-panel{display:none}
+.portal-panel.active{display:block}
+.portal-card{background:#fff;border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}
+.portal-card-title{padding:8px 12px;background:#e9f4fb;border-bottom:1px dashed #c7d9e5;color:#234b63;font-size:13px;font-weight:700}
+.portal-card-body{padding:14px}
+.welcome-title{font-size:30px;font-weight:400;margin:0 0 8px;color:#111827}
+.welcome-text{font-size:13px;line-height:1.55;color:#374151;margin:0}
+.cards,.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:14px 0 0}
+.card,.stat{background:#fff;border:1px solid var(--line);padding:16px;box-shadow:0 1px 5px rgba(0,0,0,.05);border-radius:7px}
+.card h3,.stat h3{margin:0;color:#667085;font-size:13px}
+.card .number,.stat p{margin:8px 0 0;font-size:27px;font-weight:700;color:var(--blue)}
+.section,.card.section-card{background:#fff;border:1px solid var(--line);padding:16px;margin-bottom:14px;border-radius:4px;box-shadow:0 2px 7px rgba(0,0,0,.05)}
+.section h2,.card h2{margin:0 0 14px;color:var(--blue3);font-size:19px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.form-span-2{grid-column:span 2}
+.form-span-3{grid-column:1/-1}
+label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:#344054}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:5px;background:#fff;font-size:13px}
+textarea{min-height:90px;resize:vertical}
+.primary-btn{background:var(--blue);color:#fff;border:0;padding:10px 17px;border-radius:5px;font-weight:700;cursor:pointer}
+.primary-btn:disabled{opacity:.65;cursor:not-allowed}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.table-wrap,.table-wrapper{width:100%;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1000px;font-size:12px}
+th,td{padding:9px;border:1px solid #e5e7eb;text-align:left;vertical-align:top;white-space:nowrap}
+th{background:var(--blue);color:#fff;font-weight:700}
+tr:nth-child(even) td{background:#fafcfd}
+.badge{display:inline-block;padding:5px 8px;border-radius:14px;font-size:11px;font-weight:700}
+.badge-pending{background:#fff3cd;color:#856404}.badge-approved{background:#d4edda;color:#155724}.badge-rejected{background:#f8d7da;color:#721c24}.badge-other{background:#e2e3e5;color:#41464b}
+.action-btn,.btn,.download-btn{border:0;padding:7px 10px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;margin:2px;text-decoration:none;display:inline-block}
+.profile-btn,.btn-view{background:#0d6efd;color:#fff}.document-btn,.btn-doc{background:#6f42c1;color:#fff}.approve-btn,.btn-verify,.btn-excel{background:#198754;color:#fff}.reject-btn,.btn-reject,.btn-pdf{background:#dc3545;color:#fff}.disabled-btn,.btn-close{background:#6c757d;color:#fff;cursor:not-allowed}
+.message{padding:10px 12px;border-radius:5px;margin-bottom:12px;display:none}.success{background:#d4edda;color:#155724}.error{background:#f8d7da;color:#721c24}.loading,.empty{text-align:center;padding:25px;color:#6b7280}
+.area-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.area-box{background:#f8fbfd;border:1px solid var(--line);padding:14px;border-radius:6px}.area-box small{display:block;color:#667085;margin-bottom:5px}.area-box strong{font-size:16px;color:#1f2937}
+.download-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.download-card{border:1px solid var(--line);background:#fafcfd;border-radius:7px;padding:14px}.download-card h3{margin:0 0 10px;font-size:15px;color:var(--blue3)}.download-buttons{display:flex;gap:7px;flex-wrap:wrap}
+.profile-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.profile-summary-item{border:1px solid var(--line);background:#f8fbfd;padding:12px;border-radius:6px}.profile-summary-item span{display:block;font-size:11px;color:#667085;margin-bottom:4px}.profile-summary-item strong{font-size:13px;word-break:break-word}
+.registration-success{background:#eaf8ef;border:1px solid #b8e0c6;padding:12px;border-radius:6px;display:grid;gap:5px;color:#155724}
+.section-note{font-size:12px;color:#667085;margin:-6px 0 14px}
+.portal-footer{background:#1d6587;color:#fff;text-align:center;padding:12px;font-size:11px;margin-top:auto}
+.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
+@media(max-width:1100px){.cards,.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.form-span-3{grid-column:1/-1}.profile-summary-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.main-shell{margin-left:0;width:100%}.menu-toggle{display:block}.top-logo{display:none}.filters,.download-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.form-span-2,.form-span-3{grid-column:auto}.user-text{max-width:135px}}
+@media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
 
-body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:#f4f7f5;
-    color:#1f2937;
-}
-
-header{
-    background:#126b3a; color:white; padding:10px 3%; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:18px; width:100%;
-}
-.header-brand{display:flex;align-items:center;gap:12px;min-width:0;}
-.fpo-logo{width:65px;height:65px;object-fit:contain;background:white;border-radius:50%;padding:3px;flex-shrink:0;}
-.header-left h1{margin:0;font-size:19px;line-height:1.25;white-space:nowrap;}
-.header-left p{margin:4px 0 0;font-size:12px;opacity:.9;}
-.header-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;}
-.jharkhand-logo{width:62px;height:62px;object-fit:contain;background:white;border-radius:8px;padding:4px;flex-shrink:0;}
-
-
-.logout-btn{
-    background:#fff;
-    color:#126b3a;
-    border:0;
-    padding:10px 18px;
-    border-radius:7px;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.container{
-    width:95%;
-    max-width:1400px;
-    margin:25px auto;
-}
-
-.card{
-    background:white;
-    border-radius:12px;
-    padding:20px;
-    margin-bottom:20px;
-    box-shadow:0 2px 10px rgba(0,0,0,.07);
-}
-
-.card h2{
-    margin-top:0;
-    color:#126b3a;
-}
-
-.area-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
-}
-
-.area-box{
-    background:#f1f8f4;
-    border:1px solid #d9eadf;
-    padding:15px;
-    border-radius:8px;
-}
-
-.area-box small{
-    color:#666;
-    display:block;
-    margin-bottom:5px;
-}
-
-.area-box strong{
-    font-size:17px;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
-}
-
-.stat{
-    padding:20px;
-    border-radius:10px;
-    background:#f7f7f7;
-    border:1px solid #e5e5e5;
-}
-
-.stat h3{
-    margin:0 0 8px;
-    font-size:15px;
-    color:#555;
-}
-
-.stat p{
-    margin:0;
-    font-size:28px;
-    font-weight:bold;
-}
-
-.filters{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:12px;
-}
-
-input,select,textarea{
-    width:100%;
-    padding:11px;
-    border:1px solid #ccc;
-    border-radius:7px;
-    font-size:14px;
-}
-
-textarea{
-    min-height:100px;
-    resize:vertical;
-}
-
-/* =========================
-   DOWNLOAD SECTION
-========================= */
-
-.download-grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:15px;
-    margin-top:15px;
-}
-
-.download-card{
-    border:1px solid #ddd;
-    border-radius:10px;
-    padding:16px;
-    background:#fafafa;
-}
-
-.download-card h3{
-    margin:0 0 12px;
-    color:#126b3a;
-    font-size:17px;
-}
-
-.download-buttons{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-}
-
-.btn-excel{
-    background:#198754;
-    color:white;
-}
-
-.btn-pdf{
-    background:#dc3545;
-    color:white;
-}
-
-.download-btn{
-    border:0;
-    padding:9px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:13px;
-    font-weight:bold;
-}
-
-.download-btn:hover{
-    opacity:.9;
-}
-
-/* =========================
-   TABLE
-========================= */
-
-.table-wrapper{
-    overflow-x:auto;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:1100px;
-}
-
-th,td{
-    padding:11px;
-    border-bottom:1px solid #eee;
-    text-align:left;
-    vertical-align:top;
-}
-
-th{
-    background:#126b3a;
-    color:white;
-    white-space:nowrap;
-}
-
-tr:hover{
-    background:#fafafa;
-}
-
-.badge{
-    display:inline-block;
-    padding:5px 9px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:bold;
-}
-
-.badge-pending{
-    background:#fff3cd;
-    color:#856404;
-}
-
-.badge-approved{
-    background:#d1e7dd;
-    color:#0f5132;
-}
-
-.badge-rejected{
-    background:#f8d7da;
-    color:#842029;
-}
-
-.badge-other{
-    background:#e2e3e5;
-    color:#41464b;
-}
-
-.btn{
-    border:0;
-    padding:8px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:13px;
-    font-weight:bold;
-    text-decoration:none;
-    display:inline-block;
-    margin:2px;
-}
-
-.btn-view{
-    background:#0d6efd;
-    color:white;
-}
-
-.btn-doc{
-    background:#6f42c1;
-    color:white;
-}
-
-.btn-verify{
-    background:#198754;
-    color:white;
-}
-
-.btn-reject{
-    background:#dc3545;
-    color:white;
-}
-
-.btn-close{
-    background:#555;
-    color:white;
-}
-
-.message{
-    padding:12px;
-    border-radius:7px;
-    margin-bottom:15px;
-    display:none;
-}
-
-.success{
-    background:#d1e7dd;
-    color:#0f5132;
-}
-
-.error{
-    background:#f8d7da;
-    color:#842029;
-}
-
-.loading{
-    text-align:center;
-    padding:30px;
-    color:#666;
-}
-
-.empty{
-    text-align:center;
-    padding:30px;
-    color:#777;
-}
-
-/* =========================
-   MODAL
-========================= */
-
-.modal-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.65);
-    z-index:9999;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    overflow:auto;
-}
-
-.modal-box{
-    background:white;
-    width:95%;
-    max-width:900px;
-    max-height:90vh;
-    overflow:auto;
-    border-radius:12px;
-    padding:25px;
-    box-shadow:0 10px 40px rgba(0,0,0,.3);
-}
-
-.modal-box h2{
-    margin-top:0;
-    color:#126b3a;
-}
-
-.detail-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:12px;
-}
-
-.detail{
-    background:#f7f7f7;
-    padding:12px;
-    border-radius:7px;
-}
-
-.detail strong{
-    display:block;
-    color:#555;
-    font-size:12px;
-    margin-bottom:4px;
-}
-
-.document-item{
-    border:1px solid #ddd;
-    border-radius:9px;
-    padding:15px;
-    margin-bottom:15px;
-    background:#fafafa;
-}
-
-.document-item h3{
-    margin-top:0;
-    color:#126b3a;
-}
-
-.document-preview{
-    max-width:300px;
-    max-height:300px;
-    display:block;
-    margin:10px 0;
-    border:1px solid #ddd;
-    border-radius:8px;
-    object-fit:contain;
-    background:white;
-}
-
-.no-document{
-    color:#888;
-    font-style:italic;
-}
-
-.close-row{
-    text-align:right;
-    margin-top:15px;
-}
-
-@media(max-width:900px){
-
-    .area-grid,
-    .stats{
-        grid-template-columns:repeat(2,1fr);
-    }
-
-    .filters{
-        grid-template-columns:1fr;
-    }
-
-    .download-grid{
-        grid-template-columns:1fr;
-    }
-}
-
-@media(max-width:600px){
-
-    .area-grid,
-    .stats,
-    .detail-grid{
-        grid-template-columns:1fr;
-    }
-
-    .container{
-        width:94%;
-    }
-
-    header{
-        padding:15px;
-    }
-
-    .header-left h1{
-        font-size:20px;
-    }
-}
-
-@media(max-width:600px){
- header{grid-template-columns:1fr;justify-items:center;text-align:center;gap:10px;padding:12px 15px;}
- .header-brand{justify-content:center;} .header-left{text-align:center;}
- .header-left h1{font-size:17px;white-space:normal;}
- .fpo-logo{width:58px;height:58px;} .jharkhand-logo{width:55px;height:55px;}
- .header-right{justify-content:center;flex-wrap:wrap;}
-}
 </style>
 </head>
-
 <body>
 
-<header>
-    <div class="header-brand">
-        <img src="logo.png" alt="Chanho FPO Logo" class="fpo-logo">
-        <div class="header-left">
-            <h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
-            <p>Admin Dashboard &nbsp;•&nbsp; <span id="adminWelcome">Loading...</span></p>
-        </div>
+<div class="app-shell">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head"><span>Menu</span><span>☰</span></div>
+  <div class="sidebar-brand">
+    <div class="logos"><img class="fpo-round" src="logo.png" alt="FPO Logo"><img src="jharkhand-logo.png" alt="Jharkhand Logo"></div>
+    <strong>Chanho Birsa Munda Sangathan<br>Producer Company Limited</strong>
+    <small>Admin Panel</small>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="sidebar-link active" data-title="Admin Dashboard" onclick="showAdminPanel('dashboardPanel',this)"><span class="ico">⌂</span>Dashboard</button>
+    <button class="sidebar-link" data-title="Admin Profile" onclick="showAdminPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
+    <button class="sidebar-link" data-title="My Assigned Area" onclick="showAdminPanel('assignedAreaPanel',this)"><span class="ico">📍</span>My Assigned Area</button>
+    <button class="sidebar-link" data-title="Farmer Applications" onclick="showAdminPanel('farmersPanel',this)"><span class="ico">🌾</span>Farmer Applications</button>
+    <button class="sidebar-link" data-title="Download Farmer Lists" onclick="showAdminPanel('downloadsPanel',this)"><span class="ico">⬇</span>Download Reports</button>
+  </nav>
+</aside>
+
+<div class="main-shell">
+<header class="topbar">
+  <div class="topbar-left"><button class="menu-toggle" onclick="toggleSidebar()">☰</button><div class="topbar-title" id="pageTitle">Admin Dashboard</div></div>
+  <div class="topbar-right">
+    <img class="top-logo" src="jharkhand-logo.png" alt="Jharkhand">
+    <div class="user-chip">
+      <img id="adminPhoto" class="user-photo" alt="Admin Photo" style="display:none">
+      <div id="adminPhotoFallback" class="user-fallback">A</div>
+      <div class="user-text"><strong id="adminNameTop">Admin</strong><span id="adminWelcome">Loading...</span></div>
     </div>
-    <div></div>
-    <div class="header-right">
-        <img src="jharkhand-logo.png" alt="Government of Jharkhand" class="jharkhand-logo">
-        <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 </header>
 
+<main class="content">
+<div id="message" class="message"></div>
 
-<div class="container">
-
-    <div id="message" class="message"></div>
-
-
-    <!-- ASSIGNED AREA -->
-
-    <div class="card">
-
-        <h2>My Assigned Area</h2>
-
-        <div class="area-grid">
-
-            <div class="area-box">
-                <small>Admin ID</small>
-                <strong id="areaAdminId">-</strong>
-            </div>
-
-            <div class="area-box">
-                <small>Block</small>
-                <strong id="areaBlock">-</strong>
-            </div>
-
-            <div class="area-box">
-                <small>Panchayat</small>
-                <strong id="areaPanchayat">-</strong>
-            </div>
-
-            <div class="area-box">
-                <small>Village</small>
-                <strong id="areaVillage">-</strong>
-            </div>
-
-        </div>
-
+<section id="dashboardPanel" class="portal-panel active">
+  <div class="portal-card"><div class="portal-card-title">ABOUT ADMIN DASHBOARD</div><div class="portal-card-body">
+    <h1 class="welcome-title">Welcome to Chanho FPO</h1>
+    <p class="welcome-text">Admin Dashboard se aap apne assigned area ke farmers ko search, verify/reject aur unki application status manage kar sakte hain.</p>
+    <div class="stats">
+      <div class="stat"><h3>Total Farmers</h3><p id="totalCount">0</p></div>
+      <div class="stat"><h3>Pending Verification</h3><p id="pendingCount">0</p></div>
+      <div class="stat"><h3>Pending Officer Approval</h3><p id="verifiedCount">0</p></div>
+      <div class="stat"><h3>Rejected</h3><p id="rejectedCount">0</p></div>
     </div>
+  </div></div>
+</section>
 
+<section id="profilePanel" class="portal-panel"><div class="section"><h2>Admin Profile</h2><div id="adminProfileContent"></div></div></section>
 
-    <!-- STATISTICS -->
+<section id="assignedAreaPanel" class="portal-panel">
+  <div class="section"><h2>My Assigned Area</h2><div class="area-grid">
+    <div class="area-box"><small>Admin ID</small><strong id="areaAdminId">-</strong></div>
+    <div class="area-box"><small>Block</small><strong id="areaBlock">-</strong></div>
+    <div class="area-box"><small>Panchayat</small><strong id="areaPanchayat">-</strong></div>
+    <div class="area-box"><small>Village</small><strong id="areaVillage">-</strong></div>
+  </div></div>
+</section>
 
-    <div class="card">
+<section id="farmersPanel" class="portal-panel">
+  <div class="section"><h2>Search Farmers</h2><div class="filters">
+    <input type="text" id="searchInput" placeholder="Search name, registration no, mobile..." oninput="applyFilters()">
+    <select id="statusFilter" onchange="applyFilters()"><option value="">All Status</option><option value="Pending Admin Verification">Pending Admin Verification</option><option value="Pending Officer Approval">Pending Officer Approval</option><option value="Verified">Verified</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
+    <select id="villageFilter" onchange="applyFilters()"><option value="">All Villages</option></select>
+  </div></div>
+  <div class="section"><h2>Farmer Applications</h2><div id="tableArea"><div class="loading">Loading farmers...</div></div></div>
+</section>
 
-        <h2>Farmer Statistics</h2>
-
-        <div class="stats">
-
-            <div class="stat">
-                <h3>Total Farmers</h3>
-                <p id="totalCount">0</p>
-            </div>
-
-            <div class="stat">
-                <h3>Pending Verification</h3>
-                <p id="pendingCount">0</p>
-            </div>
-
-            <div class="stat">
-                <h3>Pending Officer Approval</h3>
-                <p id="verifiedCount">0</p>
-            </div>
-
-            <div class="stat">
-                <h3>Rejected</h3>
-                <p id="rejectedCount">0</p>
-            </div>
-
-        </div>
-
+<section id="downloadsPanel" class="portal-panel">
+  <div class="section"><h2>Download Farmer Lists</h2><p class="section-note">Apne assigned farmers ki Approved, Reject aur Pending list download karein.</p>
+    <div class="download-grid">
+      <div class="download-card"><h3>Approved List</h3><div class="download-buttons"><button class="download-btn btn-excel" onclick="downloadFarmerList('approved','excel')">📊 Excel</button><button class="download-btn btn-pdf" onclick="downloadFarmerList('approved','pdf')">📄 PDF</button></div></div>
+      <div class="download-card"><h3>Reject List</h3><div class="download-buttons"><button class="download-btn btn-excel" onclick="downloadFarmerList('rejected','excel')">📊 Excel</button><button class="download-btn btn-pdf" onclick="downloadFarmerList('rejected','pdf')">📄 PDF</button></div></div>
+      <div class="download-card"><h3>Pending List</h3><div class="download-buttons"><button class="download-btn btn-excel" onclick="downloadFarmerList('pending','excel')">📊 Excel</button><button class="download-btn btn-pdf" onclick="downloadFarmerList('pending','pdf')">📄 PDF</button></div></div>
     </div>
-
-
-    <!-- DOWNLOAD LISTS -->
-
-    <div class="card">
-
-        <h2>Download Farmer Lists</h2>
-
-        <p style="color:#666;margin-top:-5px;">
-            Apne assigned farmers ki Approved, Reject aur Pending list download karein.
-        </p>
-
-        <div class="download-grid">
-
-            <!-- APPROVED -->
-
-            <div class="download-card">
-
-                <h3>Approved List</h3>
-
-                <div class="download-buttons">
-
-                    <button
-                        class="download-btn btn-excel"
-                        onclick="downloadFarmerList('approved','excel')"
-                    >
-                        📊 Excel
-                    </button>
-
-                    <button
-                        class="download-btn btn-pdf"
-                        onclick="downloadFarmerList('approved','pdf')"
-                    >
-                        📄 PDF
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- REJECTED -->
-
-            <div class="download-card">
-
-                <h3>Reject List</h3>
-
-                <div class="download-buttons">
-
-                    <button
-                        class="download-btn btn-excel"
-                        onclick="downloadFarmerList('rejected','excel')"
-                    >
-                        📊 Excel
-                    </button>
-
-                    <button
-                        class="download-btn btn-pdf"
-                        onclick="downloadFarmerList('rejected','pdf')"
-                    >
-                        📄 PDF
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- PENDING -->
-
-            <div class="download-card">
-
-                <h3>Pending List</h3>
-
-                <div class="download-buttons">
-
-                    <button
-                        class="download-btn btn-excel"
-                        onclick="downloadFarmerList('pending','excel')"
-                    >
-                        📊 Excel
-                    </button>
-
-                    <button
-                        class="download-btn btn-pdf"
-                        onclick="downloadFarmerList('pending','pdf')"
-                    >
-                        📄 PDF
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- FILTER -->
-
-    <div class="card">
-
-        <h2>Search Farmers</h2>
-
-        <div class="filters">
-
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Search name, registration no, mobile..."
-                oninput="applyFilters()"
-            >
-
-            <select id="statusFilter" onchange="applyFilters()">
-
-                <option value="">All Status</option>
-
-                <option value="Pending Admin Verification">
-                    Pending Admin Verification
-                </option>
-
-                <option value="Pending Officer Approval">
-                    Pending Officer Approval
-                </option>
-
-                <option value="Verified">
-                    Verified
-                </option>
-
-                <option value="Rejected">
-                    Rejected
-                </option>
-
-            </select>
-
-            <select id="villageFilter" onchange="applyFilters()">
-                <option value="">All Villages</option>
-            </select>
-
-        </div>
-
-    </div>
-
-
-    <!-- FARMER LIST -->
-
-    <div class="card">
-
-        <h2>Farmer Applications</h2>
-
-        <div id="tableArea">
-
-            <div class="loading">
-                Loading farmers...
-            </div>
-
-        </div>
-
-    </div>
-
+  </div>
+</section>
+</main>
+<div class="portal-footer">Chanho Birsa Munda Sangathan Producer Company Limited</div>
+</div>
 </div>
 
-
 <script>
+
 
 const SUPABASE_URL =
     "https://unqihzayhrpmtdxrjiyy.supabase.co";
@@ -818,14 +307,8 @@ async function checkLogin() {
 
     currentAdmin = admin;
 
-
-    document.getElementById("adminWelcome").innerText =
-        "Welcome, " +
-        (admin.name || "Admin") +
-        " (" +
-        admin.admin_id +
-        ")";
-
+    updateAdminHeader(admin);
+    renderAdminProfile(admin);
 
     return true;
 }
@@ -2720,6 +2203,84 @@ function escapeAttribute(value) {
 }
 
 
+
+/* =========================
+   PORTAL UI / PROFILE
+========================= */
+
+function showAdminPanel(panelId, clicked){
+    document.querySelectorAll(".portal-panel").forEach(function(panel){
+        panel.classList.remove("active");
+    });
+
+    const panel = document.getElementById(panelId);
+    if(panel) panel.classList.add("active");
+
+    document.querySelectorAll(".sidebar-link").forEach(function(link){
+        link.classList.remove("active");
+    });
+
+    if(clicked){
+        clicked.classList.add("active");
+        const title = document.getElementById("pageTitle");
+        const label = clicked.getAttribute("data-title");
+        if(title && label) title.textContent = label;
+    }
+
+    if(window.innerWidth <= 900){
+        document.getElementById("sidebar").classList.remove("open");
+    }
+}
+
+function toggleSidebar(){
+    document.getElementById("sidebar").classList.toggle("open");
+}
+
+function updateAdminHeader(admin){
+    const name = admin && admin.name ? admin.name : "Admin";
+    const id = admin && admin.admin_id ? admin.admin_id : "-";
+
+    const nameEl = document.getElementById("adminNameTop");
+    const idEl = document.getElementById("adminWelcome");
+    const imgEl = document.getElementById("adminPhoto");
+    const fallback = document.getElementById("adminPhotoFallback");
+
+    if(nameEl) nameEl.textContent = name;
+    if(idEl) idEl.textContent = id;
+
+    const photoUrl = admin && admin.photo_url ? getDocumentUrl(admin.photo_url) : null;
+    if(photoUrl && imgEl){
+        imgEl.src = photoUrl;
+        imgEl.style.display = "block";
+        if(fallback) fallback.style.display = "none";
+        imgEl.onerror = function(){
+            imgEl.style.display = "none";
+            if(fallback) fallback.style.display = "flex";
+        };
+    }else{
+        if(imgEl) imgEl.style.display = "none";
+        if(fallback){
+            fallback.style.display = "flex";
+            fallback.textContent = name.trim().charAt(0).toUpperCase() || "A";
+        }
+    }
+}
+
+function renderAdminProfile(admin){
+    const box = document.getElementById("adminProfileContent");
+    if(!box || !admin) return;
+    const fields = [
+        ["Admin ID",admin.admin_id],["Name",admin.name],["Father/Husband",admin.father_name],
+        ["Mobile",admin.mobile],["Email",admin.email],["Designation",admin.designation],
+        ["Village",admin.village],["Panchayat",admin.panchayat],["Block",admin.block],
+        ["District",admin.district],["State",admin.state],["Joining Date",admin.joining_date],
+        ["Status",admin.status]
+    ];
+    box.innerHTML = '<div class="profile-summary-grid">' + fields.map(function(item){
+        return '<div class="profile-summary-item"><span>'+escapeHtml(item[0])+'</span><strong>'+escapeHtml(item[1] || "-")+'</strong></div>';
+    }).join('') + '</div>';
+}
+
 /* =========================
    START
 ========================= */
@@ -2741,7 +2302,7 @@ async function startDashboard() {
 
 startDashboard();
 
-</script>
 
+</script>
 </body>
 </html>
