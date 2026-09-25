@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farmer Registration Dashboard | Chanho FPO</title>
+<meta name="robots" content="index, follow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+:root{
+    --green:#126b32;
+    --green2:#198754;
+    --blue:#0b6f9f;
+    --gold:#f4a000;
+    --red:#c0392b;
+    --bg:#f4f8f5;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --line:#dfe7e2;
+}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(90deg,#0d5d2b,#16833d);color:#fff;padding:10px 4%;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 2px 9px rgba(0,0,0,.12)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand img{width:58px;height:58px;border-radius:50%;background:#fff;padding:3px;object-fit:contain;flex-shrink:0}
+.brand h1{font-size:18px;margin:0;line-height:1.25}.brand p{font-size:11px;margin:4px 0 0;opacity:.9}
+nav{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+nav a{color:#fff;text-decoration:none;padding:8px 10px;border-radius:6px;font-size:13px;font-weight:700}
+nav a:hover,nav a.active{background:rgba(255,255,255,.16)}
+main{max-width:1350px;margin:0 auto;padding:30px 18px 45px}
+.hero{text-align:center;margin-bottom:22px}.hero h2{margin:0;color:var(--green);font-size:30px}.hero p{margin:8px 0 0;color:var(--muted);line-height:1.5}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0 28px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,.06);position:relative;overflow:hidden}
+.stat:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--green)}
+.stat.approved:before{background:var(--green2)}.stat.pending:before{background:var(--gold)}.stat.rejected:before{background:var(--red)}
+.stat .label{font-size:13px;color:var(--muted);font-weight:700}.stat .num{font-size:34px;font-weight:800;margin-top:8px}.stat .icon{position:absolute;right:16px;top:17px;font-size:30px;opacity:.2}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 4px 16px rgba(0,0,0,.06);overflow:hidden}
+.panel-head{padding:17px 18px;background:#f8fbf9;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-head h3{margin:0;color:var(--green);font-size:19px}.badge{background:#e6f4ea;color:#17622f;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:700}
+.chart{padding:14px 16px 20px;max-height:680px;overflow:auto}
+.row{display:grid;grid-template-columns:150px 1fr 48px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed #edf1ee}
+.name{font-size:12px;font-weight:700;word-break:break-word}.track{height:20px;background:#edf4ef;border-radius:999px;overflow:hidden;position:relative}.bar{height:100%;background:linear-gradient(90deg,#198754,#53a96f);border-radius:999px;min-width:0;transition:width .5s ease}.value{text-align:right;font-size:12px;font-weight:800;color:#17622f}
+.legend{padding:0 16px 16px;color:var(--muted);font-size:11px;line-height:1.5}
+.loading,.error,.empty{text-align:center;padding:35px 16px;color:var(--muted)}.error{color:#b42318;background:#fff4f2;border-radius:10px}
+.updated{text-align:center;color:var(--muted);font-size:11px;margin-top:18px}
+footer{background:#0b4d25;color:#fff;text-align:center;padding:22px;font-size:12px;line-height:1.7}
+@media(max-width:900px){header{flex-direction:column;text-align:center}.brand{justify-content:center}.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}nav{justify-content:center}}
+@media(max-width:520px){main{padding:22px 10px 35px}.hero h2{font-size:25px}.stats{grid-template-columns:1fr 1fr;gap:10px}.stat{padding:15px}.stat .num{font-size:28px}.row{grid-template-columns:112px 1fr 38px;gap:7px}.brand h1{font-size:15px}.brand img{width:50px;height:50px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="logo.png" alt="Chanho FPO Logo">
+    <div>
+      <h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
+      <p>Public Farmer Registration Dashboard</p>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#services">Services</a>
+    <a href="admin-login.html">Admin Login</a>
+    <a href="officer-login.html">Officer Login</a>
+    <a href="dashboard.html" class="active">Dashboard</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>Farmer Registration Dashboard</h2>
+    <p>Chanho और Mandar Block का Panchayat-wise Approved Farmer Registration</p>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><div class="icon">👨‍🌾</div><div class="label">Total Farmer Registration</div><div class="num" id="totalCount">0</div></div>
+    <div class="stat approved"><div class="icon">✅</div><div class="label">Approved Farmer</div><div class="num" id="approvedCount">0</div></div>
+    <div class="stat pending"><div class="icon">⏳</div><div class="label">Pending Farmer</div><div class="num" id="pendingCount">0</div></div>
+    <div class="stat rejected"><div class="icon">❌</div><div class="label">Rejected Farmer</div><div class="num" id="rejectedCount">0</div></div>
+  </section>
+
+  <div id="message" class="loading">Dashboard data load ho raha hai...</div>
+
+  <section class="grid" id="charts" style="display:none">
+    <div class="panel">
+      <div class="panel-head"><h3>Chanho Block</h3><span class="badge" id="chanhoBadge">0 Panchayats</span></div>
+      <div class="chart" id="chanhoChart"></div>
+      <div class="legend">हर bar उस पंचायत के Approved Farmers की संख्या दिखाता है।</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Mandar Block</h3><span class="badge" id="mandarBadge">0 Panchayats</span></div>
+      <div class="chart" id="mandarChart"></div>
+      <div class="legend">हर bar उस पंचायत के Approved Farmers की संख्या दिखाता है।</div>
+    </div>
+  </section>
+
+  <div class="updated" id="updatedAt"></div>
+</main>
+
+<footer>
+  © 2026 Chanho Birsa Munda Sangathan Producer Company Limited<br>
+  Farmer First • Agriculture • Development
+</footer>
+
+<script>
+const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function n(v){ return Number(v || 0); }
+function esc(s){return String(s??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));}
+
+function renderBlock(rows, targetId, badgeId){
+  const target=document.getElementById(targetId);
+  const badge=document.getElementById(badgeId);
+  badge.textContent=`${rows.length} Panchayats`;
+  if(!rows.length){target.innerHTML='<div class="empty">Panchayat data available nahi hai.</div>';return;}
+
+  const max=Math.max(1,...rows.map(x=>n(x.approved)));
+  target.innerHTML=rows.map(x=>{
+    const approved=n(x.approved);
+    const width=approved===0?0:Math.max(3,(approved/max)*100);
+    return `<div class="row" title="${esc(x.panchayat)}: ${approved} approved">
+      <div class="name">${esc(x.panchayat)}</div>
+      <div class="track"><div class="bar" style="width:${width}%"></div></div>
+      <div class="value">${approved}</div>
+    </div>`;
+  }).join('');
+}
+
+async function loadDashboard(){
+  const message=document.getElementById('message');
+  try{
+    const {data,error}=await db.rpc('get_public_dashboard_stats');
+    if(error) throw error;
+    const d=data || {};
+    document.getElementById('totalCount').textContent=n(d.total).toLocaleString('en-IN');
+    document.getElementById('approvedCount').textContent=n(d.approved).toLocaleString('en-IN');
+    document.getElementById('pendingCount').textContent=n(d.pending).toLocaleString('en-IN');
+    document.getElementById('rejectedCount').textContent=n(d.rejected).toLocaleString('en-IN');
+
+    const all=Array.isArray(d.panchayat)?d.panchayat:[];
+    const chanho=all.filter(x=>String(x.block||'').trim().toLowerCase()==='chanho');
+    const mandar=all.filter(x=>String(x.block||'').trim().toLowerCase()==='mandar');
+
+    renderBlock(chanho,'chanhoChart','chanhoBadge');
+    renderBlock(mandar,'mandarChart','mandarBadge');
+
+    message.style.display='none';
+    document.getElementById('charts').style.display='grid';
+    if(d.updated_at){
+      const dt=new Date(d.updated_at);
+      document.getElementById('updatedAt').textContent='Last updated: '+dt.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+    }
+  }catch(err){
+    console.error(err);
+    message.className='error';
+    message.innerHTML='Dashboard data load nahi ho paaya.<br><small>Supabase me public dashboard SQL function run hua hai ya nahi, check kijiye.</small>';
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
