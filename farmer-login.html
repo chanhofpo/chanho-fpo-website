@@ -8,32 +8,54 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+    *{
+        box-sizing:border-box;
+    }
+
     body{
         margin:0;
         font-family:Arial, sans-serif;
         background:#f1f8f3;
+        color:#1f2937;
     }
 
     header{
-        background:#198754;
+        background:linear-gradient(135deg,#166534,#198754);
         color:white;
-        text-align:center;
-        padding:20px;
+        padding:14px 4%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:14px;
+        text-align:left;
+    }
+
+    .header-logo{
+        width:64px;
+        height:64px;
+        object-fit:contain;
+        background:#fff;
+        border-radius:50%;
+        padding:3px;
+        flex-shrink:0;
     }
 
     header h1{
         margin:0;
-        font-size:28px;
+        font-size:24px;
+        line-height:1.25;
     }
 
     header p{
-        margin:6px 0 0;
+        margin:5px 0 0;
+        font-size:13px;
+        opacity:.95;
     }
 
     .box{
-        width:90%;
-        max-width:500px;
-        margin:40px auto;
+        width:92%;
+        max-width:560px;
+        margin:35px auto;
         background:white;
         padding:25px;
         border-radius:15px;
@@ -43,6 +65,7 @@
     h2{
         text-align:center;
         color:#198754;
+        margin-top:0;
     }
 
     label{
@@ -57,11 +80,10 @@
         margin-top:6px;
         border:1px solid #ccc;
         border-radius:8px;
-        box-sizing:border-box;
         font-size:16px;
     }
 
-    button{
+    .main-btn{
         width:100%;
         padding:13px;
         margin-top:22px;
@@ -71,9 +93,10 @@
         border-radius:8px;
         font-size:17px;
         cursor:pointer;
+        font-weight:bold;
     }
 
-    button:hover{
+    .main-btn:hover{
         background:#146c43;
     }
 
@@ -95,10 +118,23 @@
     .row{
         padding:9px 0;
         border-bottom:1px solid #ddd;
+        display:flex;
+        gap:8px;
+        justify-content:space-between;
+        align-items:flex-start;
     }
 
     .row:last-child{
         border-bottom:none;
+    }
+
+    .row b{
+        min-width:145px;
+    }
+
+    .row span{
+        text-align:right;
+        word-break:break-word;
     }
 
     .status{
@@ -110,12 +146,103 @@
         color:#856404;
     }
 
+    .status.approved{
+        background:#d1e7dd;
+        color:#0f5132;
+    }
+
+    .status.rejected{
+        background:#f8d7da;
+        color:#842029;
+    }
+
+    .receipt-area{
+        display:none;
+        margin-top:18px;
+        padding:16px;
+        background:#eaf8ef;
+        border:1px solid #9fd0b0;
+        border-radius:10px;
+        text-align:center;
+    }
+
+    .receipt-area h3{
+        margin:0 0 8px;
+        color:#146c43;
+    }
+
+    .receipt-area p{
+        margin:5px 0 12px;
+        color:#355d44;
+        font-size:14px;
+    }
+
+    .receipt-btn{
+        width:100%;
+        padding:12px;
+        border:0;
+        border-radius:8px;
+        background:#0b6f9f;
+        color:#fff;
+        font-weight:bold;
+        font-size:16px;
+        cursor:pointer;
+    }
+
+    .receipt-btn:hover{
+        background:#075e88;
+    }
+
+    .locked-area{
+        display:none;
+        margin-top:18px;
+        padding:13px;
+        background:#fff8e1;
+        border:1px solid #f0cf74;
+        border-radius:9px;
+        color:#7a5a00;
+        text-align:center;
+        font-size:14px;
+        line-height:1.45;
+    }
+
     .back{
         display:block;
         text-align:center;
         margin-top:20px;
         color:#198754;
         text-decoration:none;
+        font-weight:bold;
+    }
+
+    @media(max-width:600px){
+        header{
+            padding:12px 14px;
+        }
+
+        .header-logo{
+            width:55px;
+            height:55px;
+        }
+
+        header h1{
+            font-size:19px;
+        }
+
+        .box{
+            padding:18px;
+            margin:22px auto;
+        }
+
+        .row{
+            display:block;
+        }
+
+        .row span{
+            display:block;
+            text-align:left;
+            margin-top:4px;
+        }
     }
 </style>
 </head>
@@ -123,8 +250,11 @@
 <body>
 
 <header>
-    <h1>Chanho FPO</h1>
-    <p>किसान Status Login</p>
+    <img src="logo.png" alt="Chanho FPO Logo" class="header-logo">
+    <div>
+        <h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
+        <p>किसान Status Login</p>
+    </div>
 </header>
 
 <div class="box">
@@ -136,6 +266,7 @@
         type="text"
         id="registrationNo"
         placeholder="जैसे CBMS/2026/01"
+        autocomplete="off"
     >
 
     <label>Mobile Number</label>
@@ -144,9 +275,11 @@
         id="mobile"
         placeholder="अपना मोबाइल नंबर डालें"
         maxlength="10"
+        inputmode="numeric"
+        autocomplete="off"
     >
 
-    <button onclick="checkStatus()">
+    <button class="main-btn" onclick="checkStatus()">
         अपना Status देखें
     </button>
 
@@ -185,6 +318,11 @@
         </div>
 
         <div class="row">
+            <b>ब्लॉक:</b>
+            <span id="r_block"></span>
+        </div>
+
+        <div class="row">
             <b>फसल:</b>
             <span id="r_crop"></span>
         </div>
@@ -199,6 +337,18 @@
             <span class="status" id="r_status"></span>
         </div>
 
+        <div id="receiptArea" class="receipt-area">
+            <h3>✅ Final Approval Complete</h3>
+            <p>आपकी Payment Receipt अब उपलब्ध है।</p>
+            <button class="receipt-btn" onclick="openPaymentReceipt()">
+                🧾 Payment Receipt डाउनलोड / Print करें
+            </button>
+        </div>
+
+        <div id="lockedArea" class="locked-area">
+            🔒 Payment Receipt Final Officer Approval के बाद उपलब्ध होगी।
+        </div>
+
     </div>
 
     <a class="back" href="index.html">
@@ -209,10 +359,11 @@
 
 <script>
 
-const SUPABASE_URL = "https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_URL =
+    "https://unqihzayhrpmtdxrjiyy.supabase.co";
 
 const SUPABASE_KEY =
-"sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+    "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 
 const { createClient } = supabase;
 
@@ -220,6 +371,14 @@ const db = createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+/*
+    Membership fee currently set to ₹1,000.
+    Change this value later from one place if needed.
+*/
+const MEMBERSHIP_FEE = 1000;
+
+let currentFarmerData = null;
 
 
 async function checkStatus(){
@@ -236,9 +395,18 @@ async function checkStatus(){
     const result =
         document.getElementById("result");
 
+    const receiptArea =
+        document.getElementById("receiptArea");
+
+    const lockedArea =
+        document.getElementById("lockedArea");
+
 
     message.innerHTML = "";
     result.style.display = "none";
+    receiptArea.style.display = "none";
+    lockedArea.style.display = "none";
+    currentFarmerData = null;
 
 
     if(registrationNo === "" || mobile === ""){
@@ -293,15 +461,20 @@ async function checkStatus(){
         }
 
 
-        if(!data){
+        if(!data || data.success === false){
 
             message.style.color = "red";
 
             message.innerHTML =
-                "❌ Registration Number या Mobile Number गलत है।";
+                data && data.message
+                ? "❌ " + data.message
+                : "❌ Registration Number या Mobile Number गलत है।";
 
             return;
         }
+
+
+        currentFarmerData = data;
 
 
         document.getElementById("r_registration").textContent =
@@ -322,14 +495,46 @@ async function checkStatus(){
         document.getElementById("r_panchayat").textContent =
             data.panchayat || "-";
 
+        document.getElementById("r_block").textContent =
+            data.block || "-";
+
         document.getElementById("r_crop").textContent =
             data.crop || "-";
 
         document.getElementById("r_land").textContent =
             data.land || "-";
 
-        document.getElementById("r_status").textContent =
-            data.status || "Pending";
+
+        const statusElement =
+            document.getElementById("r_status");
+
+        const status =
+            String(data.status || "Pending").trim();
+
+        const statusLower =
+            status.toLowerCase();
+
+        statusElement.textContent = status;
+        statusElement.className = "status";
+
+
+        if(statusLower === "approved"){
+
+            statusElement.classList.add("approved");
+
+            receiptArea.style.display = "block";
+            lockedArea.style.display = "none";
+
+        }
+        else{
+
+            if(statusLower.includes("rejected")){
+                statusElement.classList.add("rejected");
+            }
+
+            receiptArea.style.display = "none";
+            lockedArea.style.display = "block";
+        }
 
 
         message.style.color = "green";
@@ -351,6 +556,556 @@ async function checkStatus(){
         message.innerHTML =
             "❌ कुछ तकनीकी समस्या हुई।";
     }
+
+}
+
+
+function getReceiptNumber(registrationNo){
+
+    const value =
+        String(registrationNo || "").trim();
+
+    if(!value){
+        return "CBMS/RCPT/2026/--";
+    }
+
+    /*
+        CBMS/2026/05 -> CBMS/RCPT/2026/05
+    */
+    const parts = value.split("/");
+
+    if(parts.length >= 3){
+        return "CBMS/RCPT/" + parts.slice(1).join("/");
+    }
+
+    return "CBMS/RCPT/" + value;
+}
+
+
+function formatReceiptDate(value){
+
+    if(!value){
+        return new Date().toLocaleDateString("en-IN");
+    }
+
+    const date = new Date(value);
+
+    if(isNaN(date.getTime())){
+        return String(value);
+    }
+
+    return date.toLocaleDateString("en-IN");
+}
+
+
+function escapeReceiptHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
+
+
+function openPaymentReceipt(){
+
+    if(!currentFarmerData){
+
+        alert("पहले किसान का Status देखें।");
+
+        return;
+    }
+
+
+    const status =
+        String(
+            currentFarmerData.status || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    /*
+        IMPORTANT:
+        Receipt is available only after Officer final approval.
+    */
+    if(status !== "approved"){
+
+        alert(
+            "Payment Receipt Final Approval के बाद ही उपलब्ध होगी।"
+        );
+
+        return;
+    }
+
+
+    const farmer =
+        currentFarmerData;
+
+    const receiptNo =
+        getReceiptNumber(
+            farmer.registration_no
+        );
+
+    const receiptDate =
+        formatReceiptDate(
+            farmer.officer_decision_at
+        );
+
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank",
+            "width=900,height=900"
+        );
+
+
+    if(!printWindow){
+
+        alert(
+            "Popup blocked है। Browser में popup allow करके दोबारा कोशिश करें।"
+        );
+
+        return;
+    }
+
+
+    printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<title>Payment Receipt - ${escapeReceiptHtml(receiptNo)}</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    padding:20px;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#eef5ef;
+    color:#111;
+}
+
+.receipt{
+    width:100%;
+    max-width:800px;
+    margin:0 auto;
+    background:#fff;
+    border:2px solid #14713c;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.receipt-header{
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    gap:15px;
+    background:
+        linear-gradient(
+            90deg,
+            #f5fff6,
+            #ffffff,
+            #edf9ef
+        );
+    border-bottom:1px solid #b9d9c3;
+}
+
+.receipt-header img{
+    width:86px;
+    height:86px;
+    object-fit:contain;
+    border-radius:50%;
+    flex-shrink:0;
+}
+
+.company{
+    flex:1;
+    text-align:center;
+}
+
+.company h1{
+    margin:0;
+    color:#075b2d;
+    font-size:27px;
+    line-height:1.2;
+}
+
+.company p{
+    margin:6px 0 0;
+    font-size:13px;
+}
+
+.receipt-title{
+    background:#08622f;
+    color:#fff;
+    text-align:center;
+    padding:12px 15px;
+}
+
+.receipt-title h2{
+    margin:0;
+    font-size:25px;
+}
+
+.receipt-title p{
+    margin:4px 0 0;
+    font-size:15px;
+}
+
+.receipt-body{
+    padding:22px;
+}
+
+.meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 22px;
+    margin-bottom:18px;
+}
+
+.meta-row{
+    display:grid;
+    grid-template-columns:145px 1fr;
+    gap:8px;
+    padding:6px 0;
+}
+
+.meta-row strong{
+    color:#1f2937;
+}
+
+.amount-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+.amount-table th,
+.amount-table td{
+    border:1px solid #b7cdbf;
+    padding:10px;
+}
+
+.amount-table th{
+    background:#0b6b36;
+    color:#fff;
+}
+
+.amount-table .amount{
+    text-align:right;
+    font-weight:bold;
+}
+
+.total-row td{
+    background:#eff8f1;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.words{
+    margin-top:16px;
+    padding:10px 12px;
+    border:1px solid #d9e6dd;
+    background:#fbfefc;
+    border-radius:6px;
+}
+
+.note{
+    margin-top:18px;
+    padding:12px;
+    border:1px solid #e7c765;
+    background:#fff9df;
+    border-radius:7px;
+    font-size:13px;
+    line-height:1.55;
+}
+
+.signatures{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:60px;
+    margin-top:55px;
+    text-align:center;
+}
+
+.sign-line{
+    border-top:1px solid #333;
+    padding-top:6px;
+    font-weight:bold;
+}
+
+.footer{
+    margin-top:25px;
+    background:#075b2d;
+    color:#fff;
+    text-align:center;
+    padding:10px;
+    font-size:12px;
+}
+
+.print-actions{
+    max-width:800px;
+    margin:15px auto 0;
+    display:flex;
+    justify-content:center;
+    gap:10px;
+}
+
+.print-actions button{
+    border:0;
+    padding:11px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:bold;
+}
+
+.print-btn{
+    background:#0b6f9f;
+    color:#fff;
+}
+
+.close-btn{
+    background:#6c757d;
+    color:#fff;
+}
+
+@media print{
+
+    body{
+        background:#fff;
+        padding:0;
+    }
+
+    .print-actions{
+        display:none;
+    }
+
+    .receipt{
+        border:1px solid #14713c;
+        max-width:none;
+    }
+}
+
+@media(max-width:650px){
+
+    .receipt-header{
+        flex-direction:column;
+    }
+
+    .company h1{
+        font-size:21px;
+    }
+
+    .meta{
+        grid-template-columns:1fr;
+    }
+
+    .meta-row{
+        grid-template-columns:125px 1fr;
+    }
+
+    .signatures{
+        grid-template-columns:1fr;
+        gap:45px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="receipt">
+
+    <div class="receipt-header">
+
+        <img
+            src="logo.png"
+            alt="CBMS Logo"
+        >
+
+        <div class="company">
+
+            <h1>
+                Chanho Birsa Munda Sangathan
+                Producer Company Limited
+            </h1>
+
+            <p>
+                Vill-Hutar, P.O.-Tangar, P.S.-Chanho,
+                Ranchi, Jharkhand
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="receipt-title">
+
+        <h2>PAYMENT RECEIPT</h2>
+
+        <p>भुगतान रसीद</p>
+
+    </div>
+
+    <div class="receipt-body">
+
+        <div class="meta">
+
+            <div class="meta-row">
+                <strong>Receipt No.</strong>
+                <span>${escapeReceiptHtml(receiptNo)}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Date</strong>
+                <span>${escapeReceiptHtml(receiptDate)}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Received From</strong>
+                <span>${escapeReceiptHtml(farmer.name || "-")}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Registration No.</strong>
+                <span>${escapeReceiptHtml(farmer.registration_no || "-")}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Mobile No.</strong>
+                <span>${escapeReceiptHtml(farmer.mobile || "-")}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Village</strong>
+                <span>${escapeReceiptHtml(farmer.village || "-")}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Panchayat</strong>
+                <span>${escapeReceiptHtml(farmer.panchayat || "-")}</span>
+            </div>
+
+            <div class="meta-row">
+                <strong>Block</strong>
+                <span>${escapeReceiptHtml(farmer.block || "-")}</span>
+            </div>
+
+        </div>
+
+
+        <table class="amount-table">
+
+            <thead>
+                <tr>
+                    <th style="width:70px;">Sl No.</th>
+                    <th>Particulars</th>
+                    <th style="width:170px;">Amount (₹)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <tr>
+                    <td style="text-align:center;">1</td>
+                    <td>FPO Membership Fee</td>
+                    <td class="amount">
+                        ${MEMBERSHIP_FEE.toLocaleString("en-IN")}.00
+                    </td>
+                </tr>
+
+                <tr class="total-row">
+                    <td colspan="2" style="text-align:right;">
+                        Total Amount (₹)
+                    </td>
+                    <td class="amount">
+                        ${MEMBERSHIP_FEE.toLocaleString("en-IN")}.00
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+
+        <div class="words">
+            <strong>Amount in Words:</strong>
+            Rupees One Thousand Only
+        </div>
+
+
+        <div class="note">
+
+            <strong>Note:</strong><br>
+
+            • यह रसीद FPO सदस्यता शुल्क के लिए जारी की गई है।<br>
+            • यह रसीद किसान के Final Officer Approval के बाद उपलब्ध कराई गई है।<br>
+            • भविष्य में सत्यापन के लिए Registration Number सुरक्षित रखें।
+
+        </div>
+
+
+        <div class="signatures">
+
+            <div>
+                <div class="sign-line">
+                    Received By
+                </div>
+                <small>For CBMS</small>
+            </div>
+
+            <div>
+                <div class="sign-line">
+                    Authorised Signatory
+                </div>
+                <small>
+                    Chanho Birsa Munda Sangathan Producer Company Limited
+                </small>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Final Approved Farmer Payment Receipt •
+        ${escapeReceiptHtml(farmer.registration_no || "")}
+    </div>
+
+</div>
+
+
+<div class="print-actions">
+
+    <button
+        class="print-btn"
+        onclick="window.print()"
+    >
+        🖨 Print / Save as PDF
+    </button>
+
+    <button
+        class="close-btn"
+        onclick="window.close()"
+    >
+        Close
+    </button>
+
+</div>
+
+</body>
+</html>
+    `);
+
+
+    printWindow.document.close();
 
 }
 
