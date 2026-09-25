@@ -7,6 +7,7 @@
     <title>Chanho Birsa Munda Sangathan Producer Company Limited</title>
 
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -19,31 +20,75 @@
             color: #222;
         }
 
+        /* ================= HEADER ================= */
+
         header {
             background: #126b32;
             color: white;
-            padding: 18px 5%;
+            padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .logo {
-            font-size: 22px;
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .fpo-logo {
+            width: 68px;
+            height: 68px;
+            object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 3px;
+            flex-shrink: 0;
+        }
+
+        .company-name {
+            font-size: 20px;
             font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .company-subtitle {
+            font-size: 13px;
+            margin-top: 4px;
+            opacity: .95;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .jharkhand-logo {
+            width: 62px;
+            height: 62px;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            padding: 4px;
+            flex-shrink: 0;
         }
 
         nav a {
             color: white;
             text-decoration: none;
-            margin: 0 8px;
+            margin: 0 7px;
             font-size: 15px;
         }
 
         nav a:hover {
             color: #ffcc33;
         }
+
+        /* ================= HERO ================= */
 
         .hero {
             min-height: 450px;
@@ -97,6 +142,8 @@
             background: #146c43;
         }
 
+        /* ================= SECTIONS ================= */
+
         section {
             padding: 55px 7%;
         }
@@ -115,6 +162,8 @@
             line-height: 1.8;
             font-size: 17px;
         }
+
+        /* ================= SERVICES ================= */
 
         .services {
             display: grid;
@@ -144,7 +193,7 @@
             line-height: 1.5;
         }
 
-        /* Farmer Section */
+        /* ================= FARMER ================= */
 
         .farmer-section {
             background: #e8f7e8;
@@ -200,7 +249,7 @@
             background: #212529;
         }
 
-        /* Contact */
+        /* ================= CONTACT ================= */
 
         .contact-box {
             max-width: 700px;
@@ -213,6 +262,8 @@
             line-height: 1.8;
         }
 
+        /* ================= FOOTER ================= */
+
         footer {
             background: #0b4d25;
             color: white;
@@ -221,15 +272,22 @@
             line-height: 1.7;
         }
 
-        @media(max-width:700px) {
+        /* ================= MOBILE ================= */
+
+        @media(max-width:900px) {
 
             header {
                 justify-content: center;
                 text-align: center;
             }
 
-            .logo {
-                margin-bottom: 12px;
+            .header-brand {
+                justify-content: center;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: center;
             }
 
             nav {
@@ -239,6 +297,24 @@
             nav a {
                 display: inline-block;
                 margin: 5px 6px;
+            }
+
+            .fpo-logo {
+                width: 58px;
+                height: 58px;
+            }
+
+            .jharkhand-logo {
+                width: 55px;
+                height: 55px;
+            }
+
+            .company-name {
+                font-size: 17px;
+            }
+
+            .company-subtitle {
+                font-size: 12px;
             }
 
             .hero {
@@ -261,6 +337,7 @@
                 padding: 25px 18px;
             }
         }
+
     </style>
 </head>
 
@@ -271,35 +348,65 @@
 
 <header>
 
-    <div class="logo">
-        🌾 Chanho FPO
+    <div class="header-brand">
+
+        <img
+            src="logo.png"
+            alt="Chanho FPO Logo"
+            class="fpo-logo"
+        >
+
+        <div>
+
+            <div class="company-name">
+                Chanho Birsa Munda Sangathan
+                Producer Company Limited
+            </div>
+
+            <div class="company-subtitle">
+                Farmer Producer Organisation
+            </div>
+
+        </div>
+
     </div>
 
-    <nav>
 
-        <a href="#home">Home</a>
+    <div class="header-right">
 
-        <a href="#about">About</a>
+        <img
+            src="jharkhand-logo.png"
+            alt="Government of Jharkhand"
+            class="jharkhand-logo"
+        >
 
-        <a href="#services">Services</a>
+        <nav>
 
-        <a href="register.html">
-            Farmer Registration
-        </a>
+            <a href="#home">Home</a>
 
-        <a href="farmer-login.html">
-            Farmer Login
-        </a>
+            <a href="#about">About</a>
 
-        <a href="admin-login.html">
-            Admin
-        </a>
+            <a href="#services">Services</a>
 
-        <a href="#contact">
-            Contact
-        </a>
+            <a href="register.html">
+                Farmer Registration
+            </a>
 
-    </nav>
+            <a href="farmer-login.html">
+                Farmer Login
+            </a>
+
+            <a href="admin-login.html">
+                Admin
+            </a>
+
+            <a href="#contact">
+                Contact
+            </a>
+
+        </nav>
+
+    </div>
 
 </header>
 
@@ -352,21 +459,26 @@
     <div class="about">
 
         <p>
+
             <b>
                 Chanho Birsa Munda Sangathan Producer Company Limited
             </b>
+
             किसानों को एक साथ जोड़कर कृषि उत्पादन,
             उचित मूल्य, आधुनिक तकनीक और विभिन्न
             सरकारी योजनाओं का लाभ दिलाने के उद्देश्य
             से कार्य करता है।
+
         </p>
 
         <br>
 
         <p>
+
             हमारा उद्देश्य किसानों की आय और कृषि व्यवस्था
             को मजबूत बनाना तथा किसानों को बाजार से
             सीधे जोड़ना है।
+
         </p>
 
     </div>
@@ -613,38 +725,6 @@
     </div>
 
 </section>
-<!-- ================= ADMIN ================= -->
-
-<section>
-
-    <h2 class="title">
-        🔐 FPO Admin
-    </h2>
-
-    <div class="login-box">
-
-        <p style="line-height:1.7;">
-
-            FPO के अधिकृत Admin किसान Registration,
-            Farmer Details और Application Status
-            को manage कर सकते हैं।
-
-        </p>
-
-        <div style="margin-top:20px;">
-
-            <a
-                href="admin-login.html"
-                class="big-btn admin-btn"
-            >
-                🔐 Admin Login
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
 
 
 <!-- ================= OFFICER ================= -->
@@ -655,6 +735,7 @@
         👨‍💼 FPO Officer
     </h2>
 
+
     <div class="login-box">
 
         <p style="line-height:1.7;">
@@ -664,6 +745,7 @@
             को manage कर सकते हैं।
 
         </p>
+
 
         <div style="margin-top:20px;">
 
@@ -680,6 +762,7 @@
 
 </section>
 
+
 <!-- ================= CONTACT ================= -->
 
 <section id="contact">
@@ -692,16 +775,20 @@
     <div class="contact-box">
 
         <p>
+
             <b>
                 Chanho Birsa Munda Sangathan
                 Producer Company Limited
             </b>
+
         </p>
 
 
         <p>
+
             Vill-Hutar, PO-Tangar, PS-Chanho,<br>
             Ranchi, Jharkhand
+
         </p>
 
 
@@ -709,8 +796,10 @@
 
 
         <p>
+
             किसानों एवं सदस्यों के लिए कृषि सेवाओं
             और सरकारी योजनाओं की जानकारी उपलब्ध।
+
         </p>
 
     </div>
@@ -723,12 +812,16 @@
 <footer>
 
     <p>
+
         © 2026 Chanho Birsa Munda Sangathan
         Producer Company Limited
+
     </p>
 
     <p>
+
         Farmer First • Agriculture • Development
+
     </p>
 
 </footer>
