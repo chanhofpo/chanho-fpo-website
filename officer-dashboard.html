@@ -92,11 +92,18 @@ tr:nth-child(even) td{background:#fafcfd}
 .profile-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.profile-summary-item{border:1px solid var(--line);background:#f8fbfd;padding:12px;border-radius:6px}.profile-summary-item span{display:block;font-size:11px;color:#667085;margin-bottom:4px}.profile-summary-item strong{font-size:13px;word-break:break-word}
 .registration-success{background:#eaf8ef;border:1px solid #b8e0c6;padding:12px;border-radius:6px;display:grid;gap:5px;color:#155724}
 .section-note{font-size:12px;color:#667085;margin:-6px 0 14px}
+.officer-profile-layout{display:grid;grid-template-columns:190px 1fr;gap:22px;align-items:start}
+.officer-photo-card{border:1px solid var(--line);background:#f8fbfd;border-radius:9px;padding:14px;text-align:center}
+.officer-profile-photo{width:135px;height:155px;object-fit:cover;border:2px solid #d5e2e8;border-radius:9px;background:#fff;display:block;margin:0 auto 10px}
+.officer-photo-placeholder{width:135px;height:155px;border:2px dashed #c5d3db;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;color:#718096;font-size:13px;padding:12px}
+.profile-readonly{background:#f2f4f7!important;color:#667085}
+.profile-save-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.profile-help{font-size:11px;color:#667085;margin-top:7px;line-height:1.45}
 .portal-footer{background:#1d6587;color:#fff;text-align:center;padding:12px;font-size:11px;margin-top:auto}
 .modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
 @media(max-width:1100px){.cards,.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.form-span-3{grid-column:1/-1}.profile-summary-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.main-shell{margin-left:0;width:100%}.menu-toggle{display:block}.top-logo{display:none}.filters,.download-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.form-span-2,.form-span-3{grid-column:auto}.user-text{max-width:135px}}
-@media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
+@media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.officer-profile-layout{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
 
 </style>
 </head>
@@ -158,7 +165,11 @@ tr:nth-child(even) td{background:#fafcfd}
   </section>
 
   <section id="profilePanel" class="portal-panel">
-    <div class="section"><h2>Officer Profile</h2><div id="officerProfileContent"></div></div>
+    <div class="section">
+      <h2>Manage Officer Profile</h2>
+      <p class="section-note">Officer ID pehle se bana hua rahega. Yahan apna photo aur profile details update karein.</p>
+      <div id="officerProfileContent"></div>
+    </div>
   </section>
 
   <section id="adminRegistrationPanel" class="portal-panel">
@@ -2436,13 +2447,203 @@ function renderOfficerProfile(officer){
     const box = document.getElementById("officerProfileContent");
     if(!box || !officer) return;
 
+    const photoUrl = officer.photo_url ? getDocumentUrl(officer.photo_url) : null;
+    const photoHtml = photoUrl
+        ? `<img id="officerProfilePhotoPreview" class="officer-profile-photo" src="${escapeHtml(photoUrl)}" alt="Officer Photo" onerror="this.style.display='none';document.getElementById('officerProfilePhotoFallback').style.display='flex';">`
+        : "";
+
     box.innerHTML = `
-        <div class="profile-summary-grid">
-            <div class="profile-summary-item"><span>Officer ID</span><strong>${escapeHtml(officer.officer_id || "-")}</strong></div>
-            <div class="profile-summary-item"><span>Name</span><strong>${escapeHtml(officer.name || "Officer")}</strong></div>
-            <div class="profile-summary-item"><span>Status</span><strong>${escapeHtml(officer.status || "-")}</strong></div>
+        <div class="officer-profile-layout">
+
+            <div class="officer-photo-card">
+                ${photoHtml}
+                <div id="officerProfilePhotoFallback" class="officer-photo-placeholder" style="${photoUrl ? 'display:none' : 'display:flex'}">
+                    Officer Photo<br>Not Uploaded
+                </div>
+
+                <label style="text-align:left;margin-top:8px">Upload / Change Photo</label>
+                <input type="file" id="officerProfilePhotoFile" accept="image/*" onchange="previewOfficerProfilePhoto(this)">
+                <div class="profile-help">JPG, JPEG, PNG ya WebP photo upload karein.</div>
+            </div>
+
+            <form id="officerProfileForm" onsubmit="event.preventDefault();saveOfficerProfile();">
+                <div class="form-grid-2">
+                    <div>
+                        <label>Officer ID</label>
+                        <input class="profile-readonly" id="profileOfficerId" value="${escapeHtml(officer.officer_id || '')}" readonly>
+                    </div>
+
+                    <div>
+                        <label>Status</label>
+                        <input class="profile-readonly" value="${escapeHtml(officer.status || 'Active')}" readonly>
+                    </div>
+
+                    <div>
+                        <label>Name *</label>
+                        <input id="profileOfficerName" value="${escapeHtml(officer.name || '')}" required>
+                    </div>
+
+                    <div>
+                        <label>Father Name</label>
+                        <input id="profileOfficerFatherName" value="${escapeHtml(officer.father_name || '')}">
+                    </div>
+
+                    <div>
+                        <label>Mobile Number *</label>
+                        <input id="profileOfficerMobile" value="${escapeHtml(officer.mobile || '')}" maxlength="10" inputmode="numeric" placeholder="10 digit mobile number" required>
+                    </div>
+
+                    <div>
+                        <label>Aadhaar Number</label>
+                        <input id="profileOfficerAadhaar" value="${escapeHtml(officer.aadhar_number || '')}" maxlength="12" inputmode="numeric" placeholder="12 digit Aadhaar number">
+                    </div>
+
+                    <div>
+                        <label>Designation</label>
+                        <input id="profileOfficerDesignation" value="${escapeHtml(officer.designation || 'Officer')}" placeholder="Officer">
+                    </div>
+                </div>
+
+                <div class="profile-save-row">
+                    <button type="submit" class="primary-btn" id="saveOfficerProfileBtn">Save Profile</button>
+                    <span id="officerProfileSaveMessage" style="font-size:12px;color:#667085"></span>
+                </div>
+            </form>
+
         </div>
     `;
+}
+
+function previewOfficerProfilePhoto(input){
+    const file = input && input.files ? input.files[0] : null;
+    if(!file) return;
+
+    if(!String(file.type || "").startsWith("image/")){
+        showError("Officer photo ke liye image file select karein.");
+        input.value = "";
+        return;
+    }
+
+    const img = document.getElementById("officerProfilePhotoPreview");
+    const fallback = document.getElementById("officerProfilePhotoFallback");
+    const url = URL.createObjectURL(file);
+
+    if(img){
+        img.src = url;
+        img.style.display = "block";
+    }else if(fallback){
+        const created = document.createElement("img");
+        created.id = "officerProfilePhotoPreview";
+        created.className = "officer-profile-photo";
+        created.src = url;
+        created.alt = "Officer Photo";
+        fallback.parentNode.insertBefore(created, fallback);
+    }
+
+    if(fallback) fallback.style.display = "none";
+}
+
+async function uploadOfficerProfilePhoto(file){
+    if(!file) return currentOfficer && currentOfficer.photo_url ? currentOfficer.photo_url : null;
+
+    if(!String(file.type || "").startsWith("image/")){
+        throw new Error("Sirf image file upload karein.");
+    }
+
+    const originalName = String(file.name || "photo.jpg");
+    const extension = originalName.includes(".")
+        ? originalName.split(".").pop().toLowerCase()
+        : "jpg";
+
+    const officerId = currentOfficer && currentOfficer.officer_id
+        ? String(currentOfficer.officer_id).replace(/[^a-zA-Z0-9_-]/g,"_")
+        : "officer";
+
+    const path = "officer/photo/" + officerId + "_" + Date.now() + "." + extension;
+
+    const { error } = await db.storage
+        .from("farmer-documents")
+        .upload(path, file, {
+            cacheControl:"3600",
+            upsert:false
+        });
+
+    if(error) throw error;
+    return path;
+}
+
+async function saveOfficerProfile(){
+    if(!currentOfficer) return;
+
+    const name = document.getElementById("profileOfficerName").value.trim();
+    const fatherName = document.getElementById("profileOfficerFatherName").value.trim();
+    const mobile = document.getElementById("profileOfficerMobile").value.trim();
+    const aadhaar = document.getElementById("profileOfficerAadhaar").value.trim();
+    const designation = document.getElementById("profileOfficerDesignation").value.trim();
+    const photoInput = document.getElementById("officerProfilePhotoFile");
+    const photoFile = photoInput && photoInput.files ? photoInput.files[0] : null;
+    const btn = document.getElementById("saveOfficerProfileBtn");
+    const msg = document.getElementById("officerProfileSaveMessage");
+
+    if(!name){
+        showError("Officer Name bharna zaroori hai.");
+        return;
+    }
+
+    if(!/^\d{10}$/.test(mobile)){
+        showError("Mobile Number 10 digit ka hona chahiye.");
+        return;
+    }
+
+    if(aadhaar && !/^\d{12}$/.test(aadhaar)){
+        showError("Aadhaar Number 12 digit ka hona chahiye.");
+        return;
+    }
+
+    if(btn){
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+    }
+    if(msg) msg.textContent = "Profile save ho raha hai...";
+
+    try{
+        const photoPath = await uploadOfficerProfilePhoto(photoFile);
+
+        const payload = {
+            name: name,
+            father_name: fatherName || null,
+            mobile: mobile,
+            aadhar_number: aadhaar || null,
+            designation: designation || "Officer",
+            photo_url: photoPath || null
+        };
+
+        const { data, error } = await db
+            .from("officers")
+            .update(payload)
+            .eq("auth_user_id", currentOfficer.auth_user_id)
+            .select("*")
+            .maybeSingle();
+
+        if(error) throw error;
+        if(!data) throw new Error("Officer profile update nahi hua.");
+
+        currentOfficer = data;
+        updateOfficerHeader(data);
+        renderOfficerProfile(data);
+        showSuccess("Officer profile successfully updated.");
+
+    }catch(error){
+        console.error(error);
+        showError("Officer profile update failed: " + (error.message || error));
+        if(msg) msg.textContent = "Save failed.";
+    }finally{
+        const currentBtn = document.getElementById("saveOfficerProfileBtn");
+        if(currentBtn){
+            currentBtn.disabled = false;
+            currentBtn.textContent = "Save Profile";
+        }
+    }
 }
 
 /* =========================
