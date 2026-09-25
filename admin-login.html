@@ -528,7 +528,7 @@ async function verifyPasswordAndSendOtp(){
     const {
       data: authData,
       error: authError
-    } = await db.auth.signInWithPassword({
+    } = await passwordDb.auth.signInWithPassword({
       email,
       password
     });
@@ -541,6 +541,15 @@ async function verifyPasswordAndSendOtp(){
 
     if(!user){
       throw new Error("Login session नहीं बना।");
+    }
+
+    const tempSession =
+      authData && authData.session
+        ? authData.session
+        : null;
+
+    if(!tempSession || !tempSession.access_token){
+      throw new Error("Password verification session नहीं मिला।");
     }
 
     const profile = await verifyRole(user.id, passwordDb);
