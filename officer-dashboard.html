@@ -3019,7 +3019,7 @@ async function loadAuditLogs(){
 
         html += `
             <tr>
-                <td>${escapeHtml(formatDate(row.created_at))}</td>
+                <td>${escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString("en-IN") : "-")}</td>
                 <td>${escapeHtml(row.actor_role || "-")}</td>
                 <td>${escapeHtml(row.action || "-")}</td>
                 <td>${escapeHtml(row.entity_type || "-")}</td>
