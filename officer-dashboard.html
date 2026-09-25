@@ -42,6 +42,43 @@ body{
     font-size:14px;
 }
 
+.header-brand{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.header-title{
+    display:flex;
+    flex-direction:column;
+}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.header-logo{
+    width:72px;
+    height:72px;
+    object-fit:contain;
+    background:white;
+    border-radius:50%;
+    padding:3px;
+    flex-shrink:0;
+}
+
+.jharkhand-logo{
+    width:90px;
+    height:72px;
+    object-fit:contain;
+    background:white;
+    border-radius:8px;
+    padding:4px;
+    flex-shrink:0;
+}
+
 .logout-btn{
     background:white;
     color:#138a4b;
@@ -367,6 +404,25 @@ th{
         font-size:20px;
     }
 
+    .header-brand{
+        width:100%;
+    }
+
+    .header-right{
+        width:100%;
+        justify-content:flex-end;
+    }
+
+    .header-logo{
+        width:58px;
+        height:58px;
+    }
+
+    .jharkhand-logo{
+        width:72px;
+        height:58px;
+    }
+
 }
 
 </style>
@@ -376,14 +432,34 @@ th{
 
 <header class="header">
 
-    <div>
-        <h1>Chanho FPO - Officer Dashboard</h1>
-        <p id="officerInfo">Loading officer...</p>
+    <div class="header-brand">
+
+        <img
+            src="logo.png"
+            alt="Chanho Birsa Munda Sangathan Logo"
+            class="header-logo"
+        >
+
+        <div class="header-title">
+            <h1>Chanho FPO - Officer Dashboard</h1>
+            <p id="officerInfo">Loading officer...</p>
+        </div>
+
     </div>
 
-    <button class="logout-btn" onclick="logout()">
-        Logout
-    </button>
+    <div class="header-right">
+
+        <img
+            src="jharkhand-logo.png"
+            alt="Government of Jharkhand"
+            class="jharkhand-logo"
+        >
+
+        <button class="logout-btn" onclick="logout()">
+            Logout
+        </button>
+
+    </div>
 
 </header>
 
