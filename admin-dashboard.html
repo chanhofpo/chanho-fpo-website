@@ -93,7 +93,7 @@ tr:nth-child(even) td{background:#fafcfd}
 .registration-success{background:#eaf8ef;border:1px solid #b8e0c6;padding:12px;border-radius:6px;display:grid;gap:5px;color:#155724}
 .section-note{font-size:12px;color:#667085;margin:-6px 0 14px}
 .portal-footer{background:#1d6587;color:#fff;text-align:center;padding:12px;font-size:11px;margin-top:auto}
-.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
+.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.dup-warning{margin-top:5px;font-size:10px;font-weight:700;color:#b45309;background:#fff7ed;border:1px solid #fed7aa;padding:3px 6px;border-radius:4px;display:inline-block}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
 @media(max-width:1100px){.cards,.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.form-span-3{grid-column:1/-1}.profile-summary-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.main-shell{margin-left:0;width:100%}.menu-toggle{display:block}.top-logo{display:none}.filters,.download-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.form-span-2,.form-span-3{grid-column:auto}.user-text{max-width:135px}}
 @media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
@@ -306,7 +306,7 @@ async function checkLogin() {
 
     currentAdmin = admin;
 
-    updateAdminHeader(admin);
+    await updateAdminHeader(admin);
     renderAdminProfile(admin);
 
     return true;
@@ -439,6 +439,8 @@ async function loadFarmers() {
             admin_verified_at,
             admin_verified_by,
             admin_rejection_reason,
+            duplicate_warning,
+            duplicate_checked_at,
             officer_decision_at,
             officer_decision_by,
             officer_rejection_reason
@@ -725,7 +727,7 @@ function renderFarmers(farmers) {
 
                 <td>
                     ${escapeHtml(
-                        farmer.aadhar_number || "-"
+                        maskAadhaar(farmer.aadhar_number)
                     )}
                 </td>
 
@@ -751,6 +753,9 @@ function renderFarmers(farmers) {
                     ${getStatusBadge(
                         farmer.status
                     )}
+                    ${farmer.duplicate_warning
+                        ? `<div class="dup-warning">⚠ Duplicate data review</div>`
+                        : ""}
                 </td>
 
                 <td>
@@ -1007,7 +1012,7 @@ function getExcelData(farmers) {
                 f.mobile || "",
 
             "Aadhaar":
-                f.aadhar_number || "",
+                maskAadhaar(f.aadhar_number),
 
             "Block":
                 f.block || "",
@@ -1339,7 +1344,7 @@ function downloadPDFList(
 
                 f.mobile || "",
 
-                f.aadhar_number || "",
+                maskAadhaar(f.aadhar_number),
 
                 f.block || "",
 
@@ -1569,7 +1574,7 @@ function viewFarmer(id) {
 
                     ${detail(
                         "Aadhaar",
-                        farmer.aadhar_number
+                        maskAadhaar(farmer.aadhar_number)
                     )}
 
                     ${detail(
@@ -1584,7 +1589,7 @@ function viewFarmer(id) {
 
                     ${detail(
                         "Account No.",
-                        farmer.account_number
+                        maskAccount(farmer.account_number)
                     )}
 
                     ${detail(
@@ -1657,6 +1662,20 @@ function viewFarmer(id) {
    DETAIL HELPER
 ========================= */
 
+
+function maskAadhaar(value){
+    const digits = String(value || "").replace(/\D/g,"");
+    if(digits.length < 4) return "-";
+    return "XXXX XXXX " + digits.slice(-4);
+}
+
+function maskAccount(value){
+    const text = String(value || "").trim();
+    if(!text) return "-";
+    if(text.length <= 4) return "XXXX";
+    return "XXXXXX" + text.slice(-4);
+}
+
 function detail(label,value) {
 
     return `
@@ -1683,36 +1702,36 @@ function detail(label,value) {
    DOCUMENT URL
 ========================= */
 
-function getDocumentUrl(path) {
+async function getDocumentUrl(path) {
 
     if (!path) return null;
 
-
-    let value =
-        String(path).trim();
-
+    let value = String(path).trim();
 
     if (!value) return null;
 
-
+    // Legacy full URL support.
     if (
         value.startsWith("http://") ||
         value.startsWith("https://")
     ) {
-
         return value;
     }
 
+    value = value.replace(/^\/+/,"");
 
-    value =
-        value.replace(/^\/+/,"");
+    const { data, error } = await db.storage
+        .from("farmer-documents")
+        .createSignedUrl(value, 600);
 
+    if(error){
+        console.error("Signed document URL error:", error);
+        return null;
+    }
 
-    return (
-        SUPABASE_URL +
-        "/storage/v1/object/public/farmer-documents/" +
-        value
-    );
+    return data && data.signedUrl
+        ? data.signedUrl
+        : null;
 }
 
 
@@ -1720,7 +1739,7 @@ function getDocumentUrl(path) {
    OPEN DOCUMENTS BY ID
 ========================= */
 
-function openDocumentsById(id) {
+async function openDocumentsById(id) {
 
     const farmer =
         allFarmers.find(
@@ -1738,7 +1757,7 @@ function openDocumentsById(id) {
     }
 
 
-    openDocuments(farmer);
+    await openDocuments(farmer);
 }
 
 
@@ -1746,7 +1765,7 @@ function openDocumentsById(id) {
    OPEN DOCUMENTS
 ========================= */
 
-function openDocuments(farmer) {
+async function openDocuments(farmer) {
 
     const documents = [
 
@@ -1801,10 +1820,10 @@ function openDocuments(farmer) {
     `;
 
 
-    documents.forEach(doc => {
+    for (const doc of documents) {
 
         const url =
-            getDocumentUrl(doc.path);
+            await getDocumentUrl(doc.path);
 
 
         html += `
@@ -1885,7 +1904,7 @@ function openDocuments(farmer) {
 
         `;
 
-    });
+    }
 
 
     html += `
@@ -2235,7 +2254,7 @@ function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("open");
 }
 
-function updateAdminHeader(admin){
+async function updateAdminHeader(admin){
     const name = admin && admin.name ? admin.name : "Admin";
     const id = admin && admin.admin_id ? admin.admin_id : "-";
 
@@ -2247,7 +2266,7 @@ function updateAdminHeader(admin){
     if(nameEl) nameEl.textContent = name;
     if(idEl) idEl.textContent = id;
 
-    const photoUrl = admin && admin.photo_url ? getDocumentUrl(admin.photo_url) : null;
+    const photoUrl = admin && admin.photo_url ? await getDocumentUrl(admin.photo_url) : null;
     if(photoUrl && imgEl){
         imgEl.src = photoUrl;
         imgEl.style.display = "block";

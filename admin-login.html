@@ -1,654 +1,94 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Admin Login - Chanho FPO</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#eef7f0;
-    min-height:100vh;
-}
-
-header{
-    background:#198754;
-    color:white;
-    text-align:center;
-    padding:25px 15px;
-}
-
-header h1{
-    margin:0;
-    font-size:27px;
-}
-
-header p{
-    margin:7px 0 0;
-    font-size:15px;
-}
-
-.box{
-    width:92%;
-    max-width:450px;
-    margin:50px auto;
-    background:white;
-    padding:30px;
-    border-radius:15px;
-    box-shadow:0 4px 20px rgba(0,0,0,.12);
-}
-
-.logo{
-    text-align:center;
-    font-size:48px;
-    margin-bottom:5px;
-}
-
-h2{
-    text-align:center;
-    color:#198754;
-    margin:10px 0 25px;
-}
-
-label{
-    display:block;
-    margin-top:18px;
-    font-weight:bold;
-    color:#333;
-}
-
-input{
-    width:100%;
-    padding:13px;
-    margin-top:7px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    font-size:16px;
-    outline:none;
-}
-
-input:focus{
-    border-color:#198754;
-}
-
-.login-btn{
-    width:100%;
-    padding:14px;
-    margin-top:25px;
-    border:0;
-    border-radius:8px;
-    background:#198754;
-    color:white;
-    font-size:17px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.login-btn:hover{
-    background:#146c43;
-}
-
-.login-btn:disabled{
-    background:#8abda2;
-    cursor:not-allowed;
-}
-
-#message{
-    text-align:center;
-    margin-top:18px;
-    font-weight:bold;
-    line-height:1.5;
-}
-
-.success{
-    color:#198754;
-}
-
-.error{
-    color:#dc3545;
-}
-
-.back{
-    display:block;
-    text-align:center;
-    margin-top:22px;
-    color:#198754;
-    text-decoration:none;
-    font-weight:bold;
-}
-
-.back:hover{
-    text-decoration:underline;
-}
-
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef5f8;color:#1f2937}
+header{background:linear-gradient(90deg,#075e88,#168cc3);color:#fff;padding:12px 18px}
+.brand{max-width:1000px;margin:auto;display:flex;align-items:center;gap:12px}.brand img{width:58px;height:58px;border-radius:50%;background:#fff;padding:3px;object-fit:contain}
+.brand h1{font-size:20px;margin:0}.brand p{font-size:12px;margin:4px 0 0;opacity:.9}
+main{min-height:calc(100vh - 82px);display:flex;align-items:center;justify-content:center;padding:24px 12px}
+.card{width:100%;max-width:430px;background:#fff;border-radius:16px;box-shadow:0 14px 40px rgba(0,0,0,.13);overflow:hidden}
+.head{text-align:center;padding:22px 20px 16px;border-bottom:1px solid #e8eef2}.ico{width:58px;height:58px;border-radius:50%;background:#e8f4fa;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:28px}
+.head h2{margin:0;color:#075e88}.head p{margin:6px 0 0;color:#667085;font-size:13px}.body{padding:20px}
+label{display:block;font-weight:700;font-size:13px;margin:0 0 6px}.field{margin-bottom:15px}
+input{width:100%;height:46px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}.wrap{position:relative}.wrap input{padding-right:48px}
+.eye{position:absolute;right:5px;top:5px;width:38px;height:36px;border:0;background:transparent;cursor:pointer}
+.login{width:100%;height:47px;margin-top:4px;border:0;border-radius:8px;background:linear-gradient(90deg,#075e88,#168cc3);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.login:disabled{opacity:.6}.forgot{display:block;border:0;background:transparent;color:#075e88;text-decoration:underline;cursor:pointer;margin:13px auto 0;font-weight:700}
+.msg{display:none;margin-top:13px;padding:10px;border-radius:8px;text-align:center;font-size:13px}.msg.error{display:block;background:#fef3f2;color:#b42318;border:1px solid #fecdca}.msg.success{display:block;background:#ecfdf3;color:#067647;border:1px solid #abefc6}
+.note{margin-top:14px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;color:#667085;font-size:11px}.back{display:block;margin-top:16px;text-align:center;color:#075e88;text-decoration:none;font-weight:700;font-size:13px}
+footer{text-align:center;padding:11px;color:#667085;font-size:11px}
 </style>
-
 </head>
-
 <body>
-
-
-<header>
-
-    <h1>Chanho Birsa Munda Sangathan</h1>
-
-    <p>Producer Company Limited</p>
-
-</header>
-
-
-<div class="box">
-
-    <div class="logo">
-        🔐
-    </div>
-
-    <h2>Admin Login</h2>
-
-
-    <label for="email">
-        Admin Email
-    </label>
-
-    <input
-        type="email"
-        id="email"
-        placeholder="Admin Email डालें"
-        autocomplete="username"
-    >
-
-
-    <label for="password">
-        Password
-    </label>
-
-    <input
-        type="password"
-        id="password"
-        placeholder="Password डालें"
-        autocomplete="current-password"
-    >
-
-
-    <button
-        class="login-btn"
-        id="loginButton"
-        onclick="adminLogin()"
-    >
-        Login करें
-    </button>
-
-
-    <div id="message"></div>
-
-
-    <a
-        class="back"
-        href="index.html"
-    >
-        ← मुख्य वेबसाइट पर वापस जाएँ
-    </a>
-
+<header><div class="brand"><img src="logo.png" alt="CBMS Logo"><div><h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1><p>Secure Admin Portal</p></div></div></header>
+<main><div class="card">
+<div class="head"><div class="ico">🔐</div><h2>Admin Login</h2><p>केवल अधिकृत Admin के लिए</p></div>
+<div class="body">
+<form id="loginForm">
+<div class="field"><label>Registered Email ID</label><input type="email" id="email" autocomplete="username" required placeholder="Registered email डालें"></div>
+<div class="field"><label>Password</label><div class="wrap"><input type="password" id="password" autocomplete="current-password" required placeholder="Password डालें"><button type="button" class="eye" onclick="togglePassword()">👁</button></div></div>
+<button class="login" id="loginBtn" type="submit">🔐 Admin Login</button>
+<button class="forgot" id="forgotBtn" type="button" onclick="forgotPassword()">Forgot Password?</button>
+<div id="message" class="msg"></div>
+</form>
+<div class="note">Email/Password Supabase Authentication account से verify होगा.</div>
+<a class="back" href="index.html">← मुख्य वेबसाइट पर वापस जाएँ</a>
 </div>
-
-
+<footer>© 2026 Chanho Birsa Munda Sangathan Producer Company Limited</footer>
+</div></main>
 <script>
+const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
+function showMessage(text,type){const m=document.getElementById("message");m.textContent=text;m.className="msg "+type;}
+function togglePassword(){const p=document.getElementById("password");p.type=p.type==="password"?"text":"password";}
 
-/* =========================================
-   SUPABASE CONFIGURATION
-========================================= */
-
-const SUPABASE_URL =
-    "https://unqihzayhrpmtdxrjiyy.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
-
-
-const db =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
-
-
-/* =========================================
-   MESSAGE
-========================================= */
-
-function showMessage(
-    message,
-    type
-){
-
-    const box =
-        document.getElementById(
-            "message"
-        );
-
-    box.className =
-        type;
-
-    box.innerHTML =
-        message;
-
+async function forgotPassword(){
+ const email=document.getElementById("email").value.trim();
+ const btn=document.getElementById("forgotBtn");
+ if(!email){showMessage("पहले Registered Email ID भरें।","error");return;}
+ btn.disabled=true;
+ try{
+   const redirectTo=new URL("reset-password.html",window.location.href).href;
+   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
+   if(error) throw error;
+   showMessage("Password reset email भेज दिया गया है। Email खोलकर reset link पर click करें।","success");
+ }catch(error){
+   console.error(error);
+   showMessage("Reset email भेजने में समस्या: "+(error.message||error),"error");
+ }finally{btn.disabled=false;}
 }
 
-
-/* =========================================
-   ADMIN LOGIN
-========================================= */
-
-async function adminLogin(){
-
-    const email =
-        document
-        .getElementById("email")
-        .value
-        .trim();
-
-    const password =
-        document
-        .getElementById("password")
-        .value;
-
-
-    const button =
-        document
-        .getElementById("loginButton");
-
-
-    /* Validation */
-
-    if(!email){
-
-        showMessage(
-            "❌ Admin Email डालें।",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if(!password){
-
-        showMessage(
-            "❌ Password डालें।",
-            "error"
-        );
-
-        return;
-    }
-
-
-    button.disabled =
-        true;
-
-    button.textContent =
-        "⏳ Login हो रहा है...";
-
-
-    showMessage(
-        "⏳ कृपया प्रतीक्षा करें...",
-        "success"
-    );
-
-
-    try{
-
-        /* =================================
-           SUPABASE AUTH LOGIN
-        ================================= */
-
-        const {
-            data,
-            error
-        } =
-        await db.auth.signInWithPassword({
-
-            email:
-                email,
-
-            password:
-                password
-
-        });
-
-
-        if(error){
-
-            console.error(
-                "Login Error:",
-                error
-            );
-
-            showMessage(
-                "❌ Email या Password गलत है।<br>कृपया दोबारा कोशिश करें।",
-                "error"
-            );
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                "Login करें";
-
-            return;
-        }
-
-
-        /* =================================
-           AUTH SESSION CHECK
-        ================================= */
-
-        if(
-            !data ||
-            !data.user
-        ){
-
-            showMessage(
-                "❌ Login session नहीं बना।",
-                "error"
-            );
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                "Login करें";
-
-            return;
-        }
-
-
-        const authUserId =
-            data.user.id;
-
-
-        /* =================================
-           ADMIN TABLE CHECK
-        ================================= */
-
-        const {
-            data: admin,
-            error: adminError
-        } =
-        await db
-        .from("admins")
-        .select(`
-            id,
-            admin_id,
-            auth_user_id,
-            name,
-            status,
-            block,
-            panchayat,
-            village
-        `)
-        .eq(
-            "auth_user_id",
-            authUserId
-        )
-        .maybeSingle();
-
-
-        if(adminError){
-
-            console.error(
-                "Admin Check Error:",
-                adminError
-            );
-
-            await db.auth.signOut();
-
-            showMessage(
-                "❌ Admin information verify नहीं हो पाई।",
-                "error"
-            );
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                "Login करें";
-
-            return;
-        }
-
-
-        /* =================================
-           ADMIN RECORD NOT FOUND
-        ================================= */
-
-        if(!admin){
-
-            await db.auth.signOut();
-
-            showMessage(
-                "❌ यह Email किसी Admin account से जुड़ा नहीं है।",
-                "error"
-            );
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                "Login करें";
-
-            return;
-        }
-
-
-        /* =================================
-           ADMIN STATUS CHECK
-        ================================= */
-
-        if(
-            String(
-                admin.status || ""
-            )
-            .toLowerCase()
-            !==
-            "active"
-        ){
-
-            await db.auth.signOut();
-
-            showMessage(
-                "❌ आपका Admin account Active नहीं है।",
-                "error"
-            );
-
-            button.disabled =
-                false;
-
-            button.textContent =
-                "Login करें";
-
-            return;
-        }
-
-
-        /* =================================
-           SAVE LOGIN INFORMATION
-        ================================= */
-
-        localStorage.setItem(
-            "adminId",
-            admin.admin_id || ""
-        );
-
-        localStorage.setItem(
-            "adminName",
-            admin.name || ""
-        );
-
-        localStorage.setItem(
-            "adminLoggedIn",
-            "true"
-        );
-
-
-        /* =================================
-           SUCCESS
-        ================================= */
-
-        showMessage(
-            "✅ Login सफल हुआ।<br>Dashboard खोला जा रहा है...",
-            "success"
-        );
-
-
-        setTimeout(
-            function(){
-
-                window.location.href =
-                    "admin-dashboard.html";
-
-            },
-            700
-        );
-
-
-    }
-    catch(error){
-
-        console.error(
-            "Unexpected Error:",
-            error
-        );
-
-        showMessage(
-            "❌ कुछ समस्या हुई। Internet connection और login details check करें।",
-            "error"
-        );
-
-        button.disabled =
-            false;
-
-        button.textContent =
-            "Login करें";
-
-    }
-
-}
-
-
-/* =========================================
-   ENTER KEY LOGIN
-========================================= */
-
-document
-.getElementById("password")
-.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Enter"
-        ){
-
-            adminLogin();
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   CHECK EXISTING SESSION
-========================================= */
-
-async function checkExistingSession(){
-
-    const {
-        data
-    } =
-    await db.auth.getSession();
-
-
-    if(
-        data &&
-        data.session
-    ){
-
-        /*
-           Session already available.
-           Dashboard directly open nahi kar rahe,
-           pehle Admin record verify hoga.
-        */
-
-        const authUserId =
-            data.session.user.id;
-
-
-        const {
-            data: admin
-        } =
-        await db
-        .from("admins")
-        .select(`
-            admin_id,
-            name,
-            status
-        `)
-        .eq(
-            "auth_user_id",
-            authUserId
-        )
-        .maybeSingle();
-
-
-        if(
-            admin &&
-            String(
-                admin.status || ""
-            )
-            .toLowerCase()
-            ===
-            "active"
-        ){
-
-            localStorage.setItem(
-                "adminId",
-                admin.admin_id || ""
-            );
-
-            localStorage.setItem(
-                "adminName",
-                admin.name || ""
-            );
-
-            localStorage.setItem(
-                "adminLoggedIn",
-                "true"
-            );
-
-        }
-
-    }
-
-}
-
-
-checkExistingSession();
-
-
+document.getElementById("loginForm").addEventListener("submit",async(e)=>{
+ e.preventDefault();
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+ const btn=document.getElementById("loginBtn");
+ if(!email||!password){showMessage("Email और Password दोनों भरें।","error");return;}
+ btn.disabled=true;btn.textContent="Login हो रहा है...";
+ try{
+   const {data:authData,error:authError}=await db.auth.signInWithPassword({email,password});
+   if(authError){showMessage("Login failed: "+authError.message,"error");return;}
+   const user=authData&&authData.user?authData.user:null;
+   if(!user){await db.auth.signOut();showMessage("Login session नहीं बना।","error");return;}
+   const {data:profile,error:profileError}=await db.from("admins")
+     .select("admin_id,name,status")
+     .eq("auth_user_id",user.id)
+     .maybeSingle();
+   if(profileError){await db.auth.signOut();showMessage("Admin profile verify नहीं हुआ: "+profileError.message,"error");return;}
+   if(!profile){await db.auth.signOut();showMessage("यह account अधिकृत Admin account नहीं है।","error");return;}
+   if(String(profile.status||"").trim().toLowerCase()!=="active"){await db.auth.signOut();showMessage("Admin account Active नहीं है।","error");return;}
+   showMessage("Login successful. Dashboard खुल रहा है...","success");
+   window.location.href="admin-dashboard.html";
+ }catch(error){console.error(error);showMessage("तकनीकी समस्या हुई। दोबारा कोशिश करें।","error");}
+ finally{btn.disabled=false;btn.textContent="🔐 Admin Login";}
+});
 </script>
-
 </body>
 </html>

@@ -631,7 +631,7 @@ function escapeReceiptHtml(value){
 }
 
 
-function getStoragePublicUrl(path){
+async function getStorageSecureUrl(path){
 
     if(!path){
         return "";
@@ -643,17 +643,23 @@ function getStoragePublicUrl(path){
         return "";
     }
 
+    // Legacy full URLs are left unchanged.
     if(/^https?:\/\//i.test(value)){
         return value;
     }
 
-    const { data } = db.storage
+    const { data, error } = await db.storage
         .from("farmer-documents")
-        .getPublicUrl(value);
+        .createSignedUrl(value, 300);
 
-    return data && data.publicUrl
-        ? data.publicUrl
-        : value;
+    if(error){
+        console.error("Signed photo URL error:", error);
+        return "";
+    }
+
+    return data && data.signedUrl
+        ? data.signedUrl
+        : "";
 }
 
 
@@ -1243,7 +1249,7 @@ body{
 }
 
 
-function openMembershipCertificate(){
+async function openMembershipCertificate(){
 
     if(!currentFarmerData){
 
@@ -1292,7 +1298,7 @@ function openMembershipCertificate(){
         );
 
     const memberPhotoUrl =
-        getStoragePublicUrl(farmer.photo_url);
+        await getStorageSecureUrl(farmer.photo_url);
 
     const certificateQrText =
         "CBMS MEMBERSHIP CERTIFICATE\n" +

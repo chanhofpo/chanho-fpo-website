@@ -811,11 +811,22 @@ async function uploadFile(file,folder){
 
     if(!file) return null;
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const ALLOWED_EXTENSIONS = ["jpg","jpeg","png","webp","pdf"];
+
+    if(file.size > MAX_FILE_SIZE){
+        throw new Error("हर document की maximum size 5 MB होनी चाहिए।");
+    }
+
     const extension =
     file.name
     .split(".")
     .pop()
     .toLowerCase();
+
+    if(!ALLOWED_EXTENSIONS.includes(extension)){
+        throw new Error("केवल JPG, JPEG, PNG, WEBP या PDF file upload करें।");
+    }
 
     const randomPart =
     Date.now() +

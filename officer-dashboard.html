@@ -100,7 +100,7 @@ tr:nth-child(even) td{background:#fafcfd}
 .profile-save-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
 .profile-help{font-size:11px;color:#667085;margin-top:7px;line-height:1.45}
 .portal-footer{background:#1d6587;color:#fff;text-align:center;padding:12px;font-size:11px;margin-top:auto}
-.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
+.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.dup-warning{margin-top:5px;font-size:10px;font-weight:700;color:#b45309;background:#fff7ed;border:1px solid #fed7aa;padding:3px 6px;border-radius:4px;display:inline-block}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
 @media(max-width:1100px){.cards,.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.form-span-3{grid-column:1/-1}.profile-summary-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.main-shell{margin-left:0;width:100%}.menu-toggle{display:block}.top-logo{display:none}.filters,.download-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.form-span-2,.form-span-3{grid-column:auto}.user-text{max-width:135px}}
 @media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.officer-profile-layout{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
@@ -124,6 +124,8 @@ tr:nth-child(even) td{background:#fafcfd}
     <button class="sidebar-link" data-title="Assign Admin Area" onclick="showOfficerPanel('assignAreaPanel',this)"><span class="ico">📍</span>Assign Admin Area</button>
     <button class="sidebar-link" data-title="Assigned Areas" onclick="showOfficerPanel('assignedAreasPanel',this)"><span class="ico">▦</span>Assigned Areas</button>
     <button class="sidebar-link" data-title="Admin Performance" onclick="showOfficerPanel('performancePanel',this)"><span class="ico">📊</span>Admin Performance</button>
+    <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
+    <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
     <button class="sidebar-link" data-title="Farmer Applications" onclick="showOfficerPanel('farmersPanel',this)"><span class="ico">🌾</span>Farmer Applications</button>
     <button class="sidebar-link" data-title="Download Farmer Lists" onclick="showOfficerPanel('downloadsPanel',this)"><span class="ico">⬇</span>Download Reports</button>
   </nav>
@@ -249,6 +251,30 @@ tr:nth-child(even) td{background:#fafcfd}
     <div class="section"><h2>Admin Performance</h2><div class="table-wrap"><table><thead><tr><th>Admin ID</th><th>Name</th><th>Assigned Area</th><th>Total Farmers</th><th>Verified</th></tr></thead><tbody id="performanceTable"></tbody></table></div></div>
   </section>
 
+  <section id="auditPanel" class="portal-panel">
+    <div class="portal-card">
+      <div class="portal-card-title">SYSTEM ACTIVITY / AUDIT LOG</div>
+      <div class="portal-card-body">
+        <p class="section-note">Farmer status changes, Admin registration, Auth linking aur area assignment ka recent activity record.</p>
+        <div style="margin-bottom:10px">
+          <button class="primary-btn" onclick="loadAuditLogs()">Refresh Audit Log</button>
+        </div>
+        <div id="auditLogContent"><div class="loading">Audit log load karne ke liye Refresh karein.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="backupPanel" class="portal-panel">
+    <div class="portal-card">
+      <div class="portal-card-title">SYSTEM DATA BACKUP</div>
+      <div class="portal-card-body">
+        <p class="section-note">Officer apne authorized portal data ka JSON backup download kar sakta hai. Is file me sensitive data ho sakta hai; ise secure jagah par rakhein.</p>
+        <button class="primary-btn" id="backupBtn" onclick="downloadSystemBackup()">💾 Download JSON Backup</button>
+        <div id="backupMessage" style="margin-top:10px;font-size:12px;color:#667085"></div>
+      </div>
+    </div>
+  </section>
+
   <section id="farmersPanel" class="portal-panel">
     <div class="section"><h2>Search Farmers</h2>
       <div class="filters">
@@ -346,18 +372,32 @@ async function logout(){
 }
 
 
+
+function maskAadhaar(value){
+    const digits = String(value || "").replace(/\D/g,"");
+    if(digits.length < 4) return "-";
+    return "XXXX XXXX " + digits.slice(-4);
+}
+
+function maskAccount(value){
+    const text = String(value || "").trim();
+    if(!text) return "-";
+    if(text.length <= 4) return "XXXX";
+    return "XXXXXX" + text.slice(-4);
+}
+
+
 /* =========================
    DOCUMENT URL
 ========================= */
 
-function getDocumentUrl(path){
+async function getDocumentUrl(path){
 
     if(!path){
         return null;
     }
 
-    const value =
-        String(path).trim();
+    const value = String(path).trim();
 
     if(!value){
         return null;
@@ -367,20 +407,18 @@ function getDocumentUrl(path){
         return value;
     }
 
-    const result =
-        db.storage
+    const { data, error } = await db.storage
         .from("farmer-documents")
-        .getPublicUrl(value);
+        .createSignedUrl(value, 600);
 
-    if(
-        result &&
-        result.data &&
-        result.data.publicUrl
-    ){
-        return result.data.publicUrl;
+    if(error){
+        console.error("Signed document URL error:", error);
+        return null;
     }
 
-    return null;
+    return data && data.signedUrl
+        ? data.signedUrl
+        : null;
 }
 
 
@@ -471,8 +509,8 @@ async function loadOfficer(){
 
     currentOfficer = data;
 
-    updateOfficerHeader(data);
-    renderOfficerProfile(data);
+    await updateOfficerHeader(data);
+    await renderOfficerProfile(data);
 
     return true;
 }
@@ -1594,7 +1632,7 @@ function renderOfficerFarmers(farmers){
 
                 <td>
                     ${escapeHtml(
-                        farmer.aadhar_number || "-"
+                        maskAadhaar(farmer.aadhar_number)
                     )}
                 </td>
 
@@ -1628,6 +1666,9 @@ function renderOfficerFarmers(farmers){
                             status || "-"
                         )}
                     </span>
+                    ${farmer.duplicate_warning
+                        ? `<div class="dup-warning">⚠ ${escapeHtml(farmer.duplicate_warning)}</div>`
+                        : ""}
                 </td>
 
                 <td>
@@ -1714,7 +1755,7 @@ function openProfileByIndex(index){
 
             ${profileItem(
                 "Aadhaar",
-                farmer.aadhar_number
+                maskAadhaar(farmer.aadhar_number)
             )}
 
             ${profileItem(
@@ -1779,7 +1820,7 @@ function openProfileByIndex(index){
 
             ${profileItem(
                 "Account No",
-                farmer.account_number
+                maskAccount(farmer.account_number)
             )}
 
             ${profileItem(
@@ -1880,7 +1921,7 @@ function profileItem(label,value){
    DOCUMENTS
 ========================= */
 
-function openDocumentsByIndex(index){
+async function openDocumentsByIndex(index){
 
     const farmer =
         officerFarmers[index];
@@ -1937,10 +1978,10 @@ function openDocumentsByIndex(index){
         );
 
 
-    documents.forEach(function(doc){
+    for (const doc of documents){
 
         const url =
-            getDocumentUrl(
+            await getDocumentUrl(
                 doc.path
             );
 
@@ -1997,7 +2038,7 @@ function openDocumentsByIndex(index){
 
         list.appendChild(card);
 
-    });
+    }
 
 
     openModal(
@@ -2402,6 +2443,10 @@ function showOfficerPanel(panelId, clicked){
         if(title && label) title.textContent = label;
     }
 
+    if(panelId === "auditPanel"){
+        loadAuditLogs();
+    }
+
     if(window.innerWidth <= 900){
         document.getElementById("sidebar").classList.remove("open");
     }
@@ -2411,7 +2456,7 @@ function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("open");
 }
 
-function updateOfficerHeader(officer){
+async function updateOfficerHeader(officer){
     const name = officer && officer.name ? officer.name : "Officer";
     const id = officer && officer.officer_id ? officer.officer_id : "-";
 
@@ -2424,7 +2469,7 @@ function updateOfficerHeader(officer){
     if(idEl) idEl.textContent = id;
 
     const photoPath = officer && officer.photo_url ? officer.photo_url : null;
-    const photoUrl = photoPath ? getDocumentUrl(photoPath) : null;
+    const photoUrl = photoPath ? await getDocumentUrl(photoPath) : null;
 
     if(photoUrl && imgEl){
         imgEl.src = photoUrl;
@@ -2443,11 +2488,11 @@ function updateOfficerHeader(officer){
     }
 }
 
-function renderOfficerProfile(officer){
+async function renderOfficerProfile(officer){
     const box = document.getElementById("officerProfileContent");
     if(!box || !officer) return;
 
-    const photoUrl = officer.photo_url ? getDocumentUrl(officer.photo_url) : null;
+    const photoUrl = officer.photo_url ? await getDocumentUrl(officer.photo_url) : null;
     const photoHtml = photoUrl
         ? `<img id="officerProfilePhotoPreview" class="officer-profile-photo" src="${escapeHtml(photoUrl)}" alt="Officer Photo" onerror="this.style.display='none';document.getElementById('officerProfilePhotoFallback').style.display='flex';">`
         : "";
@@ -2550,6 +2595,10 @@ async function uploadOfficerProfilePhoto(file){
         throw new Error("Sirf image file upload karein.");
     }
 
+    if(file.size > 5 * 1024 * 1024){
+        throw new Error("Officer photo की maximum size 5 MB होनी चाहिए।");
+    }
+
     const originalName = String(file.name || "photo.jpg");
     const extension = originalName.includes(".")
         ? originalName.split(".").pop().toLowerCase()
@@ -2629,8 +2678,8 @@ async function saveOfficerProfile(){
         if(!data) throw new Error("Officer profile update nahi hua.");
 
         currentOfficer = data;
-        updateOfficerHeader(data);
-        renderOfficerProfile(data);
+        await updateOfficerHeader(data);
+        await renderOfficerProfile(data);
         showSuccess("Officer profile successfully updated.");
 
     }catch(error){
@@ -2653,10 +2702,21 @@ async function saveOfficerProfile(){
 async function uploadAdminFile(file, folder){
     if(!file) return null;
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    const ALLOWED_EXTENSIONS = ["jpg","jpeg","png","webp","pdf"];
+
+    if(file.size > MAX_FILE_SIZE){
+        throw new Error("Admin document की maximum size 5 MB होनी चाहिए।");
+    }
+
     const originalName = String(file.name || "file");
     const extension = originalName.includes(".")
         ? originalName.split(".").pop().toLowerCase()
         : "bin";
+
+    if(!ALLOWED_EXTENSIONS.includes(extension)){
+        throw new Error("Admin documents के लिए JPG, JPEG, PNG, WEBP या PDF file upload करें।");
+    }
 
     const randomPart = Date.now() + "_" + Math.random().toString(36).slice(2,10);
     const filePath = "admin/" + folder + "/" + randomPart + "." + extension;
@@ -2750,7 +2810,32 @@ async function registerAdmin(){
         if(error) throw error;
 
         const adminId = data && data.admin_id ? data.admin_id : "Generated by database";
-        showSuccess("Admin successfully registered: " + adminId);
+
+        let authMessage = "";
+        try{
+            const { data: inviteData, error: inviteError } =
+                await db.functions.invoke("create-admin-auth", {
+                    body: {
+                        admin_id: adminId,
+                        email: email
+                    }
+                });
+
+            if(inviteError){
+                throw inviteError;
+            }
+
+            authMessage =
+                inviteData && inviteData.message
+                ? inviteData.message
+                : "Admin login invite email sent.";
+        }catch(inviteProblem){
+            console.warn("Admin Auth automation unavailable:", inviteProblem);
+            authMessage =
+                "Admin record बन गया है, लेकिन Auth invite automatic नहीं हो पाया। Edge Function deploy होने तक Supabase Authentication में user बनाकर UUID manually link करें।";
+        }
+
+        showSuccess("Admin successfully registered: " + adminId + " | " + authMessage);
 
         if(resultBox){
             resultBox.innerHTML = `
@@ -2759,6 +2844,7 @@ async function registerAdmin(){
                     <span>Admin ID: ${escapeHtml(adminId)}</span>
                     <span>Name: ${escapeHtml(data && data.name ? data.name : name)}</span>
                     <span>Mobile: ${escapeHtml(mobile)}</span>
+                    <span>Login: ${escapeHtml(authMessage)}</span>
                 </div>
             `;
         }
@@ -2816,7 +2902,7 @@ function officerDownloadRows(farmers){
             "Farmer Name": f.name || "",
             "Father/Husband Name": f.father_name || "",
             "Mobile": f.mobile || "",
-            "Aadhaar": f.aadhar_number || "",
+            "Aadhaar": maskAadhaar(f.aadhar_number),
             "Block": f.block || "",
             "Panchayat": f.panchayat || "",
             "Village": f.village || "",
@@ -2870,7 +2956,7 @@ function downloadOfficerPDF(farmers, type){
     doc.text("Date: " + new Date().toLocaleDateString("en-IN"),10,30);
     doc.text("Total Farmers: " + farmers.length,287,30,{align:"right"});
     const body = farmers.map(function(f,index){
-        return [index+1,f.registration_no||"",f.name||"",f.father_name||"",f.mobile||"",f.aadhar_number||"",f.block||"",f.panchayat||"",f.village||"",f.admin_id||"",f.status||""];
+        return [index+1,f.registration_no||"",f.name||"",f.father_name||"",f.mobile||"",maskAadhaar(f.aadhar_number),f.block||"",f.panchayat||"",f.village||"",f.admin_id||"",f.status||""];
     });
     doc.autoTable({
         startY:35,
@@ -2880,6 +2966,168 @@ function downloadOfficerPDF(farmers, type){
     const file = type === "approved" ? "Approved_Farmer_List.pdf" : type === "rejected" ? "Rejected_Farmer_List.pdf" : "Pending_Farmer_List.pdf";
     doc.save(file);
 }
+
+
+/* =========================
+   AUDIT LOG
+========================= */
+
+async function loadAuditLogs(){
+
+    const box = document.getElementById("auditLogContent");
+    if(!box) return;
+
+    box.innerHTML = '<div class="loading">Loading audit log...</div>';
+
+    const { data, error } = await db
+        .from("activity_logs")
+        .select("id,actor_role,action,entity_type,entity_id,details,created_at")
+        .order("created_at",{ascending:false})
+        .limit(100);
+
+    if(error){
+        console.error(error);
+        box.innerHTML = '<div class="empty">Audit log load नहीं हुआ: ' + escapeHtml(error.message) + '</div>';
+        return;
+    }
+
+    if(!data || !data.length){
+        box.innerHTML = '<div class="empty">अभी कोई audit activity उपलब्ध नहीं है।</div>';
+        return;
+    }
+
+    let html = `
+        <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date/Time</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>ID</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    data.forEach(function(row){
+        const details = row.details
+            ? JSON.stringify(row.details)
+            : "-";
+
+        html += `
+            <tr>
+                <td>${escapeHtml(formatDate(row.created_at))}</td>
+                <td>${escapeHtml(row.actor_role || "-")}</td>
+                <td>${escapeHtml(row.action || "-")}</td>
+                <td>${escapeHtml(row.entity_type || "-")}</td>
+                <td>${escapeHtml(row.entity_id || "-")}</td>
+                <td style="max-width:360px;white-space:normal">${escapeHtml(details)}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    box.innerHTML = html;
+}
+
+
+/* =========================
+   SYSTEM BACKUP
+========================= */
+
+async function downloadSystemBackup(){
+
+    const btn = document.getElementById("backupBtn");
+    const msg = document.getElementById("backupMessage");
+
+    if(btn){
+        btn.disabled = true;
+        btn.textContent = "Preparing Backup...";
+    }
+
+    if(msg){
+        msg.textContent = "Authorized data collect किया जा रहा है...";
+    }
+
+    try{
+
+        const [
+            farmerResult,
+            adminResult,
+            assignmentResult,
+            locationResult,
+            auditResult
+        ] = await Promise.all([
+            db.from("farmer").select("*").order("id",{ascending:true}),
+            db.from("admins").select("*").order("admin_id",{ascending:true}),
+            db.from("admin_area_assignments").select("*").order("created_at",{ascending:true}),
+            db.from("location_master").select("*").order("block",{ascending:true}).order("panchayat",{ascending:true}),
+            db.from("activity_logs").select("*").order("created_at",{ascending:true})
+        ]);
+
+        const results = [
+            farmerResult,
+            adminResult,
+            assignmentResult,
+            locationResult,
+            auditResult
+        ];
+
+        const failed = results.find(function(result){
+            return result.error;
+        });
+
+        if(failed){
+            throw failed.error;
+        }
+
+        const backup = {
+            generated_at: new Date().toISOString(),
+            company: "Chanho Birsa Munda Sangathan Producer Company Limited",
+            warning: "CONFIDENTIAL - Contains personal and financial data. Store securely.",
+            farmer: farmerResult.data || [],
+            admins: adminResult.data || [],
+            admin_area_assignments: assignmentResult.data || [],
+            location_master: locationResult.data || [],
+            activity_logs: auditResult.data || []
+        };
+
+        const blob = new Blob(
+            [JSON.stringify(backup,null,2)],
+            {type:"application/json"}
+        );
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const stamp = new Date().toISOString().slice(0,10);
+
+        a.href = url;
+        a.download = "CBMS_System_Backup_" + stamp + ".json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        if(msg){
+            msg.textContent = "Backup download complete.";
+        }
+
+    }catch(error){
+        console.error(error);
+        if(msg){
+            msg.textContent = "Backup failed: " + (error.message || error);
+        }
+    }finally{
+        if(btn){
+            btn.disabled = false;
+            btn.textContent = "💾 Download JSON Backup";
+        }
+    }
+}
+
 
 /* =========================
    INITIALIZE
