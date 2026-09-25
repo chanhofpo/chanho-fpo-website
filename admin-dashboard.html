@@ -28,25 +28,15 @@ body{
 }
 
 header{
-    background:#126b3a;
-    color:white;
-    padding:18px 25px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    flex-wrap:wrap;
+    background:#126b3a; color:white; padding:10px 3%; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:18px; width:100%;
 }
+.header-brand{display:flex;align-items:center;gap:12px;min-width:0;}
+.fpo-logo{width:65px;height:65px;object-fit:contain;background:white;border-radius:50%;padding:3px;flex-shrink:0;}
+.header-left h1{margin:0;font-size:19px;line-height:1.25;white-space:nowrap;}
+.header-left p{margin:4px 0 0;font-size:12px;opacity:.9;}
+.header-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;}
+.jharkhand-logo{width:62px;height:62px;object-fit:contain;background:white;border-radius:8px;padding:4px;flex-shrink:0;}
 
-.header-left h1{
-    margin:0;
-    font-size:24px;
-}
-
-.header-left p{
-    margin:5px 0 0;
-    opacity:.9;
-}
 
 .logout-btn{
     background:#fff;
@@ -443,22 +433,32 @@ tr:hover{
         font-size:20px;
     }
 }
+
+@media(max-width:600px){
+ header{grid-template-columns:1fr;justify-items:center;text-align:center;gap:10px;padding:12px 15px;}
+ .header-brand{justify-content:center;} .header-left{text-align:center;}
+ .header-left h1{font-size:17px;white-space:normal;}
+ .fpo-logo{width:58px;height:58px;} .jharkhand-logo{width:55px;height:55px;}
+ .header-right{justify-content:center;flex-wrap:wrap;}
+}
 </style>
 </head>
 
 <body>
 
 <header>
-
-    <div class="header-left">
-        <h1>Chanho FPO - Admin Dashboard</h1>
-        <p id="adminWelcome">Loading...</p>
+    <div class="header-brand">
+        <img src="logo.png" alt="Chanho FPO Logo" class="fpo-logo">
+        <div class="header-left">
+            <h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
+            <p>Admin Dashboard &nbsp;•&nbsp; <span id="adminWelcome">Loading...</span></p>
+        </div>
     </div>
-
-    <button class="logout-btn" onclick="logout()">
-        Logout
-    </button>
-
+    <div></div>
+    <div class="header-right">
+        <img src="jharkhand-logo.png" alt="Government of Jharkhand" class="jharkhand-logo">
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
 </header>
 
 
