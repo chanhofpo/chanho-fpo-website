@@ -631,6 +631,39 @@ function escapeReceiptHtml(value){
 }
 
 
+function getStoragePublicUrl(path){
+
+    if(!path){
+        return "";
+    }
+
+    const value = String(path).trim();
+
+    if(!value){
+        return "";
+    }
+
+    if(/^https?:\/\//i.test(value)){
+        return value;
+    }
+
+    const { data } = db.storage
+        .from("farmer-documents")
+        .getPublicUrl(value);
+
+    return data && data.publicUrl
+        ? data.publicUrl
+        : value;
+}
+
+
+function getQrCodeUrl(text){
+
+    return "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" +
+        encodeURIComponent(text || "CBMS");
+}
+
+
 function openPaymentReceipt(){
 
     if(!currentFarmerData){
@@ -675,6 +708,19 @@ function openPaymentReceipt(){
         formatReceiptDate(
             farmer.officer_decision_at
         );
+
+    const receiptQrText =
+        "CBMS PAYMENT RECEIPT\n" +
+        "Receipt No: " + receiptNo + "\n" +
+        "Registration No: " + (farmer.registration_no || "-") + "\n" +
+        "Farmer Name: " + (farmer.name || "-") + "\n" +
+        "Mobile: " + (farmer.mobile || "-") + "\n" +
+        "Status: " + (farmer.status || "-") + "\n" +
+        "Date: " + receiptDate + "\n" +
+        "Fee: Rs. " + MEMBERSHIP_FEE;
+
+    const receiptQrUrl =
+        getQrCodeUrl(receiptQrText);
 
 
     const printWindow =
@@ -848,6 +894,46 @@ body{
     line-height:1.55;
 }
 
+.receipt-verify{
+    margin-top:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:18px;
+    padding:14px;
+    border:1px dashed #b9cbbd;
+    background:#f8fcf9;
+    border-radius:8px;
+}
+
+.receipt-verify-text{
+    flex:1;
+    font-size:13px;
+    line-height:1.6;
+}
+
+.receipt-qr-box{
+    width:180px;
+    text-align:center;
+    flex-shrink:0;
+}
+
+.receipt-qr-box img{
+    width:150px;
+    height:150px;
+    object-fit:contain;
+    border:1px solid #cddbd1;
+    background:#fff;
+    padding:6px;
+    border-radius:8px;
+}
+
+.receipt-qr-box small{
+    display:block;
+    margin-top:6px;
+    color:#555;
+}
+
 .signatures{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -931,6 +1017,15 @@ body{
 
     .meta-row{
         grid-template-columns:125px 1fr;
+    }
+
+    .receipt-verify{
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .receipt-qr-box{
+        width:100%;
     }
 
     .signatures{
@@ -1074,6 +1169,22 @@ body{
         </div>
 
 
+        <div class="receipt-verify">
+
+            <div class="receipt-verify-text">
+                <strong>QR Verification</strong><br>
+                इस QR Code में Receipt No., Registration No., Farmer Name, Mobile, Status और Approval Date की जानकारी encode की गई है।
+                भविष्य में verification के लिए इस QR को scan किया जा सकता है।
+            </div>
+
+            <div class="receipt-qr-box">
+                <img src="${receiptQrUrl}" alt="Receipt QR Code">
+                <small>Scan for receipt details</small>
+            </div>
+
+        </div>
+
+
         <div class="signatures">
 
             <div>
@@ -1179,6 +1290,23 @@ function openMembershipCertificate(){
         formatReceiptDate(
             farmer.officer_decision_at
         );
+
+    const memberPhotoUrl =
+        getStoragePublicUrl(farmer.photo_url);
+
+    const certificateQrText =
+        "CBMS MEMBERSHIP CERTIFICATE\n" +
+        "Certificate No: " + certificateNo + "\n" +
+        "Registration No: " + (farmer.registration_no || "-") + "\n" +
+        "Member Name: " + (farmer.name || "-") + "\n" +
+        "Village: " + (farmer.village || "-") + "\n" +
+        "Panchayat: " + (farmer.panchayat || "-") + "\n" +
+        "Block: " + (farmer.block || "-") + "\n" +
+        "Status: " + (farmer.status || "-") + "\n" +
+        "Approval Date: " + certificateDate;
+
+    const certificateQrUrl =
+        getQrCodeUrl(certificateQrText);
 
 
     const printWindow =
@@ -1330,6 +1458,58 @@ body{
     line-height:1.55;
 }
 
+.certificate-showcase{
+    width:88%;
+    margin:0 auto 18px;
+    display:grid;
+    grid-template-columns:1fr 220px;
+    gap:18px;
+    align-items:start;
+}
+
+.member-photo-card,
+.certificate-qr-card{
+    border:1px solid #d5ddd8;
+    border-radius:10px;
+    background:#fbfdfb;
+    padding:10px;
+    text-align:center;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+.member-photo-card img,
+.certificate-qr-card img{
+    width:100%;
+    max-width:180px;
+    height:180px;
+    object-fit:cover;
+    border:1px solid #cfd8d3;
+    border-radius:8px;
+    background:#fff;
+    padding:4px;
+}
+
+.member-photo-card strong,
+.certificate-qr-card strong{
+    display:block;
+    margin-bottom:8px;
+    color:#075b2d;
+}
+
+.member-photo-placeholder{
+    height:180px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px dashed #c3cfc7;
+    border-radius:8px;
+    background:#fff;
+    color:#7a7a7a;
+    font-size:13px;
+    line-height:1.5;
+    padding:10px;
+}
+
 .details{
     width:82%;
     margin:0 auto;
@@ -1474,9 +1654,22 @@ body{
         padding:10px 14px;
     }
 
+    .certificate-showcase{
+        width:100%;
+        grid-template-columns:1fr;
+    }
+
     .details{
         width:100%;
         font-size:13px;
+    }
+
+    .member-photo-card img,
+    .certificate-qr-card img,
+    .member-photo-placeholder{
+        max-width:160px;
+        margin:0 auto;
+        height:160px;
     }
 
     .signature-row{
@@ -1540,69 +1733,90 @@ body{
         </div>
 
 
-        <table class="details">
+        <div class="certificate-showcase">
 
-            <tr>
-                <td>Registration No.</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.registration_no || "-")}</td>
-            </tr>
+            <table class="details">
 
-            <tr>
-                <td>Member Name</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.name || "-")}</td>
-            </tr>
+                <tr>
+                    <td>Registration No.</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.registration_no || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>Father / Husband Name</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.father_name || "-")}</td>
-            </tr>
+                <tr>
+                    <td>Member Name</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.name || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>Mobile No.</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.mobile || "-")}</td>
-            </tr>
+                <tr>
+                    <td>Father / Husband Name</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.father_name || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>Village</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.village || "-")}</td>
-            </tr>
+                <tr>
+                    <td>Mobile No.</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.mobile || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>Panchayat</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.panchayat || "-")}</td>
-            </tr>
+                <tr>
+                    <td>Village</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.village || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>Block</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(farmer.block || "-")}</td>
-            </tr>
+                <tr>
+                    <td>Panchayat</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.panchayat || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>District</td>
-                <td>:</td>
-                <td>Ranchi, Jharkhand</td>
-            </tr>
+                <tr>
+                    <td>Block</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(farmer.block || "-")}</td>
+                </tr>
 
-            <tr>
-                <td>Final Approval Date</td>
-                <td>:</td>
-                <td>${escapeReceiptHtml(certificateDate)}</td>
-            </tr>
+                <tr>
+                    <td>District</td>
+                    <td>:</td>
+                    <td>Ranchi, Jharkhand</td>
+                </tr>
 
-        </table>
+                <tr>
+                    <td>Final Approval Date</td>
+                    <td>:</td>
+                    <td>${escapeReceiptHtml(certificateDate)}</td>
+                </tr>
+
+            </table>
+
+            <div>
+                <div class="member-photo-card">
+                    <strong>Member Photo</strong>
+                    ${memberPhotoUrl
+                        ? `<img src="${memberPhotoUrl}" alt="Member Photo">`
+                        : `<div class="member-photo-placeholder">Member photo not available</div>`}
+                </div>
+
+                <div class="certificate-qr-card" style="margin-top:14px;">
+                    <strong>Certificate QR</strong>
+                    <img src="${certificateQrUrl}" alt="Certificate QR Code" style="object-fit:contain;">
+                    <small>Scan for certificate details</small>
+                </div>
+            </div>
+
+        </div>
 
 
         <div class="member-note">
             This member is entitled to the facilities, services and benefits provided
             by Chanho Birsa Munda Sangathan Producer Company Limited (CBMS),
             subject to the rules and regulations of the company.
+            <br><br>
+            <strong>QR Verification:</strong> इस QR Code में certificate number, member registration, name, village और approval date की जानकारी encode की गई है।
         </div>
 
 
