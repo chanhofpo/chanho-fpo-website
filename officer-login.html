@@ -552,7 +552,27 @@ async function verifyPasswordAndSendOtp(){
       throw new Error("Password verification session नहीं मिला।");
     }
 
-    const profile = await verifyRole(user.id, passwordDb);
+    // Password client ke returned access token ko explicitly
+    // PostgREST Authorization header me use karte hain.
+    // Isse profile check authenticated role me chalega.
+    const verifierDb = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false
+        },
+        global: {
+          headers: {
+            Authorization: "Bearer " + tempSession.access_token
+          }
+        }
+      }
+    );
+
+    const profile = await verifyRole(user.id, verifierDb);
 
     verifiedEmail = String(
       user.email || email
