@@ -4,10 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Chanho Birsa Munda Sangathan Producer Company Limited</title>
+    <title>Chanho Birsa Munda Sangathan Producer Company Limited | Chanho FPO</title>
+    <meta name="description" content="Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://chanhofpo.github.io/chanho-fpo-website/">
 
-    <style>
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Chanho Birsa Munda Sangathan Producer Company Limited | Chanho FPO">
+    <meta property="og:description" content="Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.">
+    <meta property="og:url" content="https://chanhofpo.github.io/chanho-fpo-website/">
+    <meta property="og:image" content="https://chanhofpo.github.io/chanho-fpo-website/logo.png">
+    <meta property="og:site_name" content="Chanho Birsa Munda Sangathan Producer Company Limited">
 
+    <!-- Twitter / Social Preview -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Chanho Birsa Munda Sangathan Producer Company Limited | Chanho FPO">
+    <meta name="twitter:description" content="Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.">
+    <meta name="twitter:image" content="https://chanhofpo.github.io/chanho-fpo-website/logo.png">
+
+    <!-- Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Chanho Birsa Munda Sangathan Producer Company Limited",
+      "url": "https://chanhofpo.github.io/chanho-fpo-website/",
+      "logo": "https://chanhofpo.github.io/chanho-fpo-website/logo.png",
+      "description": "Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Vill-Hutar, PO-Tangar, PS-Chanho",
+        "addressLocality": "Ranchi",
+        "addressRegion": "Jharkhand",
+        "addressCountry": "IN"
+      }
+    }
+    </script>
+
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -25,23 +60,24 @@
         header {
             background: #126b32;
             color: white;
-            padding: 12px 5%;
-            display: flex;
-            justify-content: space-between;
+            padding: 10px 3%;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            gap: 18px;
+            width: 100%;
         }
 
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
+            min-width: 0;
         }
 
         .fpo-logo {
-            width: 68px;
-            height: 68px;
+            width: 65px;
+            height: 65px;
             object-fit: contain;
             background: white;
             border-radius: 50%;
@@ -50,21 +86,41 @@
         }
 
         .company-name {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: bold;
-            line-height: 1.3;
+            line-height: 1.25;
+            white-space: nowrap;
         }
 
         .company-subtitle {
-            font-size: 13px;
-            margin-top: 4px;
-            opacity: .95;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 6px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        nav a:hover {
+            color: #ffcc33;
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: flex-end;
         }
 
         .jharkhand-logo {
@@ -76,19 +132,6 @@
             padding: 4px;
             flex-shrink: 0;
         }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 7px;
-            font-size: 15px;
-        }
-
-        nav a:hover {
-            color: #ffcc33;
-        }
-
-        /* ================= HERO ================= */
 
         .hero {
             min-height: 450px;
@@ -142,8 +185,6 @@
             background: #146c43;
         }
 
-        /* ================= SECTIONS ================= */
-
         section {
             padding: 55px 7%;
         }
@@ -162,8 +203,6 @@
             line-height: 1.8;
             font-size: 17px;
         }
-
-        /* ================= SERVICES ================= */
 
         .services {
             display: grid;
@@ -193,7 +232,7 @@
             line-height: 1.5;
         }
 
-        /* ================= FARMER ================= */
+        /* Farmer Section */
 
         .farmer-section {
             background: #e8f7e8;
@@ -249,7 +288,7 @@
             background: #212529;
         }
 
-        /* ================= CONTACT ================= */
+        /* Contact */
 
         .contact-box {
             max-width: 700px;
@@ -262,8 +301,6 @@
             line-height: 1.8;
         }
 
-        /* ================= FOOTER ================= */
-
         footer {
             background: #0b4d25;
             color: white;
@@ -272,31 +309,26 @@
             line-height: 1.7;
         }
 
-        /* ================= MOBILE ================= */
-
-        @media(max-width:900px) {
+        @media(max-width:700px) {
 
             header {
-                justify-content: center;
+                grid-template-columns: 1fr;
+                justify-items: center;
                 text-align: center;
+                gap: 10px;
             }
 
             .header-brand {
                 justify-content: center;
             }
 
-            .header-right {
-                width: 100%;
-                justify-content: center;
+            .company-name {
+                font-size: 17px;
+                white-space: normal;
             }
 
-            nav {
-                width: 100%;
-            }
-
-            nav a {
-                display: inline-block;
-                margin: 5px 6px;
+            .company-subtitle {
+                font-size: 12px;
             }
 
             .fpo-logo {
@@ -309,12 +341,15 @@
                 height: 55px;
             }
 
-            .company-name {
-                font-size: 17px;
+            nav {
+                width: 100%;
+                justify-content: center;
             }
 
-            .company-subtitle {
-                font-size: 12px;
+            nav a {
+                display: inline-block;
+                margin: 3px 4px;
+                padding: 6px 5px;
             }
 
             .hero {
@@ -337,7 +372,6 @@
                 padding: 25px 18px;
             }
         }
-
     </style>
 </head>
 
@@ -348,6 +382,7 @@
 
 <header>
 
+    <!-- CHANHO FPO LOGO + COMPANY NAME -->
     <div class="header-brand">
 
         <img
@@ -357,7 +392,6 @@
         >
 
         <div>
-
             <div class="company-name">
                 Chanho Birsa Munda Sangathan
                 Producer Company Limited
@@ -366,46 +400,28 @@
             <div class="company-subtitle">
                 Farmer Producer Organisation
             </div>
-
         </div>
 
     </div>
 
+    <!-- NAVIGATION -->
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="register.html">Farmer Registration</a>
+        <a href="farmer-login.html">Farmer Login</a>
+        <a href="admin-login.html">Admin</a>
+        <a href="#contact">Contact</a>
+    </nav>
 
+    <!-- JHARKHAND GOVERNMENT LOGO -->
     <div class="header-right">
-
         <img
             src="jharkhand-logo.png"
             alt="Government of Jharkhand"
             class="jharkhand-logo"
         >
-
-        <nav>
-
-            <a href="#home">Home</a>
-
-            <a href="#about">About</a>
-
-            <a href="#services">Services</a>
-
-            <a href="register.html">
-                Farmer Registration
-            </a>
-
-            <a href="farmer-login.html">
-                Farmer Login
-            </a>
-
-            <a href="admin-login.html">
-                Admin
-            </a>
-
-            <a href="#contact">
-                Contact
-            </a>
-
-        </nav>
-
     </div>
 
 </header>
@@ -459,26 +475,21 @@
     <div class="about">
 
         <p>
-
             <b>
                 Chanho Birsa Munda Sangathan Producer Company Limited
             </b>
-
             किसानों को एक साथ जोड़कर कृषि उत्पादन,
             उचित मूल्य, आधुनिक तकनीक और विभिन्न
             सरकारी योजनाओं का लाभ दिलाने के उद्देश्य
             से कार्य करता है।
-
         </p>
 
         <br>
 
         <p>
-
             हमारा उद्देश्य किसानों की आय और कृषि व्यवस्था
             को मजबूत बनाना तथा किसानों को बाजार से
             सीधे जोड़ना है।
-
         </p>
 
     </div>
@@ -725,6 +736,38 @@
     </div>
 
 </section>
+<!-- ================= ADMIN ================= -->
+
+<section>
+
+    <h2 class="title">
+        🔐 FPO Admin
+    </h2>
+
+    <div class="login-box">
+
+        <p style="line-height:1.7;">
+
+            FPO के अधिकृत Admin किसान Registration,
+            Farmer Details और Application Status
+            को manage कर सकते हैं।
+
+        </p>
+
+        <div style="margin-top:20px;">
+
+            <a
+                href="admin-login.html"
+                class="big-btn admin-btn"
+            >
+                🔐 Admin Login
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
 
 
 <!-- ================= OFFICER ================= -->
@@ -735,7 +778,6 @@
         👨‍💼 FPO Officer
     </h2>
 
-
     <div class="login-box">
 
         <p style="line-height:1.7;">
@@ -745,7 +787,6 @@
             को manage कर सकते हैं।
 
         </p>
-
 
         <div style="margin-top:20px;">
 
@@ -762,7 +803,6 @@
 
 </section>
 
-
 <!-- ================= CONTACT ================= -->
 
 <section id="contact">
@@ -775,20 +815,16 @@
     <div class="contact-box">
 
         <p>
-
             <b>
                 Chanho Birsa Munda Sangathan
                 Producer Company Limited
             </b>
-
         </p>
 
 
         <p>
-
             Vill-Hutar, PO-Tangar, PS-Chanho,<br>
             Ranchi, Jharkhand
-
         </p>
 
 
@@ -796,10 +832,8 @@
 
 
         <p>
-
             किसानों एवं सदस्यों के लिए कृषि सेवाओं
             और सरकारी योजनाओं की जानकारी उपलब्ध।
-
         </p>
 
     </div>
@@ -812,16 +846,12 @@
 <footer>
 
     <p>
-
         © 2026 Chanho Birsa Munda Sangathan
         Producer Company Limited
-
     </p>
 
     <p>
-
         Farmer First • Agriculture • Development
-
     </p>
 
 </footer>
