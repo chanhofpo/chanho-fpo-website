@@ -120,7 +120,7 @@ tr:nth-child(even) td{background:#fafcfd}
   <nav class="sidebar-nav">
     <button class="sidebar-link active" data-title="Officer Dashboard" onclick="showOfficerPanel('dashboardPanel',this)"><span class="ico">⌂</span>Dashboard</button>
     <button class="sidebar-link" data-title="Officer Profile" onclick="showOfficerPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
-    <button class="sidebar-link" data-title="Register New Admin" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">➕</span>Register Admin</button>
+    <button class="sidebar-link" data-title="Register New Staff" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">➕</span>Register Staff</button>
     <button class="sidebar-link" data-title="Assign Admin Area" onclick="showOfficerPanel('assignAreaPanel',this)"><span class="ico">📍</span>Assign Admin Area</button>
     <button class="sidebar-link" data-title="Assigned Areas" onclick="showOfficerPanel('assignedAreasPanel',this)"><span class="ico">▦</span>Assigned Areas</button>
     <button class="sidebar-link" data-title="Admin Performance" onclick="showOfficerPanel('performancePanel',this)"><span class="ico">📊</span>Admin Performance</button>
@@ -176,18 +176,23 @@ tr:nth-child(even) td{background:#fafcfd}
 
   <section id="adminRegistrationPanel" class="portal-panel">
     <div class="section">
-      <h2>Register New Admin</h2>
-      <p class="section-note">Naya Admin record yahan se banaiye. Area assignment alag menu se kiya jayega.</p>
-      <form id="adminRegistrationForm" onsubmit="event.preventDefault();registerAdmin();">
+      <h2>Register New Staff</h2>
+      <p class="section-note">Designation select karke Admin ya Accountant register karein. Admin ka area assignment alag menu se hoga; Accountant ko area assignment nahi diya jayega.</p>
+      <form id="adminRegistrationForm" onsubmit="event.preventDefault();registerStaff();">
         <div class="form-grid">
-          <div><label>Admin Name *</label><input id="adminName" required></div>
+          <div><label>Staff Name *</label><input id="adminName" required></div>
           <div><label>Father / Husband Name</label><input id="adminFatherName"></div>
           <div><label>Date of Birth</label><input type="date" id="adminDob"></div>
           <div><label>Gender</label><select id="adminGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
           <div><label>Mobile *</label><input id="adminMobile" inputmode="numeric" maxlength="10" required></div>
           <div><label>Email *</label><input type="email" id="adminEmail" required></div>
           <div><label>Aadhaar Number *</label><input id="adminAadhar" inputmode="numeric" maxlength="12" required></div>
-          <div><label>Designation</label><input id="adminDesignation" value="Admin"></div>
+          <div><label>Designation *</label>
+        <select id="adminDesignation" required onchange="updateStaffDesignationUI()">
+          <option value="Admin">Admin</option>
+          <option value="Accountant">Accountant</option>
+        </select>
+      </div>
           <div><label>Joining Date</label><input type="date" id="adminJoiningDate"></div>
           <div><label>Village</label><input id="adminVillage"></div>
           <div><label>Panchayat</label><input id="adminPanchayat"></div>
@@ -221,10 +226,10 @@ tr:nth-child(even) td{background:#fafcfd}
           <div><label>Experience Document</label><input type="file" id="adminExperienceFile" accept="image/*,.pdf"></div>
           <div><label>Address Proof</label><input type="file" id="adminAddressFile" accept="image/*,.pdf"></div>
           <div><label>Bank Passbook</label><input type="file" id="adminBankFile" accept="image/*,.pdf"></div>
-          <div><label>Admin Photo</label><input type="file" id="adminPhotoFile" accept="image/*"></div>
+          <div><label>Staff Photo</label><input type="file" id="adminPhotoFile" accept="image/*"></div>
           <div><label>Signature</label><input type="file" id="adminSignatureFile" accept="image/*"></div>
         </div>
-        <div style="margin-top:16px"><button type="submit" class="primary-btn" id="registerAdminBtn">Register Admin</button></div>
+        <div style="margin-top:16px"><button type="submit" class="primary-btn" id="registerAdminBtn">Register Staff</button></div>
         <div id="adminRegistrationResult" style="margin-top:12px"></div>
       </form>
     </div>
@@ -2699,7 +2704,7 @@ async function saveOfficerProfile(){
    ADMIN REGISTRATION
 ========================= */
 
-async function uploadAdminFile(file, folder){
+async function uploadAdminFile(file, folder, rootFolder = "admin"){
     if(!file) return null;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -2719,7 +2724,7 @@ async function uploadAdminFile(file, folder){
     }
 
     const randomPart = Date.now() + "_" + Math.random().toString(36).slice(2,10);
-    const filePath = "admin/" + folder + "/" + randomPart + "." + extension;
+    const filePath = rootFolder + "/" + folder + "/" + randomPart + "." + extension;
 
     const { error } = await db.storage
         .from("farmer-documents")
@@ -2729,7 +2734,20 @@ async function uploadAdminFile(file, folder){
     return filePath;
 }
 
-async function registerAdmin(){
+
+function updateStaffDesignationUI(){
+    const designation = document.getElementById("adminDesignation");
+    const btn = document.getElementById("registerAdminBtn");
+    if(!designation || !btn) return;
+
+    if(designation.value === "Accountant"){
+        btn.textContent = "Register Accountant";
+    }else{
+        btn.textContent = "Register Admin";
+    }
+}
+
+async function registerStaff(){
     const btn = document.getElementById("registerAdminBtn");
     const form = document.getElementById("adminRegistrationForm");
     const resultBox = document.getElementById("adminRegistrationResult");
@@ -2738,9 +2756,11 @@ async function registerAdmin(){
     const mobile = document.getElementById("adminMobile").value.trim();
     const email = document.getElementById("adminEmail").value.trim();
     const aadhar = document.getElementById("adminAadhar").value.trim();
+    const designation = document.getElementById("adminDesignation").value || "Admin";
+    const isAccountant = designation === "Accountant";
 
     if(!name || !mobile || !email || !aadhar){
-        showError("Admin Name, Mobile, Email aur Aadhaar bharna zaroori hai.");
+        showError("Staff Name, Mobile, Email aur Aadhaar bharna zaroori hai.");
         return;
     }
 
@@ -2759,13 +2779,14 @@ async function registerAdmin(){
     if(resultBox) resultBox.innerHTML = "";
 
     try{
-        const aadhaarUrl = await uploadAdminFile(document.getElementById("adminAadhaarFile").files[0], "aadhaar");
-        const qualificationUrl = await uploadAdminFile(document.getElementById("adminQualificationFile").files[0], "qualification");
-        const experienceUrl = await uploadAdminFile(document.getElementById("adminExperienceFile").files[0], "experience");
-        const addressUrl = await uploadAdminFile(document.getElementById("adminAddressFile").files[0], "address-proof");
-        const bankUrl = await uploadAdminFile(document.getElementById("adminBankFile").files[0], "bank-passbook");
-        const photoUrl = await uploadAdminFile(document.getElementById("adminPhotoFile").files[0], "photo");
-        const signatureUrl = await uploadAdminFile(document.getElementById("adminSignatureFile").files[0], "signature");
+        const storageRoot = isAccountant ? "accountant" : "admin";
+        const aadhaarUrl = await uploadAdminFile(document.getElementById("adminAadhaarFile").files[0], "aadhaar", storageRoot);
+        const qualificationUrl = await uploadAdminFile(document.getElementById("adminQualificationFile").files[0], "qualification", storageRoot);
+        const experienceUrl = await uploadAdminFile(document.getElementById("adminExperienceFile").files[0], "experience", storageRoot);
+        const addressUrl = await uploadAdminFile(document.getElementById("adminAddressFile").files[0], "address-proof", storageRoot);
+        const bankUrl = await uploadAdminFile(document.getElementById("adminBankFile").files[0], "bank-passbook", storageRoot);
+        const photoUrl = await uploadAdminFile(document.getElementById("adminPhotoFile").files[0], "photo", storageRoot);
+        const signatureUrl = await uploadAdminFile(document.getElementById("adminSignatureFile").files[0], "signature", storageRoot);
 
         const payload = {
             name: name,
@@ -2775,7 +2796,7 @@ async function registerAdmin(){
             mobile: mobile,
             email: email,
             aadhar_number: aadhar,
-            designation: document.getElementById("adminDesignation").value.trim() || "Admin",
+            designation: designation,
             full_address: document.getElementById("adminFullAddress").value.trim() || null,
             village: document.getElementById("adminVillage").value.trim() || null,
             panchayat: document.getElementById("adminPanchayat").value.trim() || null,
@@ -2801,24 +2822,35 @@ async function registerAdmin(){
             signature_url: signatureUrl
         };
 
+        const targetTable = isAccountant ? "accountants" : "admins";
+        const idColumn = isAccountant ? "accountant_id" : "admin_id";
+
         const { data, error } = await db
-            .from("admins")
+            .from(targetTable)
             .insert(payload)
-            .select("admin_id,name,mobile,email,status")
+            .select(idColumn + ",name,mobile,email,status")
             .single();
 
         if(error) throw error;
 
-        const adminId = data && data.admin_id ? data.admin_id : "Generated by database";
+        const staffId = data && data[idColumn]
+            ? data[idColumn]
+            : "Generated by database";
 
         let authMessage = "";
+
         try{
+            const functionName = isAccountant
+                ? "create-accountant-auth"
+                : "create-admin-auth";
+
+            const requestBody = isAccountant
+                ? { accountant_id: staffId, email: email }
+                : { admin_id: staffId, email: email };
+
             const { data: inviteData, error: inviteError } =
-                await db.functions.invoke("create-admin-auth", {
-                    body: {
-                        admin_id: adminId,
-                        email: email
-                    }
+                await db.functions.invoke(functionName, {
+                    body: requestBody
                 });
 
             if(inviteError){
@@ -2828,20 +2860,30 @@ async function registerAdmin(){
             authMessage =
                 inviteData && inviteData.message
                 ? inviteData.message
-                : "Admin login invite email sent.";
+                : (isAccountant
+                    ? "Accountant login invite email sent."
+                    : "Admin login invite email sent.");
+
         }catch(inviteProblem){
-            console.warn("Admin Auth automation unavailable:", inviteProblem);
+            console.warn("Staff Auth automation unavailable:", inviteProblem);
             authMessage =
-                "Admin record बन गया है, लेकिन Auth invite automatic नहीं हो पाया। Edge Function deploy होने तक Supabase Authentication में user बनाकर UUID manually link करें।";
+                (isAccountant ? "Accountant" : "Admin") +
+                " record बन गया है, लेकिन Auth invite automatic नहीं हो पाया। Edge Function check करें।";
         }
 
-        showSuccess("Admin successfully registered: " + adminId + " | " + authMessage);
+        showSuccess(
+            (isAccountant ? "Accountant" : "Admin") +
+            " successfully registered: " +
+            staffId +
+            " | " +
+            authMessage
+        );
 
         if(resultBox){
             resultBox.innerHTML = `
                 <div class="registration-success">
-                    <strong>Admin Registration Successful</strong>
-                    <span>Admin ID: ${escapeHtml(adminId)}</span>
+                    <strong>${isAccountant ? "Accountant" : "Admin"} Registration Successful</strong>
+                    <span>${isAccountant ? "Accountant" : "Admin"} ID: ${escapeHtml(staffId)}</span>
                     <span>Name: ${escapeHtml(data && data.name ? data.name : name)}</span>
                     <span>Mobile: ${escapeHtml(mobile)}</span>
                     <span>Login: ${escapeHtml(authMessage)}</span>
@@ -2854,14 +2896,17 @@ async function registerAdmin(){
         document.getElementById("adminState").value = "Jharkhand";
         document.getElementById("adminDesignation").value = "Admin";
         document.getElementById("adminStatus").value = "Active";
-        await loadAdmins();
+        updateStaffDesignationUI();
+        if(!isAccountant){
+            await loadAdmins();
+        }
 
     }catch(error){
         console.error(error);
-        showError("Admin registration failed: " + (error.message || error));
+        showError("Staff registration failed: " + (error.message || error));
     }finally{
         btn.disabled = false;
-        btn.textContent = "Register Admin";
+        btn.textContent = "Register Staff";
     }
 }
 
