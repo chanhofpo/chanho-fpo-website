@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Accountant Dashboard - Chanho FPO</title>
+
+<style>
+*{box-sizing:border-box}
+:root{
+  --blue:#075e88;
+  --blue2:#168cc3;
+  --light:#f4f7fb;
+  --border:#dfe6ee;
+  --text:#1f2937;
+  --muted:#667085;
+  --green:#067647;
+  --red:#b42318;
+  --orange:#b54708;
+}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--light);
+  color:var(--text);
+}
+button,input,select,textarea{font:inherit}
+.app-shell{min-height:100vh}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:250px;
+  background:#075e88;color:#fff;z-index:20;
+  box-shadow:2px 0 10px rgba(0,0,0,.12);
+  overflow-y:auto;
+}
+.sidebar-head{
+  height:42px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;background:#064e72;font-size:13px;font-weight:700
+}
+.sidebar-brand{
+  padding:18px 14px;text-align:center;border-bottom:1px solid rgba(255,255,255,.18)
+}
+.sidebar-brand img{
+  width:72px;height:72px;border-radius:50%;background:white;padding:4px;object-fit:contain
+}
+.sidebar-brand strong{display:block;font-size:13px;line-height:1.45;margin-top:8px}
+.sidebar-brand small{display:block;margin-top:5px;opacity:.8}
+.sidebar-nav{padding:10px}
+.sidebar-link{
+  width:100%;border:0;background:transparent;color:#fff;text-align:left;
+  padding:11px 10px;border-radius:7px;cursor:pointer;margin:2px 0;
+  display:flex;align-items:center;gap:10px;font-size:13px
+}
+.sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.16)}
+.ico{width:22px;text-align:center}
+.main-shell{margin-left:250px;min-height:100vh}
+.topbar{
+  height:64px;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  position:sticky;top:0;z-index:10
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.menu-toggle{display:none;border:0;background:#eef5f8;border-radius:6px;padding:8px 10px;cursor:pointer}
+.topbar-title{font-weight:800;color:#075e88}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-chip{display:flex;align-items:center;gap:9px}
+.user-fallback{
+  width:38px;height:38px;border-radius:50%;background:#e8f4fa;color:#075e88;
+  display:flex;align-items:center;justify-content:center;font-weight:800
+}
+.user-text{display:flex;flex-direction:column;font-size:12px}
+.user-text span{color:var(--muted)}
+.logout-btn{border:0;background:#b42318;color:#fff;border-radius:6px;padding:8px 12px;cursor:pointer}
+.content{padding:18px}
+.portal-panel{display:none}
+.portal-panel.active{display:block}
+.portal-card,.section{
+  background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:16px;
+  box-shadow:0 3px 12px rgba(15,23,42,.04)
+}
+.portal-card-title{
+  padding:12px 15px;background:#f8fafc;border-bottom:1px solid var(--border);
+  font-weight:800;color:#075e88;font-size:13px
+}
+.portal-card-body,.section-body{padding:16px}
+.welcome-title{margin:0;color:#075e88}
+.welcome-text{color:var(--muted);line-height:1.6}
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px
+}
+.stat{
+  border:1px solid var(--border);border-radius:10px;padding:14px;background:#fff
+}
+.stat h3{font-size:12px;color:var(--muted);margin:0 0 8px}
+.stat p{font-size:25px;font-weight:800;margin:0}
+.stat small{font-size:11px;color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.field label{display:block;font-weight:700;font-size:12px;margin-bottom:5px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff
+}
+.field textarea{min-height:82px;resize:vertical}
+.primary-btn{
+  border:0;background:#075e88;color:#fff;border-radius:7px;padding:10px 14px;
+  cursor:pointer;font-weight:700
+}
+.secondary-btn{
+  border:1px solid #075e88;background:#fff;color:#075e88;border-radius:7px;
+  padding:9px 13px;cursor:pointer;font-weight:700
+}
+.success-btn{
+  border:0;background:#067647;color:#fff;border-radius:7px;padding:9px 13px;cursor:pointer;font-weight:700
+}
+.danger-btn{
+  border:0;background:#b42318;color:#fff;border-radius:7px;padding:9px 13px;cursor:pointer;font-weight:700
+}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;white-space:nowrap}
+th{background:#f8fafc;color:#475467}
+.badge{display:inline-block;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:800}
+.badge.green{background:#ecfdf3;color:#067647}
+.badge.orange{background:#fff7ed;color:#b54708}
+.badge.red{background:#fef3f2;color:#b42318}
+.badge.blue{background:#eff8ff;color:#026aa2}
+.section h2{margin:0;padding:13px 16px;border-bottom:1px solid var(--border);font-size:16px;color:#075e88}
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.quick-card{
+  border:1px solid var(--border);border-radius:9px;padding:14px;cursor:pointer;background:#fff;
+  transition:.15s
+}
+.quick-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.quick-card b{display:block;margin-bottom:6px}
+.quick-card span{font-size:11px;color:var(--muted)}
+.note{padding:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#9a3412;font-size:12px}
+.message{display:none;margin-bottom:14px;padding:10px;border-radius:8px}
+.message.show{display:block}
+hr{border:0;border-top:1px solid var(--border);margin:16px 0}
+.amount-positive{color:#067647;font-weight:800}
+.amount-negative{color:#b42318;font-weight:800}
+.muted{color:var(--muted)}
+
+.inventory-toolbar{
+  display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:12px
+}
+.inventory-toolbar .field{min-width:180px}
+.stock-ok{color:#067647;font-weight:800}
+.stock-low{color:#b54708;font-weight:800}
+.stock-zero{color:#b42318;font-weight:800}
+.bill-summary{
+  margin-top:14px;margin-left:auto;max-width:360px;border:1px solid var(--border);
+  border-radius:9px;background:#f8fafc;padding:12px
+}
+.bill-summary-row{
+  display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:13px
+}
+.bill-summary-row.total{
+  border-top:1px solid var(--border);margin-top:6px;padding-top:9px;
+  font-size:16px;font-weight:800;color:#075e88
+}
+.bill-items input,.bill-items select{min-width:100px}
+.small-btn{
+  border:1px solid #cbd5e1;background:#fff;border-radius:6px;padding:6px 8px;cursor:pointer
+}
+.invoice-preview{
+  max-width:850px;margin:0 auto;background:#fff;padding:20px;border:1px solid #d0d5dd;
+  border-radius:8px
+}
+.invoice-head{
+  display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #075e88;
+  padding-bottom:12px;margin-bottom:14px
+}
+.invoice-head h2{margin:0;color:#075e88}
+.invoice-meta{font-size:12px;line-height:1.6}
+.invoice-table{width:100%;border-collapse:collapse}
+.invoice-table th,.invoice-table td{border:1px solid #d0d5dd;padding:7px;font-size:12px}
+.invoice-total{margin-left:auto;width:320px;margin-top:12px}
+.invoice-total div{display:flex;justify-content:space-between;padding:5px 0}
+
+
+.distribution-photo-wrap{
+  display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap
+}
+.distribution-photo-preview{
+  width:150px;height:150px;border:2px dashed #cbd5e1;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8fafc;
+  color:#667085;font-size:12px;text-align:center;padding:8px
+}
+.distribution-photo-preview img{width:100%;height:100%;object-fit:cover}
+.distribution-card{
+  border:1px solid var(--border);border-radius:10px;padding:14px;background:#fff
+}
+
+@media(max-width:1100px){
+  .stats,.quick-actions{grid-template-columns:repeat(2,1fr)}
+  .form-grid,.grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:800px){
+  .sidebar{transform:translateX(-100%);transition:.2s}
+  .sidebar.open{transform:translateX(0)}
+  .main-shell{margin-left:0}
+  .menu-toggle{display:inline-block}
+  .stats,.quick-actions,.grid-2,.grid-3,.form-grid{grid-template-columns:1fr}
+  .user-text{display:none}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head"><span>Menu</span><span>☰</span></div>
+
+  <div class="sidebar-brand">
+    <img src="logo.png" alt="CBMS Logo">
+    <strong>Chanho Birsa Munda Sangathan<br>Producer Company Limited</strong>
+    <small>Accountant Panel</small>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="sidebar-link active" data-title="Accountant Dashboard" onclick="showPanel('dashboardPanel',this)"><span class="ico">⌂</span>Dashboard</button>
+    <button class="sidebar-link" data-title="Accountant Profile" onclick="showPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
+    <button class="sidebar-link" data-title="GST Settings" onclick="showPanel('gstSettingsPanel',this)"><span class="ico">🧾</span>FPO GST Settings</button>
+
+    <button class="sidebar-link" data-title="Receipt Entry" onclick="showPanel('receiptPanel',this)"><span class="ico">💰</span>Receipt Entry</button>
+    <button class="sidebar-link" data-title="Payment Entry" onclick="showPanel('paymentPanel',this)"><span class="ico">💸</span>Payment Entry</button>
+    <button class="sidebar-link" data-title="Journal / Contra" onclick="showPanel('journalPanel',this)"><span class="ico">📘</span>Journal / Contra</button>
+
+    <button class="sidebar-link" data-title="Sales & Income" onclick="showPanel('salesPanel',this)"><span class="ico">🧾</span>Sales / Income</button>
+    <button class="sidebar-link" data-title="Purchase & Expense" onclick="showPanel('purchasePanel',this)"><span class="ico">🛒</span>Purchase / Expense</button>
+
+    <button class="sidebar-link" data-title="Item Master" onclick="showPanel('itemMasterPanel',this)"><span class="ico">📦</span>Seed/Fertilizer/Plant Item Master</button>
+    <button class="sidebar-link" data-title="Stock Inward" onclick="showPanel('stockInPanel',this)"><span class="ico">⬇️</span>Stock Inward / Purchase</button>
+    <button class="sidebar-link" data-title="Seed Distribution" onclick="showPanel('seedDistributionPanel',this)"><span class="ico">🌾</span>Seed Distribution</button>
+    <button class="sidebar-link" data-title="Sales Billing" onclick="showPanel('billingPanel',this)"><span class="ico">🧾</span>Seed/Fertilizer/Plant Billing</button>
+    <button class="sidebar-link" data-title="Stock Register" onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
+
+    <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this)"><span class="ico">📗</span>Cash Book</button>
+    <button class="sidebar-link" data-title="Bank Book" onclick="showPanel('bankbookPanel',this)"><span class="ico">🏦</span>Bank Book</button>
+    <button class="sidebar-link" data-title="Ledger" onclick="showPanel('ledgerPanel',this)"><span class="ico">📚</span>Ledger</button>
+
+    <button class="sidebar-link" data-title="Receivable / Payable" onclick="showPanel('duesPanel',this)"><span class="ico">⏳</span>Receivable / Payable</button>
+    <button class="sidebar-link" data-title="Reports" onclick="showPanel('reportsPanel',this)"><span class="ico">📊</span>Reports</button>
+    <button class="sidebar-link" data-title="Audit Trail" onclick="showPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Trail</button>
+  </nav>
+</aside>
+
+
+<div class="main-shell">
+
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="topbar-title" id="pageTitle">Accountant Dashboard</div>
+  </div>
+
+  <div class="topbar-right">
+    <div class="user-chip">
+      <div class="user-fallback">AC</div>
+      <div class="user-text">
+        <strong id="accountantNameTop">Accountant</strong>
+        <span id="accountantInfo">CBMS Accounts</span>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logoutAccountant()">Logout</button>
+  </div>
+</header>
+
+
+<main class="content">
+
+<div id="message" class="message"></div>
+
+<section id="dashboardPanel" class="portal-panel active">
+  <div class="portal-card">
+    <div class="portal-card-title">ABOUT ACCOUNTANT DASHBOARD</div>
+    <div class="portal-card-body">
+      <h1 class="welcome-title">Welcome to Chanho FPO Accounts</h1>
+      <p class="welcome-text">
+        Is dashboard se FPO ke receipt, payment, income, expense, cash/bank book,
+        ledger, dues aur financial reports manage kiye ja sakte hain.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <h3>Cash in Hand</h3>
+          <p class="amount-positive">₹0.00</p>
+          <small>Current Balance</small>
+        </div>
+
+        <div class="stat">
+          <h3>Bank Balance</h3>
+          <p class="amount-positive">₹0.00</p>
+          <small>All Bank Accounts</small>
+        </div>
+
+        <div class="stat">
+          <h3>This Month Income</h3>
+          <p class="amount-positive">₹0.00</p>
+          <small>Receipt + Sales</small>
+        </div>
+
+        <div class="stat">
+          <h3>This Month Expense</h3>
+          <p class="amount-negative">₹0.00</p>
+          <small>Payment + Purchase</small>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <h3>Receivable</h3>
+          <p>₹0.00</p>
+          <small>Amount to Receive</small>
+        </div>
+        <div class="stat">
+          <h3>Payable</h3>
+          <p>₹0.00</p>
+          <small>Amount to Pay</small>
+        </div>
+        <div class="stat">
+          <h3>Membership Collection</h3>
+          <p>₹0.00</p>
+          <small>Farmer Membership Fees</small>
+        </div>
+        <div class="stat">
+          <h3>Pending Vouchers</h3>
+          <p>0</p>
+          <small>Waiting for approval</small>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:14px">
+        Polyhouse stock bhi isi Item Master me maintain hoga: Plant / Seedling category select karke variety,
+        unit (Plant/Seedling/Tray/Pot), purchase/production rate aur sale rate save karein.
+      </div>
+
+      <hr>
+
+      <h3>Quick Actions</h3>
+      <div class="quick-actions">
+        <div class="quick-card" onclick="showPanel('receiptPanel')">
+          <b>➕ New Receipt</b>
+          <span>Cash/Bank me paisa receive entry</span>
+        </div>
+
+        <div class="quick-card" onclick="showPanel('paymentPanel')">
+          <b>➖ New Payment</b>
+          <span>Expense / vendor payment entry</span>
+        </div>
+
+        <div class="quick-card" onclick="showPanel('salesPanel')">
+          <b>🧾 Sales Entry</b>
+          <span>FPO sale / service income</span>
+        </div>
+
+        <div class="quick-card" onclick="showPanel('reportsPanel')">
+          <b>📊 Financial Reports</b>
+          <span>Day Book, Ledger, P&L etc.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="section">
+      <h2>Recent Transactions</h2>
+      <div class="section-body">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>Voucher</th><th>Party</th><th>Type</th><th>Amount</th></tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" class="muted">No transactions yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Approval Status</h2>
+      <div class="section-body">
+        <p><span class="badge orange">Pending</span> Accountant entry → Officer verification workflow can be enabled.</p>
+        <p><span class="badge green">Approved</span> Approved vouchers become final accounting records.</p>
+        <div class="note">Recommended: finalised voucher ko direct edit na karein; correction ke liye reversal/adjustment entry use karein.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="profilePanel" class="portal-panel">
+  <div class="section">
+    <h2>Accountant Profile</h2>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>Name</label><input placeholder="Accountant name"></div>
+        <div class="field"><label>Mobile</label><input placeholder="Mobile"></div>
+        <div class="field"><label>Email</label><input placeholder="Email"></div>
+        <div class="field"><label>Designation</label><input value="Accountant"></div>
+        <div class="field"><label>Joining Date</label><input type="date"></div>
+        <div class="field"><label>Status</label><select><option>Active</option><option>Inactive</option></select></div>
+      </div>
+      <br>
+      <button class="primary-btn">Save Profile</button>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="gstSettingsPanel" class="portal-panel">
+  <div class="section">
+    <h2>FPO GST Settings</h2>
+    <div class="section-body">
+      <div class="note">
+        FPO GST registered hone par Tax Invoice me Seller GSTIN, Place of Supply aur CGST/SGST/IGST breakup dikhaya jayega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Legal Name</label><input id="gstLegalName" value="Chanho Birsa Munda Sangathan Producer Company Limited"></div>
+        <div class="field"><label>GSTIN *</label><input id="gstGstin" placeholder="15 digit GSTIN"></div>
+        <div class="field"><label>State</label><input id="gstState" value="Jharkhand"></div>
+
+        <div class="field"><label>State Code</label><input id="gstStateCode" value="20" maxlength="2"></div>
+        <div class="field"><label>Registered Address</label><input id="gstAddress" value="Vill-Hutar, PO-Tangar, PS-Chanho, Ranchi, Jharkhand"></div>
+        <div class="field"><label>Invoice Prefix</label><input id="gstInvoicePrefix" value="CBMS/TAX"></div>
+      </div>
+
+      <br>
+      <button class="primary-btn" onclick="saveGstSettings()">Save GST Settings</button>
+      <button class="secondary-btn" onclick="loadGstSettings()">Reload</button>
+    </div>
+  </div>
+</section>
+
+<section id="receiptPanel" class="portal-panel">
+  <div class="section">
+    <h2>Receipt Entry</h2>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input type="date"></div>
+        <div class="field"><label>Receipt Type</label>
+          <select>
+            <option>Membership Fee</option>
+            <option>Sales Receipt</option>
+            <option>Service Income</option>
+            <option>Grant/Subsidy</option>
+            <option>Loan Received</option>
+            <option>Other Income</option>
+          </select>
+        </div>
+        <div class="field"><label>Received From</label><input placeholder="Farmer / Customer / Agency"></div>
+        <div class="field"><label>Amount (₹)</label><input type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Mode</label>
+          <select><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
+        </div>
+        <div class="field"><label>Reference No.</label><input placeholder="UTR / Cheque / Receipt ref"></div>
+        <div class="field"><label>Ledger</label><input placeholder="Ledger / Account Head"></div>
+        <div class="field"><label>Farmer Reg. No. (optional)</label><input placeholder="CBMS/2026/01"></div>
+        <div class="field"><label>Supporting Document</label><input type="file"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Narration</label><textarea placeholder="Transaction details"></textarea></div>
+      <br>
+      <button class="primary-btn">Save Receipt Voucher</button>
+    </div>
+  </div>
+</section>
+
+
+<section id="paymentPanel" class="portal-panel">
+  <div class="section">
+    <h2>Payment Entry</h2>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input type="date"></div>
+        <div class="field"><label>Expense Head</label>
+          <select>
+            <option>Office Expense</option>
+            <option>Training Expense</option>
+            <option>Travel / Exposure Visit</option>
+            <option>Machine / Repair</option>
+            <option>Purchase Payment</option>
+            <option>Salary / Honorarium</option>
+            <option>Electricity / Rent</option>
+            <option>Other Expense</option>
+          </select>
+        </div>
+        <div class="field"><label>Paid To</label><input placeholder="Vendor / Person / Agency"></div>
+        <div class="field"><label>Amount (₹)</label><input type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Mode</label>
+          <select><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
+        </div>
+        <div class="field"><label>Reference No.</label><input placeholder="UTR / Cheque / Bill No."></div>
+        <div class="field"><label>Ledger</label><input placeholder="Ledger / Account Head"></div>
+        <div class="field"><label>Bill / Invoice No.</label><input placeholder="Bill number"></div>
+        <div class="field"><label>Supporting Document</label><input type="file"></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Narration</label><textarea></textarea></div>
+      <br>
+      <button class="primary-btn">Save Payment Voucher</button>
+    </div>
+  </div>
+</section>
+
+
+<section id="journalPanel" class="portal-panel">
+  <div class="section">
+    <h2>Journal / Contra Entry</h2>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input type="date"></div>
+        <div class="field"><label>Voucher Type</label><select><option>Journal</option><option>Contra</option></select></div>
+        <div class="field"><label>Amount (₹)</label><input type="number"></div>
+        <div class="field"><label>Debit Ledger</label><input></div>
+        <div class="field"><label>Credit Ledger</label><input></div>
+        <div class="field"><label>Reference</label><input></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>Narration</label><textarea></textarea></div>
+      <br>
+      <button class="primary-btn">Save Journal / Contra</button>
+    </div>
+  </div>
+</section>
+
+
+<section id="salesPanel" class="portal-panel">
+  <div class="section">
+    <h2>Sales / Income</h2>
+    <div class="section-body">
+      <div class="quick-actions">
+        <div class="quick-card"><b>Product Sale</b><span>Seed, grain, produce etc.</span></div>
+        <div class="quick-card"><b>Service Income</b><span>Machine, cold storage, processing etc.</span></div>
+        <div class="quick-card"><b>Membership Fee</b><span>Farmer shareholder/member collection</span></div>
+        <div class="quick-card"><b>Other Income</b><span>Grant, interest, miscellaneous</span></div>
+      </div>
+      <hr>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Type</th><th>Total</th><th>Received</th><th>Due</th></tr></thead>
+          <tbody><tr><td colspan="7" class="muted">No sales entries yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="purchasePanel" class="portal-panel">
+  <div class="section">
+    <h2>Purchase / Expense</h2>
+    <div class="section-body">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Bill No.</th><th>Date</th><th>Vendor</th><th>Category</th><th>Total</th><th>Paid</th><th>Due</th></tr></thead>
+          <tbody><tr><td colspan="7" class="muted">No purchase/expense records yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="itemMasterPanel" class="portal-panel">
+  <div class="section">
+    <h2>Seed / Fertilizer / Plant Item Master</h2>
+    <div class="section-body">
+      <div class="note">
+        Tally ki tarah pehle har beej, khaad, pesticide, polyhouse plant/seedling ya anya stock item yahan master me add hoga.
+        Billing ke samay item dropdown me sirf yahi active items dikhenge.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Item Name *</label><input id="imName" placeholder="Jaise: DAP Fertilizer"></div>
+        <div class="field"><label>Category *</label>
+          <select id="imCategory">
+            <option value="">Select Category</option>
+            <option>Seed</option>
+            <option>Fertilizer</option>
+            <option>Pesticide</option>
+            <option>Bio Fertilizer</option>
+            <option>Micronutrient</option>
+            <option>Plant / Seedling</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Brand / Variety</label><input id="imBrand" placeholder="Brand / Variety"></div>
+
+        <div class="field"><label>Unit *</label>
+          <select id="imUnit">
+            <option>Kg</option>
+            <option>Bag</option>
+            <option>Packet</option>
+            <option>Piece</option>
+            <option>Plant</option>
+            <option>Seedling</option>
+            <option>Tray</option>
+            <option>Pot</option>
+            <option>Litre</option>
+            <option>ML</option>
+          </select>
+        </div>
+        <div class="field"><label>HSN Code</label><input id="imHsn" placeholder="Optional HSN"></div>
+        <div class="field"><label>GST %</label><input id="imGst" type="number" min="0" step="0.01" value="0"></div>
+
+        <div class="field"><label>Purchase Rate (₹)</label><input id="imPurchaseRate" type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Sale Rate (₹) *</label><input id="imSaleRate" type="number" min="0" step="0.01"></div>
+        <div class="field"><label>Opening Stock</label><input id="imOpeningStock" type="number" min="0" step="0.001" value="0"></div>
+
+        <div class="field"><label>Reorder Level</label><input id="imReorder" type="number" min="0" step="0.001" value="0"></div>
+        <div class="field"><label>Status</label>
+          <select id="imStatus"><option>Active</option><option>Inactive</option></select>
+        </div>
+        <div class="field"><label>Item Code</label><input id="imCode" readonly placeholder="Auto generated"></div>
+      </div>
+
+      <br>
+      <button class="primary-btn" onclick="saveItemMaster()">Save Item</button>
+      <button class="secondary-btn" onclick="clearItemMasterForm()">Clear</button>
+
+      <hr>
+
+      <div class="inventory-toolbar">
+        <div class="field"><label>Search Item</label><input id="itemSearch" placeholder="Item / Brand / Category" oninput="renderItemMaster()"></div>
+        <div class="field"><label>Category</label>
+          <select id="itemCategoryFilter" onchange="renderItemMaster()">
+            <option value="">All Categories</option>
+            <option>Seed</option><option>Fertilizer</option><option>Pesticide</option>
+            <option>Bio Fertilizer</option><option>Micronutrient</option><option>Plant / Seedling</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item Code</th><th>Item Name</th><th>Category</th><th>Brand/Variety</th>
+              <th>Unit</th><th>Sale Rate</th><th>Current Stock</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="itemMasterBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="stockInPanel" class="portal-panel">
+  <div class="section">
+    <h2>Stock Inward / Purchase Entry</h2>
+    <div class="section-body">
+      <div class="note">
+        Office/Polyhouse me jo bhi beej, khaad, plant/seedling ya anya stock aata hai uski inward entry yahan karein. Entry save hote hi stock badhega
+        aur wahi quantity billing me available dikhegi.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Date *</label><input id="siDate" type="date"></div>
+        <div class="field"><label>Supplier / Agency *</label><input id="siSupplier" placeholder="Supplier name"></div>
+        <div class="field"><label>Supplier Bill No.</label><input id="siBillNo" placeholder="Invoice/Bill number"></div>
+
+        <div class="field"><label>Item *</label><select id="siItem"></select></div>
+        <div class="field"><label>Quantity *</label><input id="siQty" type="number" min="0.001" step="0.001"></div>
+        <div class="field"><label>Purchase Rate (₹) *</label><input id="siRate" type="number" min="0" step="0.01"></div>
+
+        <div class="field"><label>Batch No.</label><input id="siBatch" placeholder="Optional"></div>
+        <div class="field"><label>Expiry Date</label><input id="siExpiry" type="date"></div>
+        <div class="field"><label>Payment Status</label>
+          <select id="siPaymentStatus"><option>Paid</option><option>Partly Paid</option><option>Credit</option></select>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:12px"><label>Narration</label><textarea id="siNarration" placeholder="Purchase / stock details"></textarea></div>
+      <br>
+      <button class="primary-btn" onclick="saveStockInward()">Save Stock Inward</button>
+
+      <hr>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Purchase Ref</th><th>Supplier</th><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th><th>Batch</th></tr>
+          </thead>
+          <tbody id="stockInBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="seedDistributionPanel" class="portal-panel">
+  <div class="section">
+    <h2>Seed Distribution Register</h2>
+    <div class="section-body">
+      <div class="note">
+        Beej distribution ke samay farmer ki details aur live photo capture karein.
+        Seed Item Master se select hoga aur save hote hi distributed quantity stock se automatically kam hogi.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Distribution Date *</label><input id="sdDate" type="date"></div>
+        <div class="field"><label>Scheme / Program Name *</label><input id="sdScheme" placeholder="Scheme / Program"></div>
+        <div class="field"><label>Farmer Registration No.</label><input id="sdFarmerReg" placeholder="CBMS/2026/01"></div>
+
+        <div class="field"><label>Farmer Name *</label><input id="sdFarmerName" placeholder="Farmer name"></div>
+        <div class="field"><label>Father / Husband Name *</label><input id="sdFatherHusband" placeholder="Father / Husband name"></div>
+        <div class="field"><label>Mobile *</label><input id="sdMobile" placeholder="10 digit mobile" maxlength="10"></div>
+
+        <div class="field"><label>Aadhaar Number *</label><input id="sdAadhaar" placeholder="12 digit Aadhaar" maxlength="12" inputmode="numeric"></div>
+        <div class="field"><label>Block *</label><input id="sdBlock" placeholder="Block"></div>
+        <div class="field"><label>Panchayat *</label><input id="sdPanchayat" placeholder="Panchayat"></div>
+        <div class="field"><label>Village *</label><input id="sdVillage" placeholder="Village"></div>
+
+        <div class="field"><label>Seed Name *</label><select id="sdSeedItem" onchange="onSeedDistributionItemChange()"></select></div>
+        <div class="field"><label>Quantity *</label><input id="sdQty" type="number" min="0.001" step="0.001" placeholder="Distributed quantity"></div>
+        <div class="field"><label>Unit</label><input id="sdUnit" readonly placeholder="Auto from Item Master"></div>
+      </div>
+
+      <hr>
+
+      <div class="distribution-card">
+        <h3 style="margin-top:0;color:#075e88">Farmer Photo at Distribution Time *</h3>
+
+        <div class="distribution-photo-wrap">
+          <div class="distribution-photo-preview" id="sdPhotoPreview">
+            Camera se farmer photo khinchiye
+          </div>
+
+          <div class="field" style="min-width:260px;flex:1">
+            <label>Farmer Photo</label>
+            <input
+              id="sdFarmerPhoto"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onchange="previewSeedDistributionPhoto(event)"
+            >
+            <small class="muted">
+              Mobile me Camera option khulega. Laptop me camera/file picker browser ke support par depend karega.
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:12px">
+        <label>Remark</label>
+        <textarea id="sdRemark" placeholder="Optional note"></textarea>
+      </div>
+
+      <br>
+      <button class="primary-btn" onclick="saveSeedDistribution()">Save Distribution Entry</button>
+      <button class="secondary-btn" onclick="clearSeedDistributionForm()">Clear</button>
+
+      <hr>
+
+      <div class="inventory-toolbar">
+        <div class="field"><label>Search Distribution</label><input id="sdSearch" placeholder="Farmer / Mobile / Village / Scheme / Seed" oninput="renderSeedDistribution()"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Scheme</th>
+              <th>Reg. No.</th>
+              <th>Farmer</th>
+              <th>Father/Husband</th>
+              <th>Mobile</th>
+              <th>Aadhaar</th>
+              <th>Block</th>
+              <th>Panchayat</th>
+              <th>Village</th>
+              <th>Seed</th>
+              <th>Qty</th>
+              <th>Photo</th>
+            </tr>
+          </thead>
+          <tbody id="seedDistributionBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="billingPanel" class="portal-panel">
+  <div class="section">
+    <h2>Seed / Fertilizer / Plant Sales Billing</h2>
+    <div class="section-body">
+      <div class="note">
+        Tally-style bill: Item column me Item Master ke active stock items dikhenge.
+        Quantity available stock se zyada nahi ho sakti. Bill save karte hi stock automatically ghatega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Bill No.</label><input id="billNo" readonly></div>
+        <div class="field"><label>Bill Date *</label><input id="billDate" type="date"></div>
+        <div class="field"><label>Customer Type</label>
+          <select id="customerType"><option>Farmer</option><option>Customer</option><option>Member</option><option>Other</option></select>
+        </div>
+
+        <div class="field"><label>Customer / Farmer Name *</label><input id="customerName" placeholder="Name"></div>
+        <div class="field"><label>Mobile</label><input id="customerMobile" placeholder="Mobile"></div>
+        <div class="field"><label>Farmer Reg. No.</label><input id="customerFarmerReg" placeholder="Optional CBMS/2026/01"></div>
+
+        <div class="field"><label>Buyer GSTIN (optional)</label><input id="buyerGstin" placeholder="GST registered buyer ho to"></div>
+        <div class="field"><label>Place of Supply State</label><input id="placeOfSupply" value="Jharkhand" oninput="recalculateBill()"></div>
+        <div class="field"><label>Tax Type</label>
+          <select id="taxType" onchange="recalculateBill()">
+            <option value="AUTO">Auto by State</option>
+            <option value="INTRA">CGST + SGST</option>
+            <option value="INTER">IGST</option>
+          </select>
+        </div>
+
+        <div class="field"><label>Payment Mode</label>
+          <select id="billPaymentMode"><option>Cash</option><option>UPI</option><option>Bank</option><option>Credit</option></select>
+        </div>
+        <div class="field"><label>Reference No.</label><input id="billRef" placeholder="UPI/UTR/Other"></div>
+        <div class="field"><label>Discount (₹)</label><input id="billDiscount" type="number" min="0" step="0.01" value="0" oninput="recalculateBill()"></div>
+      </div>
+
+      <hr>
+
+      <div class="table-wrap">
+        <table class="bill-items">
+          <thead>
+            <tr>
+              <th>#</th><th>Item</th><th>HSN</th><th>Available</th><th>Qty</th><th>Unit</th>
+              <th>Rate</th><th>GST %</th><th>Amount</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="billItemsBody"></tbody>
+        </table>
+      </div>
+
+      <br>
+      <button class="secondary-btn" onclick="addBillRow()">+ Add Item</button>
+
+      <div class="bill-summary">
+        <div class="bill-summary-row"><span>Taxable Amount</span><b id="billTaxable">₹0.00</b></div>
+        <div class="bill-summary-row" id="cgstRow"><span>CGST</span><b id="billCgstTotal">₹0.00</b></div>
+        <div class="bill-summary-row" id="sgstRow"><span>SGST</span><b id="billSgstTotal">₹0.00</b></div>
+        <div class="bill-summary-row" id="igstRow" style="display:none"><span>IGST</span><b id="billIgstTotal">₹0.00</b></div>
+        <div class="bill-summary-row"><span>Total GST</span><b id="billGstTotal">₹0.00</b></div>
+        <div class="bill-summary-row"><span>Discount</span><b id="billDiscountDisplay">₹0.00</b></div>
+        <div class="bill-summary-row total"><span>Grand Total</span><span id="billGrandTotal">₹0.00</span></div>
+      </div>
+
+      <br>
+      <button class="primary-btn" onclick="saveSalesBill()">Save & Finalize Bill</button>
+      <button class="secondary-btn" onclick="printLastBill()">Print Last Bill</button>
+
+      <hr>
+
+      <h3>Recent Bills</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Bill No.</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Mode</th><th>Print</th></tr></thead>
+          <tbody id="salesBillsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="stockPanel" class="portal-panel">
+  <div class="section">
+    <h2>Stock Register</h2>
+    <div class="section-body">
+      <div class="inventory-toolbar">
+        <div class="field"><label>Search</label><input id="stockSearch" placeholder="Item / Brand" oninput="renderStockRegister()"></div>
+        <div class="field"><label>Category</label>
+          <select id="stockCategoryFilter" onchange="renderStockRegister()">
+            <option value="">All Categories</option>
+            <option>Seed</option><option>Fertilizer</option><option>Pesticide</option>
+            <option>Bio Fertilizer</option><option>Micronutrient</option><option>Plant / Seedling</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Code</th><th>Item</th><th>Category</th><th>Brand/Variety</th><th>Unit</th><th>Purchased</th><th>Sold</th><th>Current Stock</th><th>Sale Rate</th><th>Status</th></tr>
+          </thead>
+          <tbody id="stockRegisterBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="cashbookPanel" class="portal-panel">
+  <div class="section">
+    <h2>Cash Book</h2>
+    <div class="section-body">
+      <div class="grid-3">
+        <div class="stat"><h3>Opening Cash</h3><p>₹0.00</p></div>
+        <div class="stat"><h3>Cash Received</h3><p class="amount-positive">₹0.00</p></div>
+        <div class="stat"><h3>Cash Paid</h3><p class="amount-negative">₹0.00</p></div>
+      </div>
+      <hr>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Voucher</th><th>Particular</th><th>Receipt</th><th>Payment</th><th>Balance</th></tr></thead>
+          <tbody><tr><td colspan="6" class="muted">No cash transactions.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="bankbookPanel" class="portal-panel">
+  <div class="section">
+    <h2>Bank Book</h2>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>Bank Account</label><select><option>Select Bank Account</option></select></div>
+        <div class="field"><label>From Date</label><input type="date"></div>
+        <div class="field"><label>To Date</label><input type="date"></div>
+      </div>
+      <br>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Voucher</th><th>Particular</th><th>Deposit</th><th>Withdrawal</th><th>Balance</th></tr></thead>
+          <tbody><tr><td colspan="6" class="muted">No bank transactions.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="ledgerPanel" class="portal-panel">
+  <div class="section">
+    <h2>Ledger</h2>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="field"><label>Ledger Account</label><select><option>Select Ledger</option></select></div>
+        <div class="field"><label>From Date</label><input type="date"></div>
+        <div class="field"><label>To Date</label><input type="date"></div>
+      </div>
+      <br>
+      <button class="primary-btn">View Ledger</button>
+      <button class="secondary-btn">Download PDF</button>
+      <button class="secondary-btn">Download Excel</button>
+    </div>
+  </div>
+</section>
+
+
+<section id="duesPanel" class="portal-panel">
+  <div class="grid-2">
+    <div class="section">
+      <h2>Receivable</h2>
+      <div class="section-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Party</th><th>Invoice</th><th>Due Date</th><th>Due Amount</th></tr></thead>
+            <tbody><tr><td colspan="4" class="muted">No receivables.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>Payable</h2>
+      <div class="section-body">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Vendor</th><th>Bill</th><th>Due Date</th><th>Due Amount</th></tr></thead>
+            <tbody><tr><td colspan="4" class="muted">No payables.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="reportsPanel" class="portal-panel">
+  <div class="section">
+    <h2>Financial Reports</h2>
+    <div class="section-body">
+      <div class="quick-actions">
+        <div class="quick-card"><b>Day Book</b><span>All daily vouchers</span></div>
+        <div class="quick-card"><b>Cash Book</b><span>Cash receipts/payments</span></div>
+        <div class="quick-card"><b>Bank Book</b><span>Bank transactions</span></div>
+        <div class="quick-card"><b>Ledger</b><span>Account-wise statement</span></div>
+        <div class="quick-card"><b>Trial Balance</b><span>Debit / Credit summary</span></div>
+        <div class="quick-card"><b>Profit & Loss</b><span>Income vs Expense</span></div>
+        <div class="quick-card"><b>Balance Sheet</b><span>Assets / Liabilities</span></div>
+        <div class="quick-card"><b>Membership Collection</b><span>Farmer fee collection report</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="auditPanel" class="portal-panel">
+  <div class="section">
+    <h2>Accounts Audit Trail</h2>
+    <div class="section-body">
+      <div class="note">
+        Accountant entry, edit request, officer approval, reversal aur deletion attempt ka audit record database me rakhna recommended hai.
+      </div>
+      <br>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date/Time</th><th>User</th><th>Action</th><th>Voucher</th><th>Details</th></tr></thead>
+          <tbody><tr><td colspan="5" class="muted">No accounting audit entries yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const authDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function requireAccountantSession(){
+  const { data: sessionData, error: sessionError } = await authDb.auth.getSession();
+
+  if(sessionError || !sessionData || !sessionData.session || !sessionData.session.user){
+    window.location.replace("accountant-login.html");
+    return null;
+  }
+
+  const user = sessionData.session.user;
+
+  const { data: accountant, error } = await authDb
+    .from("accountants")
+    .select("accountant_id,name,email,status,designation")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+
+  if(
+    error ||
+    !accountant ||
+    String(accountant.status || "").trim().toLowerCase() !== "active"
+  ){
+    await authDb.auth.signOut();
+    window.location.replace("accountant-login.html");
+    return null;
+  }
+
+  const nameEl = document.getElementById("accountantNameTop");
+  const infoEl = document.getElementById("accountantInfo");
+
+  if(nameEl) nameEl.textContent = accountant.name || "Accountant";
+  if(infoEl) infoEl.textContent = accountant.accountant_id || "CBMS Accounts";
+
+  return accountant;
+}
+
+async function logoutAccountant(){
+  await authDb.auth.signOut();
+  window.location.replace("accountant-login.html");
+}
+
+const STORE_KEYS = {
+  items: "cbms_account_items_v1",
+  inward: "cbms_account_stock_in_v1",
+  bills: "cbms_account_sales_bills_v1",
+  billSeq: "cbms_account_bill_seq_v1",
+  gst: "cbms_account_gst_settings_v1",
+  seedDistribution: "cbms_seed_distribution_v1"
+};
+
+function getStore(key){
+  try{
+    return JSON.parse(localStorage.getItem(key) || "[]");
+  }catch(e){
+    return [];
+  }
+}
+function setStore(key,value){
+  localStorage.setItem(key,JSON.stringify(value));
+}
+function money(value){
+  return "₹" + Number(value || 0).toFixed(2);
+}
+function num(value){
+  return Number(value || 0);
+}
+function today(){
+  return new Date().toISOString().slice(0,10);
+}
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function maskDistributionAadhaar(value){
+  const digits=String(value||"").replace(/\D/g,"");
+  if(digits.length!==12) return "-";
+  return "XXXX-XXXX-" + digits.slice(-4);
+}
+
+
+function defaultGstSettings(){
+  return {
+    legalName:"Chanho Birsa Munda Sangathan Producer Company Limited",
+    gstin:"",
+    state:"Jharkhand",
+    stateCode:"20",
+    address:"Vill-Hutar, PO-Tangar, PS-Chanho, Ranchi, Jharkhand",
+    invoicePrefix:"CBMS/TAX"
+  };
+}
+
+function getGstSettings(){
+  try{
+    return {
+      ...defaultGstSettings(),
+      ...JSON.parse(localStorage.getItem(STORE_KEYS.gst) || "{}")
+    };
+  }catch(e){
+    return defaultGstSettings();
+  }
+}
+
+function loadGstSettings(){
+  const g=getGstSettings();
+  if(document.getElementById("gstLegalName")) document.getElementById("gstLegalName").value=g.legalName||"";
+  if(document.getElementById("gstGstin")) document.getElementById("gstGstin").value=g.gstin||"";
+  if(document.getElementById("gstState")) document.getElementById("gstState").value=g.state||"Jharkhand";
+  if(document.getElementById("gstStateCode")) document.getElementById("gstStateCode").value=g.stateCode||"20";
+  if(document.getElementById("gstAddress")) document.getElementById("gstAddress").value=g.address||"";
+  if(document.getElementById("gstInvoicePrefix")) document.getElementById("gstInvoicePrefix").value=g.invoicePrefix||"CBMS/TAX";
+}
+
+function saveGstSettings(){
+  const gstin=document.getElementById("gstGstin").value.trim().toUpperCase();
+  if(gstin && !/^[0-9A-Z]{15}$/.test(gstin)){
+    showMessage("GSTIN 15 characters ka hona chahiye.","error");
+    return;
+  }
+
+  const settings={
+    legalName:document.getElementById("gstLegalName").value.trim(),
+    gstin,
+    state:document.getElementById("gstState").value.trim() || "Jharkhand",
+    stateCode:document.getElementById("gstStateCode").value.trim() || "20",
+    address:document.getElementById("gstAddress").value.trim(),
+    invoicePrefix:document.getElementById("gstInvoicePrefix").value.trim() || "CBMS/TAX"
+  };
+
+  localStorage.setItem(STORE_KEYS.gst,JSON.stringify(settings));
+  showMessage("FPO GST Settings save ho gaya.");
+}
+
+function resolvedTaxType(){
+  const selected=document.getElementById("taxType")?.value || "AUTO";
+  if(selected==="INTRA" || selected==="INTER") return selected;
+
+  const seller=(getGstSettings().state||"").trim().toLowerCase();
+  const pos=(document.getElementById("placeOfSupply")?.value||"").trim().toLowerCase();
+  return seller && pos && seller===pos ? "INTRA" : "INTER";
+}
+
+function showMessage(text,type="success"){
+  const box=document.getElementById("message");
+  box.textContent=text;
+  box.className="message show";
+  box.style.background=type==="error"?"#fef3f2":"#ecfdf3";
+  box.style.color=type==="error"?"#b42318":"#067647";
+  box.style.border=type==="error"?"1px solid #fecdca":"1px solid #abefc6";
+  setTimeout(()=>box.className="message",4500);
+}
+
+function showPanel(panelId,clicked){
+  document.querySelectorAll(".portal-panel").forEach(p=>p.classList.remove("active"));
+  const panel=document.getElementById(panelId);
+  if(panel) panel.classList.add("active");
+
+  document.querySelectorAll(".sidebar-link").forEach(b=>b.classList.remove("active"));
+  if(clicked) clicked.classList.add("active");
+
+  const title=document.getElementById("pageTitle");
+  if(title){
+    title.textContent=clicked
+      ? (clicked.getAttribute("data-title") || "Accountant Dashboard")
+      : "Accountant Dashboard";
+  }
+
+  if(panelId==="gstSettingsPanel") loadGstSettings();
+  if(panelId==="itemMasterPanel") renderItemMaster();
+  if(panelId==="stockInPanel"){ refreshItemDropdowns(); renderStockInward(); }
+  if(panelId==="seedDistributionPanel"){ refreshSeedDistributionItems(); renderSeedDistribution(); }
+  if(panelId==="billingPanel"){ prepareBilling(); renderSalesBills(); }
+  if(panelId==="stockPanel") renderStockRegister();
+
+  if(window.innerWidth<=800){
+    document.getElementById("sidebar").classList.remove("open");
+  }
+}
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("open");
+}
+
+/* ---------------- ITEM MASTER ---------------- */
+function nextItemCode(){
+  const items=getStore(STORE_KEYS.items);
+  const max=items.reduce((m,i)=>{
+    const n=parseInt(String(i.code||"").split("/").pop(),10);
+    return Number.isFinite(n)?Math.max(m,n):m;
+  },0);
+  return "ITEM/" + String(max+1).padStart(4,"0");
+}
+
+function clearItemMasterForm(){
+  document.getElementById("imName").value="";
+  document.getElementById("imCategory").value="";
+  document.getElementById("imBrand").value="";
+  document.getElementById("imUnit").value="Kg";
+  document.getElementById("imHsn").value="";
+  document.getElementById("imGst").value="0";
+  document.getElementById("imPurchaseRate").value="";
+  document.getElementById("imSaleRate").value="";
+  document.getElementById("imOpeningStock").value="0";
+  document.getElementById("imReorder").value="0";
+  document.getElementById("imStatus").value="Active";
+  document.getElementById("imCode").value=nextItemCode();
+}
+
+function saveItemMaster(){
+  const name=document.getElementById("imName").value.trim();
+  const category=document.getElementById("imCategory").value;
+  const saleRate=num(document.getElementById("imSaleRate").value);
+
+  if(!name || !category || saleRate<0){
+    showMessage("Item Name, Category aur valid Sale Rate भरें।","error");
+    return;
+  }
+
+  const items=getStore(STORE_KEYS.items);
+  const duplicate=items.find(i=>String(i.name).toLowerCase()===name.toLowerCase() && String(i.brand||"").toLowerCase()===document.getElementById("imBrand").value.trim().toLowerCase());
+  if(duplicate){
+    showMessage("Same Item Name / Brand pehle se Item Master me hai.","error");
+    return;
+  }
+
+  const item={
+    id:crypto.randomUUID(),
+    code:nextItemCode(),
+    name,
+    category,
+    brand:document.getElementById("imBrand").value.trim(),
+    unit:document.getElementById("imUnit").value,
+    hsn:document.getElementById("imHsn").value.trim(),
+    gst:num(document.getElementById("imGst").value),
+    purchaseRate:num(document.getElementById("imPurchaseRate").value),
+    saleRate,
+    openingStock:num(document.getElementById("imOpeningStock").value),
+    currentStock:num(document.getElementById("imOpeningStock").value),
+    totalPurchased:0,
+    totalSold:0,
+    reorderLevel:num(document.getElementById("imReorder").value),
+    status:document.getElementById("imStatus").value,
+    createdAt:new Date().toISOString()
+  };
+
+  items.push(item);
+  setStore(STORE_KEYS.items,items);
+
+  loadGstSettings();
+  const pos=document.getElementById("placeOfSupply");
+  if(pos && !pos.value) pos.value=getGstSettings().state||"Jharkhand";
+  clearItemMasterForm();
+  renderItemMaster();
+  refreshItemDropdowns();
+  showMessage("Item Master me item save ho gaya.");
+}
+
+function deleteItem(id){
+  const items=getStore(STORE_KEYS.items);
+  const inward=getStore(STORE_KEYS.inward);
+  const bills=getStore(STORE_KEYS.bills);
+
+  const used=inward.some(x=>x.itemId===id) ||
+    bills.some(b=>(b.items||[]).some(x=>x.itemId===id));
+
+  if(used){
+    showMessage("Is item par transaction ho chuka hai. Delete ke badle Inactive karein.","error");
+    return;
+  }
+
+  setStore(STORE_KEYS.items,items.filter(i=>i.id!==id));
+  renderItemMaster();
+  refreshItemDropdowns();
+}
+
+function toggleItemStatus(id){
+  const items=getStore(STORE_KEYS.items);
+  const item=items.find(i=>i.id===id);
+  if(!item) return;
+  item.status=item.status==="Active"?"Inactive":"Active";
+  setStore(STORE_KEYS.items,items);
+  renderItemMaster();
+  refreshItemDropdowns();
+}
+
+function stockClass(item){
+  const stock=num(item.currentStock);
+  if(stock<=0) return "stock-zero";
+  if(stock<=num(item.reorderLevel)) return "stock-low";
+  return "stock-ok";
+}
+
+function renderItemMaster(){
+  const body=document.getElementById("itemMasterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("itemSearch")?.value||"").trim().toLowerCase();
+  const cat=document.getElementById("itemCategoryFilter")?.value||"";
+
+  const items=getStore(STORE_KEYS.items).filter(i=>{
+    const hay=[i.code,i.name,i.category,i.brand].join(" ").toLowerCase();
+    return (!q || hay.includes(q)) && (!cat || i.category===cat);
+  });
+
+  body.innerHTML=items.length?items.map(i=>`
+    <tr>
+      <td>${escapeHtml(i.code)}</td>
+      <td><b>${escapeHtml(i.name)}</b></td>
+      <td>${escapeHtml(i.category)}</td>
+      <td>${escapeHtml(i.brand||"-")}</td>
+      <td>${escapeHtml(i.unit)}</td>
+      <td>${money(i.saleRate)}</td>
+      <td class="${stockClass(i)}">${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}</td>
+      <td><span class="badge ${i.status==="Active"?"green":"red"}">${escapeHtml(i.status)}</span></td>
+      <td>
+        <button class="small-btn" onclick="toggleItemStatus('${i.id}')">${i.status==="Active"?"Deactivate":"Activate"}</button>
+        <button class="small-btn" onclick="deleteItem('${i.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join(""):`<tr><td colspan="9" class="muted">No items in Item Master.</td></tr>`;
+}
+
+/* ---------------- STOCK INWARD ---------------- */
+function refreshItemDropdowns(){
+  const items=getStore(STORE_KEYS.items).filter(i=>i.status==="Active");
+  const options=['<option value="">Select Item</option>']
+    .concat(items.map(i=>`<option value="${i.id}">${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}</option>`))
+    .join("");
+
+  const si=document.getElementById("siItem");
+  if(si) si.innerHTML=options;
+}
+
+function nextPurchaseRef(){
+  const list=getStore(STORE_KEYS.inward);
+  return "PUR/" + new Date().getFullYear() + "/" + String(list.length+1).padStart(4,"0");
+}
+
+function saveStockInward(){
+  const itemId=document.getElementById("siItem").value;
+  const qty=num(document.getElementById("siQty").value);
+  const rate=num(document.getElementById("siRate").value);
+  const supplier=document.getElementById("siSupplier").value.trim();
+
+  if(!itemId || qty<=0 || rate<0 || !supplier){
+    showMessage("Supplier, Item, Quantity aur valid Purchase Rate भरें।","error");
+    return;
+  }
+
+  const items=getStore(STORE_KEYS.items);
+  const item=items.find(i=>i.id===itemId);
+  if(!item){
+    showMessage("Selected item नहीं मिला।","error");
+    return;
+  }
+
+  const entry={
+    id:crypto.randomUUID(),
+    ref:nextPurchaseRef(),
+    date:document.getElementById("siDate").value||today(),
+    supplier,
+    supplierBillNo:document.getElementById("siBillNo").value.trim(),
+    itemId,
+    itemCode:item.code,
+    itemName:item.name,
+    qty,
+    rate,
+    amount:qty*rate,
+    batch:document.getElementById("siBatch").value.trim(),
+    expiry:document.getElementById("siExpiry").value,
+    paymentStatus:document.getElementById("siPaymentStatus").value,
+    narration:document.getElementById("siNarration").value.trim(),
+    createdAt:new Date().toISOString()
+  };
+
+  const inward=getStore(STORE_KEYS.inward);
+  inward.push(entry);
+  setStore(STORE_KEYS.inward,inward);
+
+  item.currentStock=num(item.currentStock)+qty;
+  item.totalPurchased=num(item.totalPurchased)+qty;
+  item.purchaseRate=rate;
+  setStore(STORE_KEYS.items,items);
+
+  document.getElementById("siQty").value="";
+  document.getElementById("siRate").value="";
+  document.getElementById("siBatch").value="";
+  document.getElementById("siExpiry").value="";
+  document.getElementById("siNarration").value="";
+
+  renderStockInward();
+  refreshItemDropdowns();
+  renderStockRegister();
+  showMessage("Stock inward save ho gaya. Current stock update ho gaya.");
+}
+
+function renderStockInward(){
+  const body=document.getElementById("stockInBody");
+  if(!body) return;
+  const inward=getStore(STORE_KEYS.inward).slice().reverse();
+  body.innerHTML=inward.length?inward.map(x=>`
+    <tr>
+      <td>${escapeHtml(x.date)}</td>
+      <td>${escapeHtml(x.ref)}</td>
+      <td>${escapeHtml(x.supplier)}</td>
+      <td>${escapeHtml(x.itemName)}</td>
+      <td>${num(x.qty).toFixed(3)}</td>
+      <td>${money(x.rate)}</td>
+      <td>${money(x.amount)}</td>
+      <td>${escapeHtml(x.batch||"-")}</td>
+    </tr>
+  `).join(""):`<tr><td colspan="8" class="muted">No stock inward entries yet.</td></tr>`;
+}
+
+
+/* ---------------- SEED DISTRIBUTION ---------------- */
+let seedDistributionPhotoData = "";
+
+function refreshSeedDistributionItems(){
+  const select=document.getElementById("sdSeedItem");
+  if(!select) return;
+
+  const items=getStore(STORE_KEYS.items)
+    .filter(i=>i.status==="Active" && i.category==="Seed" && num(i.currentStock)>0);
+
+  select.innerHTML=['<option value="">Select Seed</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}">
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
+
+  onSeedDistributionItemChange();
+}
+
+function onSeedDistributionItemChange(){
+  const select=document.getElementById("sdSeedItem");
+  const unit=document.getElementById("sdUnit");
+  if(!select || !unit) return;
+
+  const item=getStore(STORE_KEYS.items).find(i=>i.id===select.value);
+  unit.value=item ? (item.unit || "") : "";
+}
+
+function previewSeedDistributionPhoto(event){
+  const file=event.target.files && event.target.files[0];
+  const preview=document.getElementById("sdPhotoPreview");
+
+  seedDistributionPhotoData="";
+
+  if(!file){
+    preview.innerHTML="Camera se farmer photo khinchiye";
+    return;
+  }
+
+  if(!file.type.startsWith("image/")){
+    showMessage("Farmer photo ke liye image file select karein.","error");
+    event.target.value="";
+    return;
+  }
+
+  if(file.size > 2 * 1024 * 1024){
+    showMessage("Demo me photo 2 MB se kam rakhein. Supabase version me compressed/private upload hoga.","error");
+    event.target.value="";
+    return;
+  }
+
+  const reader=new FileReader();
+  reader.onload=function(e){
+    seedDistributionPhotoData=e.target.result;
+    preview.innerHTML=`<img src="${seedDistributionPhotoData}" alt="Farmer Photo">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearSeedDistributionForm(){
+  const ids=[
+    "sdScheme","sdFarmerReg","sdFarmerName","sdFatherHusband","sdMobile","sdAadhaar",
+    "sdBlock","sdPanchayat","sdVillage","sdQty","sdUnit","sdRemark"
+  ];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  const seed=document.getElementById("sdSeedItem");
+  if(seed) seed.value="";
+
+  const photo=document.getElementById("sdFarmerPhoto");
+  if(photo) photo.value="";
+
+  seedDistributionPhotoData="";
+  const preview=document.getElementById("sdPhotoPreview");
+  if(preview) preview.innerHTML="Camera se farmer photo khinchiye";
+
+  const date=document.getElementById("sdDate");
+  if(date) date.value=today();
+
+  refreshSeedDistributionItems();
+}
+
+function nextSeedDistributionNo(){
+  const rows=getStore(STORE_KEYS.seedDistribution);
+  return "SEED-DIST/" + new Date().getFullYear() + "/" + String(rows.length+1).padStart(4,"0");
+}
+
+function saveSeedDistribution(){
+  try{
+    const itemId=document.getElementById("sdSeedItem").value;
+    const qty=num(document.getElementById("sdQty").value);
+
+    const required={
+      "Scheme / Program":document.getElementById("sdScheme").value.trim(),
+      "Farmer Name":document.getElementById("sdFarmerName").value.trim(),
+      "Father / Husband Name":document.getElementById("sdFatherHusband").value.trim(),
+      "Mobile":document.getElementById("sdMobile").value.trim(),
+      "Aadhaar Number":document.getElementById("sdAadhaar").value.trim(),
+      "Block":document.getElementById("sdBlock").value.trim(),
+      "Panchayat":document.getElementById("sdPanchayat").value.trim(),
+      "Village":document.getElementById("sdVillage").value.trim()
+    };
+
+    for(const [label,value] of Object.entries(required)){
+      if(!value) throw new Error(label+" भरें।");
+    }
+
+    if(!/^\d{10}$/.test(required["Mobile"])){
+      throw new Error("Mobile number 10 digit ka hona chahiye.");
+    }
+
+    if(!/^\d{12}$/.test(required["Aadhaar Number"])){
+      throw new Error("Aadhaar number 12 digit ka hona chahiye.");
+    }
+
+    if(!itemId) throw new Error("Seed Name select karein.");
+    if(qty<=0) throw new Error("Distribution Quantity zero se zyada honi chahiye.");
+    if(!seedDistributionPhotoData) throw new Error("Distribution ke samay farmer photo lena zaroori hai.");
+
+    const items=getStore(STORE_KEYS.items);
+    const item=items.find(i=>i.id===itemId);
+
+    if(!item || item.category!=="Seed"){
+      throw new Error("Selected item Seed category ka nahi hai.");
+    }
+
+    if(qty>num(item.currentStock)){
+      throw new Error("Available seed stock se zyada distribution nahi kar sakte.");
+    }
+
+    const entry={
+      id:crypto.randomUUID(),
+      distributionNo:nextSeedDistributionNo(),
+      date:document.getElementById("sdDate").value || today(),
+      scheme:required["Scheme / Program"],
+      farmerReg:document.getElementById("sdFarmerReg").value.trim(),
+      farmerName:required["Farmer Name"],
+      fatherHusbandName:required["Father / Husband Name"],
+      mobile:required["Mobile"],
+      aadhaarNumber:required["Aadhaar Number"],
+      block:required["Block"],
+      panchayat:required["Panchayat"],
+      village:required["Village"],
+      itemId:item.id,
+      seedName:item.name,
+      brand:item.brand || "",
+      qty,
+      unit:item.unit,
+      photoData:seedDistributionPhotoData,
+      remark:document.getElementById("sdRemark").value.trim(),
+      createdAt:new Date().toISOString()
+    };
+
+    const rows=getStore(STORE_KEYS.seedDistribution);
+    rows.push(entry);
+
+    try{
+      setStore(STORE_KEYS.seedDistribution,rows);
+    }catch(storageError){
+      throw new Error("Photo ke karan browser storage full ho gaya. Real Supabase version me photo private Storage me save hoga.");
+    }
+
+    item.currentStock=num(item.currentStock)-qty;
+    item.totalSold=num(item.totalSold)+qty;
+    setStore(STORE_KEYS.items,items);
+
+    clearSeedDistributionForm();
+    renderSeedDistribution();
+    renderStockRegister();
+    refreshSeedDistributionItems();
+
+    showMessage("Seed Distribution entry save ho gaya aur stock automatically deduct ho gaya.");
+
+  }catch(error){
+    showMessage(error.message || String(error),"error");
+  }
+}
+
+function renderSeedDistribution(){
+  const body=document.getElementById("seedDistributionBody");
+  if(!body) return;
+
+  const q=(document.getElementById("sdSearch")?.value || "").trim().toLowerCase();
+
+  const rows=getStore(STORE_KEYS.seedDistribution)
+    .slice()
+    .reverse()
+    .filter(x=>{
+      const hay=[
+        x.distributionNo,x.date,x.scheme,x.farmerReg,x.farmerName,
+        x.fatherHusbandName,x.mobile,x.aadhaarNumber,x.block,x.panchayat,x.village,
+        x.seedName,x.brand
+      ].join(" ").toLowerCase();
+      return !q || hay.includes(q);
+    });
+
+  body.innerHTML=rows.length ? rows.map(x=>`
+    <tr>
+      <td>${escapeHtml(x.date)}</td>
+      <td>${escapeHtml(x.scheme)}</td>
+      <td>${escapeHtml(x.farmerReg||"-")}</td>
+      <td><b>${escapeHtml(x.farmerName)}</b></td>
+      <td>${escapeHtml(x.fatherHusbandName)}</td>
+      <td>${escapeHtml(x.mobile)}</td>
+      <td>${escapeHtml(maskDistributionAadhaar(x.aadhaarNumber))}</td>
+      <td>${escapeHtml(x.block)}</td>
+      <td>${escapeHtml(x.panchayat)}</td>
+      <td>${escapeHtml(x.village)}</td>
+      <td>${escapeHtml(x.seedName)}${x.brand?` - ${escapeHtml(x.brand)}`:""}</td>
+      <td>${num(x.qty).toFixed(3)} ${escapeHtml(x.unit)}</td>
+      <td>${x.photoData?`<img src="${x.photoData}" alt="Farmer" style="width:45px;height:45px;object-fit:cover;border-radius:6px">`:"-"}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="13" class="muted">No seed distribution entries yet.</td></tr>`;
+}
+
+
+/* ---------------- SALES BILL ---------------- */
+function nextBillNo(previewOnly=false){
+  const year=new Date().getFullYear();
+  const seq=parseInt(localStorage.getItem(STORE_KEYS.billSeq)||"0",10)+1;
+  const prefix=(getGstSettings().invoicePrefix||"CBMS/TAX").replace(/\/+$/,"");
+  return prefix + "/" + year + "/" + String(seq).padStart(4,"0");
+}
+
+function prepareBilling(){
+  const billNo=document.getElementById("billNo");
+  const billDate=document.getElementById("billDate");
+  if(billNo && !billNo.value) billNo.value=nextBillNo();
+  if(billDate && !billDate.value) billDate.value=today();
+  const tbody=document.getElementById("billItemsBody");
+  if(tbody && !tbody.children.length) addBillRow();
+}
+
+function billItemOptions(selected=""){
+  const items=getStore(STORE_KEYS.items)
+    .filter(i=>i.status==="Active" && num(i.currentStock)>0);
+
+  return ['<option value="">Select Item</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}" ${i.id===selected?"selected":""}>
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
+}
+
+function addBillRow(){
+  const tbody=document.getElementById("billItemsBody");
+  if(!tbody) return;
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="rowNo"></td>
+    <td><select class="billItemSelect" onchange="onBillItemChange(this)">${billItemOptions()}</select></td>
+    <td class="billHsn">-</td>
+    <td class="availableStock">-</td>
+    <td><input class="billQty" type="number" min="0.001" step="0.001" value="1" oninput="recalculateBill()"></td>
+    <td class="billUnit">-</td>
+    <td><input class="billRate" type="number" min="0" step="0.01" value="0" oninput="recalculateBill()"></td>
+    <td><input class="billGst" type="number" min="0" step="0.01" value="0" oninput="recalculateBill()"></td>
+    <td class="billAmount">${money(0)}</td>
+    <td><button class="small-btn" onclick="removeBillRow(this)">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  renumberBillRows();
+}
+
+function removeBillRow(btn){
+  btn.closest("tr").remove();
+  if(!document.getElementById("billItemsBody").children.length) addBillRow();
+  renumberBillRows();
+  recalculateBill();
+}
+function renumberBillRows(){
+  document.querySelectorAll("#billItemsBody tr").forEach((tr,idx)=>{
+    tr.querySelector(".rowNo").textContent=idx+1;
+  });
+}
+
+function onBillItemChange(select){
+  const tr=select.closest("tr");
+  const items=getStore(STORE_KEYS.items);
+  const item=items.find(i=>i.id===select.value);
+
+  if(!item){
+    tr.querySelector(".billHsn").textContent="-";
+    tr.querySelector(".availableStock").textContent="-";
+    tr.querySelector(".billUnit").textContent="-";
+    tr.querySelector(".billRate").value="0";
+    tr.querySelector(".billGst").value="0";
+    recalculateBill();
+    return;
+  }
+
+  tr.querySelector(".billHsn").textContent=item.hsn || "-";
+  tr.querySelector(".availableStock").textContent=
+    num(item.currentStock).toFixed(3)+" "+item.unit;
+  tr.querySelector(".billUnit").textContent=item.unit;
+  tr.querySelector(".billRate").value=num(item.saleRate).toFixed(2);
+  tr.querySelector(".billGst").value=num(item.gst).toFixed(2);
+  recalculateBill();
+}
+
+function recalculateBill(){
+  let taxable=0;
+  let gstTotal=0;
+
+  document.querySelectorAll("#billItemsBody tr").forEach(tr=>{
+    const qty=num(tr.querySelector(".billQty")?.value);
+    const rate=num(tr.querySelector(".billRate")?.value);
+    const gst=num(tr.querySelector(".billGst")?.value);
+    const base=qty*rate;
+    const tax=base*gst/100;
+    taxable+=base;
+    gstTotal+=tax;
+    tr.querySelector(".billAmount").textContent=money(base+tax);
+  });
+
+  const discount=num(document.getElementById("billDiscount")?.value);
+  const grand=Math.max(0,taxable+gstTotal-discount);
+  const taxType=resolvedTaxType();
+
+  let cgst=0,sgst=0,igst=0;
+  if(taxType==="INTRA"){
+    cgst=gstTotal/2;
+    sgst=gstTotal/2;
+  }else{
+    igst=gstTotal;
+  }
+
+  document.getElementById("billTaxable").textContent=money(taxable);
+  document.getElementById("billGstTotal").textContent=money(gstTotal);
+  document.getElementById("billCgstTotal").textContent=money(cgst);
+  document.getElementById("billSgstTotal").textContent=money(sgst);
+  document.getElementById("billIgstTotal").textContent=money(igst);
+  document.getElementById("billDiscountDisplay").textContent=money(discount);
+  document.getElementById("billGrandTotal").textContent=money(grand);
+
+  document.getElementById("cgstRow").style.display=taxType==="INTRA"?"flex":"none";
+  document.getElementById("sgstRow").style.display=taxType==="INTRA"?"flex":"none";
+  document.getElementById("igstRow").style.display=taxType==="INTER"?"flex":"none";
+
+  return {taxable,gstTotal,cgst,sgst,igst,discount,grand,taxType};
+}
+
+function collectBillItems(){
+  const items=getStore(STORE_KEYS.items);
+  const rows=[...document.querySelectorAll("#billItemsBody tr")];
+  const output=[];
+
+  for(const tr of rows){
+    const itemId=tr.querySelector(".billItemSelect").value;
+    if(!itemId) continue;
+
+    const item=items.find(i=>i.id===itemId);
+    if(!item) throw new Error("Bill item master me नहीं मिला।");
+
+    const qty=num(tr.querySelector(".billQty").value);
+    const rate=num(tr.querySelector(".billRate").value);
+    const gst=num(tr.querySelector(".billGst").value);
+
+    if(qty<=0) throw new Error(item.name+": Quantity zero se zyada honi chahiye.");
+    if(qty>num(item.currentStock)) throw new Error(item.name+": Available stock se zyada quantity nahi bech sakte.");
+
+    const base=qty*rate;
+    const tax=base*gst/100;
+    output.push({
+      itemId:item.id,
+      itemCode:item.code,
+      itemName:item.name,
+      brand:item.brand,
+      unit:item.unit,
+      hsn:item.hsn,
+      qty,rate,gst,
+      taxable:base,
+      tax,
+      total:base+tax
+    });
+  }
+
+  if(!output.length) throw new Error("Bill me kam se kam ek item add karein.");
+  return output;
+}
+
+function saveSalesBill(){
+  try{
+    const customer=document.getElementById("customerName").value.trim();
+    if(!customer) throw new Error("Customer / Farmer Name भरें।");
+
+    const lineItems=collectBillItems();
+    const totals=recalculateBill();
+
+    const itemMaster=getStore(STORE_KEYS.items);
+
+    // Re-check combined qty if same item appears twice
+    const qtyByItem={};
+    lineItems.forEach(x=>qtyByItem[x.itemId]=(qtyByItem[x.itemId]||0)+x.qty);
+    for(const [itemId,qty] of Object.entries(qtyByItem)){
+      const item=itemMaster.find(i=>i.id===itemId);
+      if(!item || qty>num(item.currentStock)){
+        throw new Error((item?.name||"Item")+": Total bill quantity available stock se zyada hai.");
+      }
+    }
+
+    const bill={
+      id:crypto.randomUUID(),
+      billNo:document.getElementById("billNo").value || nextBillNo(),
+      date:document.getElementById("billDate").value||today(),
+      customerType:document.getElementById("customerType").value,
+      customerName:customer,
+      mobile:document.getElementById("customerMobile").value.trim(),
+      farmerReg:document.getElementById("customerFarmerReg").value.trim(),
+      buyerGstin:document.getElementById("buyerGstin").value.trim().toUpperCase(),
+      placeOfSupply:document.getElementById("placeOfSupply").value.trim(),
+      taxType:totals.taxType,
+      paymentMode:document.getElementById("billPaymentMode").value,
+      referenceNo:document.getElementById("billRef").value.trim(),
+      taxable:totals.taxable,
+      gstTotal:totals.gstTotal,
+      cgst:totals.cgst,
+      sgst:totals.sgst,
+      igst:totals.igst,
+      discount:totals.discount,
+      grandTotal:totals.grand,
+      items:lineItems,
+      createdAt:new Date().toISOString()
+    };
+
+    // Deduct stock
+    for(const [itemId,qty] of Object.entries(qtyByItem)){
+      const item=itemMaster.find(i=>i.id===itemId);
+      item.currentStock=num(item.currentStock)-qty;
+      item.totalSold=num(item.totalSold)+qty;
+    }
+    setStore(STORE_KEYS.items,itemMaster);
+
+    const bills=getStore(STORE_KEYS.bills);
+    bills.push(bill);
+    setStore(STORE_KEYS.bills,bills);
+
+    const currentSeq=parseInt(localStorage.getItem(STORE_KEYS.billSeq)||"0",10);
+    localStorage.setItem(STORE_KEYS.billSeq,String(currentSeq+1));
+
+    document.getElementById("billNo").value=nextBillNo();
+    document.getElementById("customerName").value="";
+    document.getElementById("customerMobile").value="";
+    document.getElementById("customerFarmerReg").value="";
+    document.getElementById("buyerGstin").value="";
+    document.getElementById("placeOfSupply").value=getGstSettings().state||"Jharkhand";
+    document.getElementById("billRef").value="";
+    document.getElementById("billDiscount").value="0";
+    document.getElementById("billItemsBody").innerHTML="";
+    addBillRow();
+    recalculateBill();
+
+    refreshItemDropdowns();
+    renderSalesBills();
+    renderStockRegister();
+    showMessage("Sales bill final ho gaya aur stock deduct ho gaya.");
+
+  }catch(error){
+    showMessage(error.message||String(error),"error");
+  }
+}
+
+function renderSalesBills(){
+  const body=document.getElementById("salesBillsBody");
+  if(!body) return;
+  const bills=getStore(STORE_KEYS.bills).slice().reverse();
+  body.innerHTML=bills.length?bills.map(b=>`
+    <tr>
+      <td>${escapeHtml(b.billNo)}</td>
+      <td>${escapeHtml(b.date)}</td>
+      <td>${escapeHtml(b.customerName)}</td>
+      <td>${(b.items||[]).length}</td>
+      <td>${money(b.grandTotal)}</td>
+      <td>${escapeHtml(b.paymentMode)}</td>
+      <td><button class="small-btn" onclick="printBill('${b.id}')">Print</button></td>
+    </tr>
+  `).join(""):`<tr><td colspan="7" class="muted">No sales bills yet.</td></tr>`;
+}
+
+function printLastBill(){
+  const bills=getStore(STORE_KEYS.bills);
+  if(!bills.length){
+    showMessage("Abhi koi saved bill नहीं है।","error");
+    return;
+  }
+  printBill(bills[bills.length-1].id);
+}
+
+function printBill(id){
+  const bill=getStore(STORE_KEYS.bills).find(b=>b.id===id);
+  const gst=getGstSettings();
+  if(!bill) return;
+
+  const w=window.open("","_blank","width=950,height=760");
+  const rows=(bill.items||[]).map((x,idx)=>`
+    <tr>
+      <td>${idx+1}</td>
+      <td>${escapeHtml(x.itemName)}${x.brand?`<br><small>${escapeHtml(x.brand)}</small>`:""}</td>
+      <td>${escapeHtml(x.hsn||"-")}</td>
+      <td>${x.qty.toFixed(3)} ${escapeHtml(x.unit)}</td>
+      <td>${money(x.rate)}</td>
+      <td>${x.gst.toFixed(2)}%</td>
+      <td>${money(x.total)}</td>
+    </tr>
+  `).join("");
+
+  w.document.write(`<!DOCTYPE html>
+  <html><head><meta charset="UTF-8"><title>${escapeHtml(bill.billNo)}</title>
+  <style>
+  body{font-family:Arial,sans-serif;padding:20px;color:#111}
+  .wrap{max-width:850px;margin:auto}
+  .head{display:flex;justify-content:space-between;border-bottom:2px solid #075e88;padding-bottom:12px}
+  h2{color:#075e88;margin:0}.small{font-size:12px;line-height:1.5}
+  table{width:100%;border-collapse:collapse;margin-top:15px}
+  th,td{border:1px solid #bbb;padding:7px;font-size:12px;text-align:left}
+  th{background:#f2f4f7}
+  .totals{width:330px;margin-left:auto;margin-top:12px}.totals div{display:flex;justify-content:space-between;padding:5px}
+  .grand{font-size:16px;font-weight:bold;border-top:1px solid #333}
+  .sign{display:flex;justify-content:space-between;margin-top:55px;font-size:12px}
+  @media print{button{display:none}}
+  </style></head>
+  <body><div class="wrap">
+    <div class="head">
+      <div>
+        <h2>Chanho Birsa Munda Sangathan Producer Company Limited</h2>
+        <div class="small">${escapeHtml(gst.address)}<br><b>GSTIN:</b> ${escapeHtml(gst.gstin||"-")}<br><b>State:</b> ${escapeHtml(gst.state)} (${escapeHtml(gst.stateCode)})<br><b>TAX INVOICE</b></div>
+      </div>
+      <div class="small">
+        <b>Bill No:</b> ${escapeHtml(bill.billNo)}<br>
+        <b>Date:</b> ${escapeHtml(bill.date)}
+      </div>
+    </div>
+
+    <div class="small" style="margin-top:12px">
+      <b>Customer:</b> ${escapeHtml(bill.customerName)}<br>
+      <b>Mobile:</b> ${escapeHtml(bill.mobile||"-")}<br>
+      <b>Farmer Reg.:</b> ${escapeHtml(bill.farmerReg||"-")}<br>
+      <b>Buyer GSTIN:</b> ${escapeHtml(bill.buyerGstin||"Unregistered")}<br>
+      <b>Place of Supply:</b> ${escapeHtml(bill.placeOfSupply||"-")}<br>
+      <b>Tax Type:</b> ${bill.taxType==="INTRA"?"CGST + SGST":"IGST"}<br>
+      <b>Payment Mode:</b> ${escapeHtml(bill.paymentMode)}
+    </div>
+
+    <table>
+      <thead><tr><th>#</th><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>GST</th><th>Amount</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <div class="totals">
+      <div><span>Taxable</span><b>${money(bill.taxable)}</b></div>
+      ${bill.taxType==="INTRA"
+        ? `<div><span>CGST</span><b>${money(bill.cgst)}</b></div><div><span>SGST</span><b>${money(bill.sgst)}</b></div>`
+        : `<div><span>IGST</span><b>${money(bill.igst)}</b></div>`}
+      <div><span>Total GST</span><b>${money(bill.gstTotal)}</b></div>
+      <div><span>Discount</span><b>${money(bill.discount)}</b></div>
+      <div class="grand"><span>Grand Total</span><span>${money(bill.grandTotal)}</span></div>
+    </div>
+
+    <div class="sign">
+      <div>Customer Signature</div>
+      <div>Authorised Signatory<br>For CBMS</div>
+    </div>
+
+    <div style="margin-top:30px;text-align:center">
+      <button onclick="window.print()">Print / Save PDF</button>
+    </div>
+  </div></body></html>`);
+  w.document.close();
+}
+
+/* ---------------- STOCK REGISTER ---------------- */
+function renderStockRegister(){
+  const body=document.getElementById("stockRegisterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase();
+  const cat=document.getElementById("stockCategoryFilter")?.value||"";
+
+  const items=getStore(STORE_KEYS.items).filter(i=>{
+    const hay=[i.code,i.name,i.brand,i.category].join(" ").toLowerCase();
+    return (!q||hay.includes(q)) && (!cat||i.category===cat);
+  });
+
+  body.innerHTML=items.length?items.map(i=>`
+    <tr>
+      <td>${escapeHtml(i.code)}</td>
+      <td><b>${escapeHtml(i.name)}</b></td>
+      <td>${escapeHtml(i.category)}</td>
+      <td>${escapeHtml(i.brand||"-")}</td>
+      <td>${escapeHtml(i.unit)}</td>
+      <td>${num(i.totalPurchased).toFixed(3)}</td>
+      <td>${num(i.totalSold).toFixed(3)}</td>
+      <td class="${stockClass(i)}">${num(i.currentStock).toFixed(3)}</td>
+      <td>${money(i.saleRate)}</td>
+      <td>${num(i.currentStock)<=0?'<span class="badge red">Out of Stock</span>':num(i.currentStock)<=num(i.reorderLevel)?'<span class="badge orange">Low Stock</span>':'<span class="badge green">Available</span>'}</td>
+    </tr>
+  `).join(""):`<tr><td colspan="10" class="muted">No stock items.</td></tr>`;
+}
+
+/* ---------------- INITIALIZE ---------------- */
+document.addEventListener("DOMContentLoaded", async ()=>{
+  const accountant = await requireAccountantSession();
+  if(!accountant) return;
+  const siDate=document.getElementById("siDate");
+  const billDate=document.getElementById("billDate");
+  const sdDate=document.getElementById("sdDate");
+  if(siDate) siDate.value=today();
+  if(billDate) billDate.value=today();
+  if(sdDate) sdDate.value=today();
+
+  clearItemMasterForm();
+  renderItemMaster();
+  refreshItemDropdowns();
+  renderStockInward();
+  refreshSeedDistributionItems();
+  renderSeedDistribution();
+  renderStockRegister();
+  prepareBilling();
+  renderSalesBills();
+});
+</script>
+
+</body>
+</html>
