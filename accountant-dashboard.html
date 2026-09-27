@@ -704,7 +704,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <div class="section-body">
       <div class="note">
         Beej distribution ke samay farmer ki details aur live photo capture karein.
-        Seed Item Master se select hoga aur save hote hi distributed quantity stock se automatically kam hogi.
+        Sirf Item Master me Category = Seed wale Active items yahan dikhenge. Seed select karte hi variety, unit aur available stock auto show hoga; save hote hi distributed quantity stock se automatically kam hogi.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -722,6 +722,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <div class="field"><label>Village *</label><input id="sdVillage" placeholder="Village"></div>
 
         <div class="field"><label>Seed Name *</label><select id="sdSeedItem" onchange="onSeedDistributionItemChange()"></select></div>
+        <div class="field"><label>Variety</label><input id="sdSeedVariety" readonly placeholder="Auto from Item Master"></div>
+        <div class="field"><label>Available Stock</label><input id="sdAvailableStock" readonly placeholder="Auto from stock"></div>
         <div class="field"><label>Quantity *</label><input id="sdQty" type="number" min="0.001" step="0.001" placeholder="Distributed quantity"></div>
         <div class="field"><label>Unit</label><input id="sdUnit" readonly placeholder="Auto from Item Master"></div>
       </div>
@@ -1466,12 +1468,16 @@ function refreshSeedDistributionItems(){
   const items=getStore(STORE_KEYS.items)
     .filter(i=>i.status==="Active" && i.category==="Seed" && num(i.currentStock)>0);
 
-  select.innerHTML=['<option value="">Select Seed</option>']
-    .concat(items.map(i=>`
-      <option value="${i.id}">
-        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
-      </option>
-    `)).join("");
+  if(!items.length){
+    select.innerHTML='<option value="">No Seed available - Item Master me Seed add karein</option>';
+  }else{
+    select.innerHTML=['<option value="">Select Seed</option>']
+      .concat(items.map(i=>`
+        <option value="${i.id}">
+          ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+        </option>
+      `)).join("");
+  }
 
   onSeedDistributionItemChange();
 }
@@ -1479,10 +1485,26 @@ function refreshSeedDistributionItems(){
 function onSeedDistributionItemChange(){
   const select=document.getElementById("sdSeedItem");
   const unit=document.getElementById("sdUnit");
+  const variety=document.getElementById("sdSeedVariety");
+  const available=document.getElementById("sdAvailableStock");
   if(!select || !unit) return;
 
   const item=getStore(STORE_KEYS.items).find(i=>i.id===select.value);
+
   unit.value=item ? (item.unit || "") : "";
+  if(variety) variety.value=item ? (item.brand || "") : "";
+  if(available){
+    available.value=item
+      ? `${num(item.currentStock).toFixed(3)} ${item.unit || ""}`
+      : "";
+  }
+
+  const qty=document.getElementById("sdQty");
+  if(qty && item){
+    qty.max=String(num(item.currentStock));
+  }else if(qty){
+    qty.removeAttribute("max");
+  }
 }
 
 function previewSeedDistributionPhoto(event){
@@ -1519,7 +1541,7 @@ function previewSeedDistributionPhoto(event){
 function clearSeedDistributionForm(){
   const ids=[
     "sdScheme","sdFarmerReg","sdFarmerName","sdFatherHusband","sdMobile","sdAadhaar",
-    "sdBlock","sdPanchayat","sdVillage","sdQty","sdUnit","sdRemark"
+    "sdBlock","sdPanchayat","sdVillage","sdQty","sdUnit","sdSeedVariety","sdAvailableStock","sdRemark"
   ];
   ids.forEach(id=>{
     const el=document.getElementById(id);
