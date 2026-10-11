@@ -766,7 +766,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Seed Distribution Register</h2>
     <div class="section-body">
       <div class="note">
-        Beej distribution ke samay farmer ki details aur live photo capture karein.
+        Beej distribution ke samay farmer ki details bharein.
+        Jharkhand Seed system me photo already liya jata hai, isliye yahan photo ki zarurat nahi hai.
         Seed Item Master se select hoga aur save hote hi distributed quantity stock se automatically kam hogi.
       </div>
 
@@ -793,33 +794,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <div class="field"><label>Unit</label><input id="sdUnit" readonly placeholder="Auto"></div>
       </div>
 
-      <hr>
-
-      <div class="distribution-card">
-        <h3 style="margin-top:0;color:#075e88">Farmer Photo at Distribution Time *</h3>
-
-        <div class="distribution-photo-wrap">
-          <div class="distribution-photo-preview" id="sdPhotoPreview">
-            Camera se farmer photo khinchiye
-          </div>
-
-          <div class="field" style="min-width:260px;flex:1">
-            <label>Farmer Photo</label>
-            <input
-              id="sdFarmerPhoto"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onchange="previewSeedDistributionPhoto(event)"
-            >
-            <small class="muted">
-              Mobile me Camera option khulega. Laptop me camera/file picker browser ke support par depend karega.
-            </small>
-          </div>
-        </div>
-      </div>
-
-      <div class="field" style="margin-top:12px">
+<div class="field" style="margin-top:12px">
         <label>Remark</label>
         <textarea id="sdRemark" placeholder="Optional note"></textarea>
       </div>
@@ -850,7 +825,6 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
               <th>Village</th>
               <th>Seed</th>
               <th>Qty</th>
-              <th>Photo</th>
             </tr>
           </thead>
           <tbody id="seedDistributionBody"></tbody>
@@ -3534,5 +3508,159 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 </script>
+
+<script>
+/* ============================================================
+   CBMS SEED DISTRIBUTION - NO PHOTO
+   Jharkhand Seed portal already captures photo, so this
+   dashboard stores only distribution data and stock movement.
+   ============================================================ */
+
+window.saveSeedDistribution=async function(){
+  try{
+    await getLiveAccountantProfile();
+
+    const itemId=document.getElementById("sdSeedItem").value;
+    const qty=num(document.getElementById("sdQty").value);
+    const mobile=document.getElementById("sdMobile").value.trim();
+    const aadhaar=document.getElementById("sdAadhaar").value.trim();
+
+    const required=[
+      ["Scheme / Program",document.getElementById("sdScheme").value.trim()],
+      ["Farmer Name",document.getElementById("sdFarmerName").value.trim()],
+      ["Father / Husband Name",document.getElementById("sdFatherHusband").value.trim()],
+      ["Block",document.getElementById("sdBlock").value.trim()],
+      ["Panchayat",document.getElementById("sdPanchayat").value.trim()],
+      ["Village",document.getElementById("sdVillage").value.trim()]
+    ];
+
+    for(const [label,value] of required){
+      if(!value) throw new Error(label+" भरें।");
+    }
+
+    if(!/^\d{10}$/.test(mobile)){
+      throw new Error("Mobile number 10 digit ka hona chahiye.");
+    }
+
+    if(!/^\d{12}$/.test(aadhaar)){
+      throw new Error("Aadhaar number 12 digit ka hona chahiye.");
+    }
+
+    if(!itemId) throw new Error("Seed Name select karein.");
+    if(qty<=0) throw new Error("Distribution Quantity zero se zyada honi chahiye.");
+
+    const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
+    if(!item || item.category!=="Seed"){
+      throw new Error("Selected item Seed category ka nahi hai.");
+    }
+
+    const stock=(liveSeedStockRows||[]).find(r=>r.item_id===itemId);
+    const available=stock ? num(stock.available) : 0;
+
+    if(qty>available){
+      throw new Error("Available seed stock se zyada distribution nahi kar sakte. Available: "+available.toFixed(3)+" "+(item.unit||"Kg"));
+    }
+
+    const {data,error}=await authDb.rpc("cbms_create_seed_distribution_no_photo",{
+      p_distribution_date:document.getElementById("sdDate").value || today(),
+      p_scheme_program_name:document.getElementById("sdScheme").value.trim(),
+      p_farmer_registration_no:document.getElementById("sdFarmerReg").value.trim(),
+      p_farmer_name:document.getElementById("sdFarmerName").value.trim(),
+      p_father_husband_name:document.getElementById("sdFatherHusband").value.trim(),
+      p_mobile:mobile,
+      p_aadhar_number:aadhaar,
+      p_block:document.getElementById("sdBlock").value.trim(),
+      p_panchayat:document.getElementById("sdPanchayat").value.trim(),
+      p_village:document.getElementById("sdVillage").value.trim(),
+      p_item_id:itemId,
+      p_quantity:qty,
+      p_remark:document.getElementById("sdRemark").value.trim()
+    });
+
+    if(error) throw error;
+
+    clearSeedDistributionForm();
+    await liveLoadInventory();
+    await renderSeedDistribution();
+
+    const no=data?.[0]?.distribution_no || "";
+    showMessage("Seed Distribution save ho gaya"+(no?" — "+no:"")+" aur stock deduct ho gaya.");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.renderSeedDistribution=async function(){
+  const body=document.getElementById("seedDistributionBody");
+  if(!body) return;
+
+  try{
+    const {data,error}=await authDb
+      .from("seed_distributions")
+      .select("*")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    if(error) throw error;
+    liveSeedRows=data||[];
+
+    const q=(document.getElementById("sdSearch")?.value||"").trim().toLowerCase();
+
+    const rows=liveSeedRows.filter(x=>{
+      const item=(liveInventoryItems||[]).find(i=>i.id===x.item_id);
+      const hay=[
+        x.distribution_no,x.distribution_date,x.scheme_program_name,
+        x.farmer_registration_no,x.farmer_name,x.father_husband_name,
+        x.mobile,x.aadhar_number,x.block,x.panchayat,x.village,
+        x.seed_name_snapshot,item?.name,item?.brand,item?.missionName,item?.seedYear
+      ].join(" ").toLowerCase();
+      return !q || hay.includes(q);
+    });
+
+    body.innerHTML=rows.length ? rows.map(x=>{
+      const item=(liveInventoryItems||[]).find(i=>i.id===x.item_id);
+      return `
+      <tr>
+        <td>${escapeHtml(x.distribution_date||"")}</td>
+        <td>${escapeHtml(x.scheme_program_name||"-")}</td>
+        <td>${escapeHtml(x.farmer_registration_no||"-")}</td>
+        <td><b>${escapeHtml(x.farmer_name||"")}</b></td>
+        <td>${escapeHtml(x.father_husband_name||"-")}</td>
+        <td>${escapeHtml(x.mobile||"-")}</td>
+        <td>${escapeHtml(maskDistributionAadhaar(x.aadhar_number))}</td>
+        <td>${escapeHtml(x.block||"-")}</td>
+        <td>${escapeHtml(x.panchayat||"-")}</td>
+        <td>${escapeHtml(x.village||"-")}</td>
+        <td>${escapeHtml(x.seed_name_snapshot||item?.name||"Seed")}</td>
+        <td>${num(x.quantity).toFixed(3)} ${escapeHtml(x.unit||item?.unit||"")}</td>
+      </tr>`;
+    }).join("") : `<tr><td colspan="12" class="muted">No seed distribution entries yet.</td></tr>`;
+  }catch(error){
+    body.innerHTML=`<tr><td colspan="12" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+window.clearSeedDistributionForm=function(){
+  const ids=[
+    "sdScheme","sdFarmerReg","sdFarmerName","sdFatherHusband","sdMobile","sdAadhaar",
+    "sdBlock","sdPanchayat","sdVillage","sdSeedVariety","sdMissionName","sdSeedYear",
+    "sdAvailableStock","sdQty","sdUnit","sdRemark"
+  ];
+
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  const seed=document.getElementById("sdSeedItem");
+  if(seed) seed.value="";
+
+  const date=document.getElementById("sdDate");
+  if(date) date.value=today();
+
+  refreshSeedDistributionItems();
+};
+</script>
+
 </body>
 </html>
