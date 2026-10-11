@@ -477,7 +477,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Payment Entry</h2>
     <div class="section-body">
-      <div class="note">Supplier payment ke liye Expense Head = Purchase Payment select karke supplier ka exact naam choose/type karein.</div>
+      <div class="note">Supplier payment ke liye <b>Purchase Payment</b> select karein. Supplier aur pending Purchase Bill choose karne par bill ka Purchase, Return, Paid aur Outstanding amount auto-show hoga.</div>
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Date *</label><input id="pyDate" type="date"></div>
         <div class="field"><label>Expense Head *</label>
@@ -492,8 +492,22 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
             <option>Other Expense</option>
           </select>
         </div>
-        <div class="field"><label>Paid To *</label><input id="pyParty" list="supplierNameList" placeholder="Vendor / Person / Agency"></div>
+        <div class="field" id="pyPartyWrap"><label>Paid To *</label><input id="pyParty" list="supplierNameList" placeholder="Vendor / Person / Agency"></div>
         <datalist id="supplierNameList"></datalist>
+
+        <div class="field" id="pyPurchaseSupplierWrap" style="display:none">
+          <label>Supplier *</label>
+          <select id="pyPurchaseSupplier" onchange="loadPurchasePaymentBills()">
+            <option value="">Select Supplier</option>
+          </select>
+        </div>
+
+        <div class="field" id="pyPurchaseBillWrap" style="display:none">
+          <label>Pending Purchase Bill *</label>
+          <select id="pyPurchaseBill" onchange="purchasePaymentBillChanged()">
+            <option value="">Select Purchase Bill</option>
+          </select>
+        </div>
         <div class="field"><label>Amount (₹) *</label><input id="pyAmount" type="number" min="0.01" step="0.01"></div>
         <div class="field"><label>Mode *</label>
           <select id="pyMode"><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
@@ -502,6 +516,30 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <div class="field"><label>Ledger</label><input id="pyLedger" placeholder="Ledger / Account Head"></div>
         <div class="field"><label>Bill / Invoice No.</label><input id="pyBill" placeholder="Optional"></div>
       </div>
+
+      <div id="pyPurchaseSummary" class="stats" style="display:none;margin-top:14px">
+        <div class="stat">
+          <h3>Purchase Total</h3>
+          <p id="pyPurchaseTotal">₹0.00</p>
+          <small>Original Purchase Bill</small>
+        </div>
+        <div class="stat">
+          <h3>Purchase Return</h3>
+          <p id="pyPurchaseReturn">₹0.00</p>
+          <small>Returned to Supplier</small>
+        </div>
+        <div class="stat">
+          <h3>Already Paid</h3>
+          <p id="pyPurchasePaid">₹0.00</p>
+          <small>Linked Payments</small>
+        </div>
+        <div class="stat">
+          <h3>Outstanding</h3>
+          <p id="pyPurchaseOutstanding">₹0.00</p>
+          <small>Maximum Payment Allowed</small>
+        </div>
+      </div>
+
       <div class="field" style="margin-top:12px"><label>Narration</label><textarea id="pyNarration"></textarea></div>
       <br>
       <button class="primary-btn" onclick="savePaymentVoucher()">Save Payment Voucher</button>
@@ -5439,6 +5477,384 @@ window.saveStockAdjustment=async function(){
     showMessage("Save error: "+liveErrorMessage(error),"error");
   }
 };
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS PURCHASE PAYMENT -> SPECIFIC PURCHASE BILL
+   ============================================================ */
+
+let cbmsPurchasePaymentBills=[];
+
+window.resetPurchasePaymentSummary=function(){
+  cbmsPurchasePaymentBills=[];
+
+  const bill=document.getElementById("pyPurchaseBill");
+  if(bill) bill.innerHTML='<option value="">Select Purchase Bill</option>';
+
+  ["pyPurchaseTotal","pyPurchaseReturn","pyPurchasePaid","pyPurchaseOutstanding"]
+    .forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.textContent="₹0.00";
+    });
+
+  const summary=document.getElementById("pyPurchaseSummary");
+  if(summary) summary.style.display="none";
+
+  const amount=document.getElementById("pyAmount");
+  if(amount){
+    amount.removeAttribute("max");
+    amount.placeholder="";
+  }
+};
+
+
+window.loadPurchasePaymentSuppliers=async function(){
+  try{
+    const {data,error}=await authDb.rpc("cbms_supplier_names");
+    if(error) throw error;
+
+    const names=(data||[])
+      .map(x=>x.supplier_name)
+      .filter(Boolean);
+
+    const sel=document.getElementById("pyPurchaseSupplier");
+    if(!sel) return;
+
+    const current=sel.value||"";
+
+    sel.innerHTML='<option value="">Select Supplier</option>'+
+      names.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+
+    if(names.includes(current)) sel.value=current;
+
+  }catch(error){
+    showMessage("Purchase supplier load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+
+window.updatePaymentSupplierHelp=async function(){
+  const type=document.getElementById("pyType")?.value||"";
+  const isPurchase=type==="Purchase Payment";
+
+  const partyWrap=document.getElementById("pyPartyWrap");
+  const supplierWrap=document.getElementById("pyPurchaseSupplierWrap");
+  const billWrap=document.getElementById("pyPurchaseBillWrap");
+  const billInput=document.getElementById("pyBill");
+
+  if(partyWrap) partyWrap.style.display=isPurchase?"none":"";
+  if(supplierWrap) supplierWrap.style.display=isPurchase?"":"none";
+  if(billWrap) billWrap.style.display=isPurchase?"":"none";
+
+  if(isPurchase){
+    document.getElementById("pyParty").value="";
+    if(billInput){
+      billInput.value="";
+      billInput.readOnly=true;
+      billInput.placeholder="Purchase Bill select karne par auto";
+    }
+
+    await loadPurchasePaymentSuppliers();
+    resetPurchasePaymentSummary();
+
+  }else{
+    if(billInput){
+      billInput.readOnly=false;
+      billInput.placeholder="Optional";
+    }
+
+    const supplier=document.getElementById("pyPurchaseSupplier");
+    if(supplier) supplier.value="";
+
+    resetPurchasePaymentSummary();
+
+    const party=document.getElementById("pyParty");
+    if(party) party.placeholder="Vendor / Person / Agency";
+  }
+};
+
+
+window.loadPurchasePaymentBills=async function(){
+  try{
+    resetPurchasePaymentSummary();
+
+    const supplier=document.getElementById("pyPurchaseSupplier")?.value||"";
+    document.getElementById("pyParty").value=supplier;
+
+    if(!supplier) return;
+
+    const {data,error}=await authDb.rpc(
+      "cbms_purchase_payment_bills",
+      {p_supplier_name:supplier}
+    );
+
+    if(error) throw error;
+
+    cbmsPurchasePaymentBills=data||[];
+
+    const bill=document.getElementById("pyPurchaseBill");
+
+    if(!cbmsPurchasePaymentBills.length){
+      bill.innerHTML='<option value="">No pending purchase bill</option>';
+      showMessage("Is supplier ka koi pending Purchase Bill nahi hai.");
+      return;
+    }
+
+    bill.innerHTML='<option value="">Select Purchase Bill</option>'+
+      cbmsPurchasePaymentBills.map(x=>`
+        <option value="${x.purchase_id}">
+          ${escapeHtml(x.purchase_no)} | ${escapeHtml(x.purchase_date||"")} |
+          Outstanding ${money(x.outstanding)}
+        </option>
+      `).join("");
+
+  }catch(error){
+    showMessage("Pending Purchase Bill load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+
+window.purchasePaymentBillChanged=function(){
+  const id=document.getElementById("pyPurchaseBill")?.value||"";
+  const row=cbmsPurchasePaymentBills.find(x=>x.purchase_id===id);
+
+  if(!row){
+    resetPurchasePaymentSummary();
+    return;
+  }
+
+  document.getElementById("pyParty").value=row.supplier_name||"";
+  document.getElementById("pyBill").value=row.purchase_no||"";
+
+  document.getElementById("pyPurchaseTotal").textContent=money(row.purchase_total);
+  document.getElementById("pyPurchaseReturn").textContent=money(row.return_total);
+  document.getElementById("pyPurchasePaid").textContent=money(row.paid_total);
+  document.getElementById("pyPurchaseOutstanding").textContent=money(row.outstanding);
+
+  const summary=document.getElementById("pyPurchaseSummary");
+  if(summary) summary.style.display="";
+
+  const amount=document.getElementById("pyAmount");
+  if(amount){
+    amount.max=num(row.outstanding).toFixed(2);
+    amount.placeholder="Max "+num(row.outstanding).toFixed(2);
+    amount.value="";
+  }
+
+  const ledger=document.getElementById("pyLedger");
+  if(ledger && !ledger.value.trim()) ledger.value="Supplier Payable";
+};
+
+
+window.clearPaymentVoucher=function(){
+  const date=document.getElementById("pyDate");
+  if(date) date.value=today();
+
+  ["pyParty","pyAmount","pyRef","pyLedger","pyBill","pyNarration"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  const type=document.getElementById("pyType");
+  if(type) type.value="Office Expense";
+
+  const mode=document.getElementById("pyMode");
+  if(mode) mode.value="Cash";
+
+  const supplier=document.getElementById("pyPurchaseSupplier");
+  if(supplier) supplier.value="";
+
+  resetPurchasePaymentSummary();
+
+  const partyWrap=document.getElementById("pyPartyWrap");
+  const supplierWrap=document.getElementById("pyPurchaseSupplierWrap");
+  const billWrap=document.getElementById("pyPurchaseBillWrap");
+
+  if(partyWrap) partyWrap.style.display="";
+  if(supplierWrap) supplierWrap.style.display="none";
+  if(billWrap) billWrap.style.display="none";
+
+  const billInput=document.getElementById("pyBill");
+  if(billInput){
+    billInput.readOnly=false;
+    billInput.placeholder="Optional";
+  }
+};
+
+
+window.savePaymentVoucher=async function(){
+  try{
+    const type=document.getElementById("pyType").value;
+    const amount=num(document.getElementById("pyAmount").value);
+
+    if(amount<=0){
+      throw new Error("Amount zero se zyada hona chahiye.");
+    }
+
+    /* -------- LINKED PURCHASE PAYMENT -------- */
+    if(type==="Purchase Payment"){
+      const supplier=document.getElementById("pyPurchaseSupplier")?.value||"";
+      const purchaseId=document.getElementById("pyPurchaseBill")?.value||"";
+
+      if(!supplier) throw new Error("Supplier select kijiye.");
+      if(!purchaseId) throw new Error("Pending Purchase Bill select kijiye.");
+
+      const bill=cbmsPurchasePaymentBills.find(x=>x.purchase_id===purchaseId);
+
+      if(!bill) throw new Error("Selected Purchase Bill load nahi hua.");
+
+      const outstanding=num(bill.outstanding);
+
+      if(amount>outstanding){
+        throw new Error(
+          "Maximum payment "+money(outstanding)+" hai."
+        );
+      }
+
+      const ok=window.confirm(
+        "Purchase Payment confirm karein:\n\n"+
+        "Supplier: "+supplier+"\n"+
+        "Purchase Bill: "+(bill.purchase_no||"")+"\n"+
+        "Outstanding: "+money(outstanding)+"\n"+
+        "Payment: "+money(amount)
+      );
+
+      if(!ok) return;
+
+      const {data,error}=await authDb.rpc(
+        "cbms_create_purchase_payment",
+        {
+          p_voucher_date:document.getElementById("pyDate").value||today(),
+          p_purchase_id:purchaseId,
+          p_amount:amount,
+          p_mode:document.getElementById("pyMode").value,
+          p_reference_no:document.getElementById("pyRef").value.trim(),
+          p_ledger_name:document.getElementById("pyLedger").value.trim(),
+          p_narration:document.getElementById("pyNarration").value.trim()
+        }
+      );
+
+      if(error) throw error;
+
+      const result=data?.[0]||{};
+      const no=result.voucher_no||"";
+
+      clearPaymentVoucher();
+
+      await Promise.all([
+        loadCashBook(),
+        loadBankBook(),
+        loadSupplierNames(),
+        typeof loadDashboardSummary==="function"
+          ? loadDashboardSummary()
+          : Promise.resolve()
+      ]);
+
+      showMessage(
+        "Purchase Payment save ho gaya"+
+        (no?" — "+no:"")+
+        ". Remaining Outstanding: "+
+        money(result.outstanding_after)
+      );
+
+      return;
+    }
+
+    /* -------- NORMAL PAYMENT -------- */
+    const party=document.getElementById("pyParty").value.trim();
+
+    if(!party) throw new Error("Paid To भरें.");
+
+    const {data,error}=await authDb.rpc(
+      "cbms_create_account_voucher",
+      {
+        p_voucher_date:document.getElementById("pyDate").value||today(),
+        p_voucher_type:"PAYMENT",
+        p_entry_type:type,
+        p_party_name:party,
+        p_amount:amount,
+        p_mode:document.getElementById("pyMode").value,
+        p_reference_no:document.getElementById("pyRef").value.trim(),
+        p_ledger_name:document.getElementById("pyLedger").value.trim(),
+        p_farmer_registration_no:"",
+        p_bill_invoice_no:document.getElementById("pyBill").value.trim(),
+        p_narration:document.getElementById("pyNarration").value.trim()
+      }
+    );
+
+    if(error) throw error;
+
+    const no=data?.[0]?.voucher_no||"";
+
+    clearPaymentVoucher();
+
+    await Promise.all([
+      loadCashBook(),
+      loadBankBook(),
+      loadSupplierNames(),
+      typeof loadDashboardSummary==="function"
+        ? loadDashboardSummary()
+        : Promise.resolve()
+    ]);
+
+    showMessage(
+      "Payment Voucher save ho gaya"+
+      (no?" — "+no:"")+"."
+    );
+
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+
+/* ============================================================
+   FINAL SUPPLIER LEDGER OVERRIDE
+   Linked Payment shows "Against Purchase Bill"
+   ============================================================ */
+
+window.loadSupplierLedger=async function(){
+  const supplier=document.getElementById("supplierLedgerSelect")?.value||"";
+
+  if(!supplier){
+    supplierLedgerRows=[];
+    renderSupplierLedger();
+    return;
+  }
+
+  try{
+    const {data,error}=await authDb.rpc(
+      "cbms_supplier_ledger",
+      {p_supplier_name:supplier}
+    );
+
+    if(error) throw error;
+
+    supplierLedgerRows=data||[];
+    renderSupplierLedger();
+
+  }catch(error){
+    const body=document.getElementById("supplierLedgerBody");
+    if(body){
+      body.innerHTML=
+        `<tr><td colspan="6" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+    }
+    showMessage("Supplier Ledger load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(async()=>{
+    try{
+      if(document.getElementById("pyType")?.value==="Purchase Payment"){
+        await updatePaymentSupplierHelp();
+      }
+    }catch(e){}
+  },1600);
+});
 </script>
 
 </body>
