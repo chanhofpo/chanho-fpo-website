@@ -760,6 +760,11 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           <input id="soReturnable" readonly placeholder="0.000">
         </div>
 
+        <div class="field" id="soMaxReturnWrap">
+          <label>Maximum Return Allowed</label>
+          <input id="soMaxReturn" readonly placeholder="0.000">
+        </div>
+
         <div class="field">
           <label>Rate</label>
           <input id="soRate" readonly placeholder="₹0.00">
@@ -5225,6 +5230,215 @@ window.loadSupplierLedger=async function(){
 document.addEventListener("DOMContentLoaded",()=>{
   if(document.getElementById("soDate")) document.getElementById("soDate").value=today();
 });
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS PURCHASE RETURN UX IMPROVEMENT
+   Shows practical maximum return:
+   min(Current Available Stock, Purchase Returnable Balance)
+   ============================================================ */
+
+window.stockOutTypeChanged=function(){
+  const type=document.getElementById("soType")?.value||"PURCHASE_RETURN";
+  const isReturn=type==="PURCHASE_RETURN";
+
+  const pWrap=document.getElementById("soPurchaseWrap");
+  const iWrap=document.getElementById("soItemWrap");
+  const rWrap=document.getElementById("soReturnableWrap");
+  const mWrap=document.getElementById("soMaxReturnWrap");
+
+  if(pWrap) pWrap.style.display=isReturn?"":"none";
+  if(iWrap) iWrap.style.display=isReturn?"none":"";
+  if(rWrap) rWrap.style.display=isReturn?"":"none";
+  if(mWrap) mWrap.style.display=isReturn?"":"none";
+
+  document.getElementById("soSupplier").value="";
+  document.getElementById("soAvailable").value="";
+  document.getElementById("soReturnable").value="";
+  if(document.getElementById("soMaxReturn")) document.getElementById("soMaxReturn").value="";
+  document.getElementById("soRate").value="";
+  document.getElementById("soAmount").value="";
+  document.getElementById("soQty").value="";
+  document.getElementById("soQty").removeAttribute("max");
+
+  if(isReturn) stockOutPurchaseChanged();
+  else stockOutItemChanged();
+};
+
+window.stockOutPurchaseChanged=function(){
+  const value=document.getElementById("soPurchaseLine")?.value||"";
+
+  if(!value){
+    document.getElementById("soSupplier").value="";
+    document.getElementById("soAvailable").value="";
+    document.getElementById("soReturnable").value="";
+    if(document.getElementById("soMaxReturn")) document.getElementById("soMaxReturn").value="";
+    document.getElementById("soRate").value="";
+    document.getElementById("soQty").removeAttribute("max");
+    stockOutCalcAmount();
+    return;
+  }
+
+  const [purchaseId,itemId]=value.split("|");
+
+  const x=cbmsStockOutPurchaseLines.find(
+    r=>r.purchase_id===purchaseId && r.item_id===itemId
+  );
+
+  if(!x) return;
+
+  const available=num(x.current_stock);
+  const returnable=num(x.returnable);
+  const maxAllowed=Math.max(0,Math.min(available,returnable));
+
+  document.getElementById("soSupplier").value=x.supplier_name||"";
+  document.getElementById("soAvailable").value=
+    available.toFixed(3)+" "+(x.unit||"");
+  document.getElementById("soReturnable").value=
+    returnable.toFixed(3)+" "+(x.unit||"");
+
+  const maxEl=document.getElementById("soMaxReturn");
+  if(maxEl){
+    maxEl.value=maxAllowed.toFixed(3)+" "+(x.unit||"");
+  }
+
+  const qtyEl=document.getElementById("soQty");
+  if(qtyEl){
+    qtyEl.max=maxAllowed.toFixed(3);
+    qtyEl.placeholder="Max "+maxAllowed.toFixed(3)+" "+(x.unit||"");
+  }
+
+  document.getElementById("soRate").value=
+    money(num(x.line_amount)/Math.max(num(x.quantity),0.000001));
+
+  stockOutCalcAmount();
+};
+
+window.stockOutItemChanged=function(){
+  const itemId=document.getElementById("soItem")?.value||"";
+  const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
+
+  document.getElementById("soSupplier").value="";
+  document.getElementById("soReturnable").value="";
+  if(document.getElementById("soMaxReturn")) document.getElementById("soMaxReturn").value="";
+
+  const qtyEl=document.getElementById("soQty");
+  if(qtyEl) qtyEl.removeAttribute("max");
+
+  if(!item){
+    document.getElementById("soAvailable").value="";
+    document.getElementById("soRate").value="";
+    stockOutCalcAmount();
+    return;
+  }
+
+  document.getElementById("soAvailable").value=
+    num(item.currentStock).toFixed(3)+" "+(item.unit||"");
+
+  document.getElementById("soRate").value=money(num(item.purchaseRate));
+  stockOutCalcAmount();
+};
+
+window.saveStockAdjustment=async function(){
+  try{
+    const type=document.getElementById("soType").value;
+    const qty=num(document.getElementById("soQty").value);
+    const reason=document.getElementById("soReason").value.trim();
+
+    let itemId="";
+    let purchaseId=null;
+
+    if(type==="PURCHASE_RETURN"){
+      const value=document.getElementById("soPurchaseLine").value;
+      if(!value) throw new Error("Original Purchase / Item select kijiye.");
+
+      [purchaseId,itemId]=value.split("|");
+
+      const x=cbmsStockOutPurchaseLines.find(
+        r=>r.purchase_id===purchaseId && r.item_id===itemId
+      );
+
+      if(!x) throw new Error("Selected purchase item load nahi hua.");
+
+      const maxAllowed=Math.max(
+        0,
+        Math.min(num(x.current_stock),num(x.returnable))
+      );
+
+      if(qty>maxAllowed){
+        throw new Error(
+          "Maximum Return Allowed "+maxAllowed.toFixed(3)+" "+(x.unit||"")+" hai."
+        );
+      }
+    }else{
+      itemId=document.getElementById("soItem").value;
+      if(!itemId) throw new Error("Inventory Item select kijiye.");
+
+      const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
+      if(item && qty>num(item.currentStock)){
+        throw new Error(
+          "Available stock sirf "+num(item.currentStock).toFixed(3)+" "+(item.unit||"")+" hai."
+        );
+      }
+    }
+
+    if(qty<=0) throw new Error("Quantity 0 se jyada honi chahiye.");
+    if(reason.length<3) throw new Error("Reason likhiye.");
+
+    const msg=
+      type==="PURCHASE_RETURN"
+        ? "Purchase Return save karna hai? Stock aur Supplier Payable dono kam honge."
+        : type==="DAMAGE"
+          ? "Damage Stock save karna hai? Physical stock kam ho jayega."
+          : "Expired Stock save karna hai? Physical stock kam ho jayega.";
+
+    if(!window.confirm(msg)) return;
+
+    const {data,error}=await authDb.rpc(
+      "cbms_create_stock_adjustment",
+      {
+        p_entry_date:document.getElementById("soDate").value||today(),
+        p_entry_type:type,
+        p_item_id:itemId,
+        p_quantity:qty,
+        p_purchase_id:purchaseId,
+        p_reason:reason
+      }
+    );
+
+    if(error) throw error;
+
+    const result=data?.[0]||{};
+
+    document.getElementById("soQty").value="";
+    document.getElementById("soReason").value="";
+    document.getElementById("soAmount").value="";
+
+    await liveLoadInventory();
+    await loadStockOutHistory();
+    await loadStockOutPurchaseLines();
+
+    if(type==="PURCHASE_RETURN"){
+      stockOutPurchaseChanged();
+    }else{
+      fillStockOutItemDropdown();
+      stockOutItemChanged();
+    }
+
+    try{ await loadSupplierNames(); }catch(e){}
+    try{ await loadDashboardSummary(); }catch(e){}
+
+    showMessage(
+      "Entry save ho gaya — "+(result.entry_no||"")+
+      (num(result.amount)>0 ? " | Value "+money(result.amount) : "")
+    );
+
+  }catch(error){
+    showMessage("Save error: "+liveErrorMessage(error),"error");
+  }
+};
 </script>
 
 </body>
