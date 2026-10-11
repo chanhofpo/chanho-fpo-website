@@ -225,6 +225,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
     <button class="sidebar-link" data-title="Item Master" onclick="showPanel('itemMasterPanel',this)"><span class="ico">📦</span>Seed/Fertilizer/Plant Item Master</button>
     <button class="sidebar-link" data-title="Stock Inward" onclick="showPanel('stockInPanel',this)"><span class="ico">⬇️</span>Stock Inward / Purchase</button>
+    <button class="sidebar-link" data-title="Return / Damage / Expired" onclick="showPanel('stockOutPanel',this);loadStockOutPanel()"><span class="ico">↩️</span>Return / Damage / Expired</button>
     <button class="sidebar-link" data-title="Seed Stock / Transfer" onclick="showPanel('seedTransferPanel',this)"><span class="ico">🌱</span>Seed Stock / Transfer</button>
     <button class="sidebar-link" data-title="Seed Distribution" onclick="showPanel('seedDistributionPanel',this)"><span class="ico">🌾</span>Seed Distribution</button>
     <button class="sidebar-link" data-title="Seed Distribution Report" onclick="showPanel('seedReportPanel',this);loadSeedDistributionReport()"><span class="ico">📋</span>Seed Distribution Report</button>
@@ -704,6 +705,114 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
 
 
+
+<section id="stockOutPanel" class="portal-panel">
+  <div class="section">
+    <h2>Purchase Return / Damage / Expired Stock</h2>
+    <div class="section-body">
+
+      <div class="note">
+        <b>Purchase Return:</b> stock kam hoga aur Supplier Payable bhi return value se kam hoga.
+        <b>Damage / Expired:</b> sirf physical stock kam hoga; supplier payable par koi effect nahi padega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field">
+          <label>Entry Type *</label>
+          <select id="soType" onchange="stockOutTypeChanged()">
+            <option value="PURCHASE_RETURN">Purchase Return</option>
+            <option value="DAMAGE">Damage Stock</option>
+            <option value="EXPIRED">Expired Stock</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Date *</label>
+          <input id="soDate" type="date">
+        </div>
+
+        <div class="field" id="soPurchaseWrap">
+          <label>Original Purchase / Item *</label>
+          <select id="soPurchaseLine" onchange="stockOutPurchaseChanged()">
+            <option value="">Select Purchase Item</option>
+          </select>
+        </div>
+
+        <div class="field" id="soItemWrap" style="display:none">
+          <label>Inventory Item *</label>
+          <select id="soItem" onchange="stockOutItemChanged()">
+            <option value="">Select Item</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Supplier</label>
+          <input id="soSupplier" readonly placeholder="Purchase Return me auto">
+        </div>
+
+        <div class="field">
+          <label>Available Stock</label>
+          <input id="soAvailable" readonly placeholder="0.000">
+        </div>
+
+        <div class="field" id="soReturnableWrap">
+          <label>Purchase Returnable Balance</label>
+          <input id="soReturnable" readonly placeholder="0.000">
+        </div>
+
+        <div class="field">
+          <label>Rate</label>
+          <input id="soRate" readonly placeholder="₹0.00">
+        </div>
+
+        <div class="field">
+          <label>Quantity *</label>
+          <input id="soQty" type="number" min="0.001" step="0.001" oninput="stockOutCalcAmount()">
+        </div>
+
+        <div class="field">
+          <label>Value</label>
+          <input id="soAmount" readonly placeholder="₹0.00">
+        </div>
+
+        <div class="field" style="grid-column:1/-1">
+          <label>Reason *</label>
+          <input id="soReason" placeholder="Example: Supplier ko return / packet damaged / expiry date over">
+        </div>
+      </div>
+
+      <br>
+      <button class="primary-btn" onclick="saveStockAdjustment()">Save Entry</button>
+
+      <hr>
+
+      <h3>Recent Return / Damage / Expired Entries</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Entry No.</th>
+              <th>Type</th>
+              <th>Item</th>
+              <th>Supplier</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Value</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="stockOutHistoryBody">
+            <tr><td colspan="9" class="muted">No entry yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
 <section id="seedTransferPanel" class="portal-panel">
   <div class="section">
     <h2>Seed Stock / Transfer Register</h2>
@@ -1144,7 +1253,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Supplier Ledger</h2>
     <div class="section-body">
-      <div class="note">Stock Inward / Purchase amount payable badhata hai. Payment Entry me "Purchase Payment" supplier ko diya amount payable kam karta hai.</div>
+      <div class="note">Stock Inward / Purchase payable badhata hai. "Purchase Payment" aur "Purchase Return" supplier balance ko kam karte hain.</div>
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Supplier *</label><select id="supplierLedgerSelect" onchange="loadSupplierLedger()"><option value="">Select Supplier</option></select></div>
         <div class="field"><label>From Date</label><input id="supplierFrom" type="date" onchange="renderSupplierLedger()"></div>
@@ -1156,14 +1265,14 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
       <div class="grid-3" style="margin-top:16px">
         <div class="stat"><h3>Total Purchase</h3><p id="supplierPurchaseTotal">₹0.00</p></div>
-        <div class="stat"><h3>Total Paid</h3><p id="supplierPaidTotal">₹0.00</p></div>
+        <div class="stat"><h3>Paid / Return</h3><p id="supplierPaidTotal">₹0.00</p></div>
         <div class="stat"><h3>Payable Balance</h3><p id="supplierBalance">₹0.00</p></div>
       </div>
 
       <hr>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Reference</th><th>Particular</th><th>Purchase</th><th>Paid</th><th>Balance</th></tr></thead>
+          <thead><tr><th>Date</th><th>Reference</th><th>Particular</th><th>Purchase</th><th>Paid / Return</th><th>Balance</th></tr></thead>
           <tbody id="supplierLedgerBody"><tr><td colspan="6" class="muted">Supplier select karein.</td></tr></tbody>
         </table>
       </div>
@@ -4603,6 +4712,519 @@ window.cancelSalesInvoice=async function(invoiceId, invoiceNo){
     showMessage("Bill Cancel error: "+liveErrorMessage(error),"error");
   }
 };
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS PURCHASE RETURN / DAMAGE / EXPIRED STOCK
+   ============================================================ */
+
+let cbmsStockOutPurchaseLines=[];
+let cbmsStockOutReturnMap={};
+let cbmsStockOutHistory=[];
+
+function cbmsStockOutTypeLabel(t){
+  if(t==="PURCHASE_RETURN") return "Purchase Return";
+  if(t==="DAMAGE") return "Damage";
+  if(t==="EXPIRED") return "Expired";
+  return t||"-";
+}
+
+window.loadStockOutPanel=async function(){
+  try{
+    if(!document.getElementById("soDate")?.value){
+      document.getElementById("soDate").value=today();
+    }
+
+    await liveLoadInventory();
+    await loadStockOutHistory();
+    await loadStockOutPurchaseLines();
+    stockOutTypeChanged();
+  }catch(error){
+    showMessage("Stock Return/Damage load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.loadStockOutHistory=async function(){
+  const {data,error}=await authDb
+    .from("inventory_stock_adjustments")
+    .select("id,entry_no,entry_date,entry_type,item_id,purchase_id,supplier_name,quantity,rate,amount,reason,created_at")
+    .order("created_at",{ascending:false})
+    .limit(200);
+
+  if(error) throw error;
+
+  cbmsStockOutHistory=data||[];
+
+  cbmsStockOutReturnMap={};
+  cbmsStockOutHistory
+    .filter(x=>x.entry_type==="PURCHASE_RETURN" && x.purchase_id)
+    .forEach(x=>{
+      const key=x.purchase_id+"|"+x.item_id;
+      cbmsStockOutReturnMap[key]=(cbmsStockOutReturnMap[key]||0)+num(x.quantity);
+    });
+
+  renderStockOutHistory();
+};
+
+window.loadStockOutPurchaseLines=async function(){
+  const {data:items,error:iErr}=await authDb
+    .from("inventory_purchase_items")
+    .select("id,purchase_id,item_id,quantity,purchase_rate,line_amount,created_at")
+    .order("created_at",{ascending:false})
+    .limit(500);
+
+  if(iErr) throw iErr;
+
+  if(!items?.length){
+    cbmsStockOutPurchaseLines=[];
+    const sel=document.getElementById("soPurchaseLine");
+    if(sel) sel.innerHTML='<option value="">No purchase item found</option>';
+    fillStockOutItemDropdown();
+    return;
+  }
+
+  const pids=[...new Set(items.map(x=>x.purchase_id))];
+
+  const {data:purchases,error:pErr}=await authDb
+    .from("inventory_purchases")
+    .select("id,purchase_no,purchase_date,supplier_name")
+    .in("id",pids);
+
+  if(pErr) throw pErr;
+
+  const pmap=Object.fromEntries((purchases||[]).map(p=>[p.id,p]));
+  const imap=Object.fromEntries((liveInventoryItems||[]).map(i=>[i.id,i]));
+
+  cbmsStockOutPurchaseLines=(items||[]).map(x=>{
+    const p=pmap[x.purchase_id]||{};
+    const i=imap[x.item_id]||{};
+    const key=x.purchase_id+"|"+x.item_id;
+    const returned=num(cbmsStockOutReturnMap[key]);
+    const returnable=Math.max(0,num(x.quantity)-returned);
+
+    return {
+      ...x,
+      purchase_no:p.purchase_no||"-",
+      purchase_date:p.purchase_date||"",
+      supplier_name:p.supplier_name||"",
+      item_name:i.name||"Item",
+      brand:i.brand||"",
+      unit:i.unit||"",
+      current_stock:num(i.currentStock),
+      returnable
+    };
+  });
+
+  const sel=document.getElementById("soPurchaseLine");
+  if(sel){
+    const rows=cbmsStockOutPurchaseLines.filter(x=>x.returnable>0);
+    sel.innerHTML='<option value="">Select Purchase Item</option>'+
+      rows.map((x,idx)=>`
+        <option value="${escapeHtml(x.purchase_id+"|"+x.item_id)}">
+          ${escapeHtml(x.purchase_no)} | ${escapeHtml(x.supplier_name)} | ${escapeHtml(x.item_name)}
+          ${x.brand?` - ${escapeHtml(x.brand)}`:""} | Returnable ${x.returnable.toFixed(3)} ${escapeHtml(x.unit)}
+        </option>
+      `).join("");
+  }
+
+  fillStockOutItemDropdown();
+};
+
+window.fillStockOutItemDropdown=function(){
+  const sel=document.getElementById("soItem");
+  if(!sel) return;
+
+  sel.innerHTML='<option value="">Select Item</option>'+
+    (liveInventoryItems||[])
+      .filter(i=>i.status==="Active" && num(i.currentStock)>0)
+      .map(i=>`
+        <option value="${i.id}">
+          ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""}
+          | Stock ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+        </option>
+      `).join("");
+};
+
+window.stockOutTypeChanged=function(){
+  const type=document.getElementById("soType")?.value||"PURCHASE_RETURN";
+  const isReturn=type==="PURCHASE_RETURN";
+
+  const pWrap=document.getElementById("soPurchaseWrap");
+  const iWrap=document.getElementById("soItemWrap");
+  const rWrap=document.getElementById("soReturnableWrap");
+
+  if(pWrap) pWrap.style.display=isReturn?"":"none";
+  if(iWrap) iWrap.style.display=isReturn?"none":"";
+  if(rWrap) rWrap.style.display=isReturn?"":"none";
+
+  document.getElementById("soSupplier").value="";
+  document.getElementById("soAvailable").value="";
+  document.getElementById("soReturnable").value="";
+  document.getElementById("soRate").value="";
+  document.getElementById("soAmount").value="";
+  document.getElementById("soQty").value="";
+
+  if(isReturn) stockOutPurchaseChanged();
+  else stockOutItemChanged();
+};
+
+window.stockOutPurchaseChanged=function(){
+  const value=document.getElementById("soPurchaseLine")?.value||"";
+
+  if(!value){
+    document.getElementById("soSupplier").value="";
+    document.getElementById("soAvailable").value="";
+    document.getElementById("soReturnable").value="";
+    document.getElementById("soRate").value="";
+    stockOutCalcAmount();
+    return;
+  }
+
+  const [purchaseId,itemId]=value.split("|");
+
+  const matches=cbmsStockOutPurchaseLines.filter(
+    x=>x.purchase_id===purchaseId && x.item_id===itemId
+  );
+
+  if(!matches.length) return;
+
+  const x=matches[0];
+
+  document.getElementById("soSupplier").value=x.supplier_name||"";
+  document.getElementById("soAvailable").value=
+    num(x.current_stock).toFixed(3)+" "+(x.unit||"");
+  document.getElementById("soReturnable").value=
+    num(x.returnable).toFixed(3)+" "+(x.unit||"");
+  document.getElementById("soRate").value=
+    money(num(x.line_amount)/Math.max(num(x.quantity),0.000001));
+
+  stockOutCalcAmount();
+};
+
+window.stockOutItemChanged=function(){
+  const itemId=document.getElementById("soItem")?.value||"";
+  const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
+
+  document.getElementById("soSupplier").value="";
+  document.getElementById("soReturnable").value="";
+
+  if(!item){
+    document.getElementById("soAvailable").value="";
+    document.getElementById("soRate").value="";
+    stockOutCalcAmount();
+    return;
+  }
+
+  document.getElementById("soAvailable").value=
+    num(item.currentStock).toFixed(3)+" "+(item.unit||"");
+
+  document.getElementById("soRate").value=money(num(item.purchaseRate));
+  stockOutCalcAmount();
+};
+
+window.stockOutCalcAmount=function(){
+  const type=document.getElementById("soType")?.value||"PURCHASE_RETURN";
+  const qty=num(document.getElementById("soQty")?.value);
+
+  let rate=0;
+
+  if(type==="PURCHASE_RETURN"){
+    const value=document.getElementById("soPurchaseLine")?.value||"";
+    if(value){
+      const [purchaseId,itemId]=value.split("|");
+      const x=cbmsStockOutPurchaseLines.find(
+        r=>r.purchase_id===purchaseId && r.item_id===itemId
+      );
+      if(x) rate=num(x.line_amount)/Math.max(num(x.quantity),0.000001);
+    }
+  }else{
+    const itemId=document.getElementById("soItem")?.value||"";
+    const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
+    if(item) rate=num(item.purchaseRate);
+  }
+
+  document.getElementById("soAmount").value=money(qty*rate);
+};
+
+window.saveStockAdjustment=async function(){
+  try{
+    const type=document.getElementById("soType").value;
+    const qty=num(document.getElementById("soQty").value);
+    const reason=document.getElementById("soReason").value.trim();
+
+    let itemId="";
+    let purchaseId=null;
+
+    if(type==="PURCHASE_RETURN"){
+      const value=document.getElementById("soPurchaseLine").value;
+      if(!value) throw new Error("Original Purchase / Item select kijiye.");
+      [purchaseId,itemId]=value.split("|");
+    }else{
+      itemId=document.getElementById("soItem").value;
+      if(!itemId) throw new Error("Inventory Item select kijiye.");
+    }
+
+    if(qty<=0) throw new Error("Quantity 0 se jyada honi chahiye.");
+    if(reason.length<3) throw new Error("Reason likhiye.");
+
+    const msg=
+      type==="PURCHASE_RETURN"
+        ? "Purchase Return save karna hai? Stock aur Supplier Payable dono kam honge."
+        : type==="DAMAGE"
+          ? "Damage Stock save karna hai? Physical stock kam ho jayega."
+          : "Expired Stock save karna hai? Physical stock kam ho jayega.";
+
+    if(!window.confirm(msg)) return;
+
+    const {data,error}=await authDb.rpc(
+      "cbms_create_stock_adjustment",
+      {
+        p_entry_date:document.getElementById("soDate").value||today(),
+        p_entry_type:type,
+        p_item_id:itemId,
+        p_quantity:qty,
+        p_purchase_id:purchaseId,
+        p_reason:reason
+      }
+    );
+
+    if(error) throw error;
+
+    const result=data?.[0]||{};
+
+    document.getElementById("soQty").value="";
+    document.getElementById("soReason").value="";
+    document.getElementById("soAmount").value="";
+
+    await liveLoadInventory();
+    await loadStockOutHistory();
+    await loadStockOutPurchaseLines();
+
+    if(type==="PURCHASE_RETURN"){
+      stockOutPurchaseChanged();
+    }else{
+      fillStockOutItemDropdown();
+      stockOutItemChanged();
+    }
+
+    try{ await loadSupplierNames(); }catch(e){}
+    try{ await loadDashboardSummary(); }catch(e){}
+
+    showMessage(
+      "Entry save ho gaya — "+(result.entry_no||"")+
+      (num(result.amount)>0 ? " | Value "+money(result.amount) : "")
+    );
+
+  }catch(error){
+    showMessage("Save error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.renderStockOutHistory=function(){
+  const body=document.getElementById("stockOutHistoryBody");
+  if(!body) return;
+
+  const imap=Object.fromEntries((liveInventoryItems||[]).map(i=>[i.id,i]));
+
+  body.innerHTML=cbmsStockOutHistory.length
+    ? cbmsStockOutHistory.map(x=>{
+        const i=imap[x.item_id]||{};
+        return `
+          <tr>
+            <td>${escapeHtml(x.entry_date||"")}</td>
+            <td><b>${escapeHtml(x.entry_no||"-")}</b></td>
+            <td>${escapeHtml(cbmsStockOutTypeLabel(x.entry_type))}</td>
+            <td>${escapeHtml(i.name||"Item")}${i.brand?` - ${escapeHtml(i.brand)}`:""}</td>
+            <td>${escapeHtml(x.supplier_name||"-")}</td>
+            <td>${num(x.quantity).toFixed(3)} ${escapeHtml(i.unit||"")}</td>
+            <td>${money(x.rate)}</td>
+            <td>${money(x.amount)}</td>
+            <td>${escapeHtml(x.reason||"-")}</td>
+          </tr>`;
+      }).join("")
+    : `<tr><td colspan="9" class="muted">No return/damage/expired entry yet.</td></tr>`;
+};
+
+
+/* ============================================================
+   FINAL SUPPLIER LEDGER OVERRIDE
+   Purchase Return is treated as Payable Reduction.
+   ============================================================ */
+
+window.loadSupplierNames=async function(){
+  try{
+    const [
+      {data:purchases,error:pErr},
+      {data:payments,error:vErr},
+      {data:returns,error:rErr}
+    ]=await Promise.all([
+      authDb.from("inventory_purchases").select("supplier_name"),
+      authDb.from("account_vouchers")
+        .select("party_name,entry_type,voucher_type,status")
+        .eq("voucher_type","PAYMENT")
+        .eq("status","Final"),
+      authDb.from("inventory_stock_adjustments")
+        .select("supplier_name,entry_type")
+        .eq("entry_type","PURCHASE_RETURN")
+    ]);
+
+    if(pErr) throw pErr;
+    if(vErr) throw vErr;
+    if(rErr) throw rErr;
+
+    const names=[
+      ...(purchases||[]).map(x=>x.supplier_name),
+      ...(payments||[])
+        .filter(x=>String(x.entry_type||"").toLowerCase()==="purchase payment")
+        .map(x=>x.party_name),
+      ...(returns||[]).map(x=>x.supplier_name)
+    ]
+      .filter(Boolean)
+      .map(x=>String(x).trim())
+      .filter(Boolean);
+
+    supplierNamesCache=[...new Set(names)]
+      .sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:"base"}));
+
+    const select=document.getElementById("supplierLedgerSelect");
+    const current=select?.value||"";
+
+    if(select){
+      select.innerHTML='<option value="">Select Supplier</option>'+
+        supplierNamesCache.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+      if(supplierNamesCache.includes(current)) select.value=current;
+    }
+
+    const datalist=document.getElementById("supplierNameList");
+    if(datalist){
+      datalist.innerHTML=supplierNamesCache
+        .map(n=>`<option value="${escapeHtml(n)}"></option>`).join("");
+    }
+
+    if(select?.value) await loadSupplierLedger();
+
+  }catch(error){
+    showMessage("Supplier list load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+
+window.loadSupplierLedger=async function(){
+  const supplier=document.getElementById("supplierLedgerSelect")?.value||"";
+
+  if(!supplier){
+    supplierLedgerRows=[];
+    renderSupplierLedger();
+    return;
+  }
+
+  try{
+    const {data:purchases,error:pErr}=await authDb
+      .from("inventory_purchases")
+      .select("id,purchase_no,purchase_date,supplier_name,created_at")
+      .ilike("supplier_name",supplier);
+
+    if(pErr) throw pErr;
+
+    const purchaseIds=(purchases||[]).map(p=>p.id);
+    let purchaseItems=[];
+
+    if(purchaseIds.length){
+      const {data,error}=await authDb
+        .from("inventory_purchase_items")
+        .select("purchase_id,line_amount")
+        .in("purchase_id",purchaseIds);
+
+      if(error) throw error;
+      purchaseItems=data||[];
+    }
+
+    const totalsByPurchase={};
+    purchaseItems.forEach(x=>{
+      totalsByPurchase[x.purchase_id]=(totalsByPurchase[x.purchase_id]||0)+num(x.line_amount);
+    });
+
+    const purchaseRows=(purchases||[]).map(p=>({
+      txn_date:p.purchase_date,
+      ref_no:p.purchase_no,
+      particular:"Purchase - "+p.supplier_name,
+      purchase_amount:totalsByPurchase[p.id]||0,
+      paid_amount:0,
+      created_at:p.created_at,
+      source_type:"PURCHASE"
+    }));
+
+    const {data:payments,error:payErr}=await authDb
+      .from("account_vouchers")
+      .select("voucher_date,voucher_no,entry_type,party_name,amount,created_at,status,voucher_type")
+      .eq("voucher_type","PAYMENT")
+      .eq("status","Final")
+      .ilike("party_name",supplier);
+
+    if(payErr) throw payErr;
+
+    const paymentRows=(payments||[])
+      .filter(v=>String(v.entry_type||"").toLowerCase()==="purchase payment")
+      .map(v=>({
+        txn_date:v.voucher_date,
+        ref_no:v.voucher_no,
+        particular:v.entry_type+" - "+v.party_name,
+        purchase_amount:0,
+        paid_amount:num(v.amount),
+        created_at:v.created_at,
+        source_type:"PAYMENT"
+      }));
+
+    const {data:returns,error:returnErr}=await authDb
+      .from("inventory_stock_adjustments")
+      .select("entry_date,entry_no,supplier_name,amount,reason,created_at,entry_type")
+      .eq("entry_type","PURCHASE_RETURN")
+      .ilike("supplier_name",supplier);
+
+    if(returnErr) throw returnErr;
+
+    const returnRows=(returns||[]).map(r=>({
+      txn_date:r.entry_date,
+      ref_no:r.entry_no,
+      particular:"Purchase Return - "+r.supplier_name+
+        (r.reason ? " ("+r.reason+")" : ""),
+      purchase_amount:0,
+      paid_amount:num(r.amount),
+      created_at:r.created_at,
+      source_type:"RETURN"
+    }));
+
+    const all=[...purchaseRows,...paymentRows,...returnRows]
+      .sort((a,b)=>{
+        const da=(a.txn_date||"")+" "+(a.created_at||"");
+        const db=(b.txn_date||"")+" "+(b.created_at||"");
+        return da.localeCompare(db);
+      });
+
+    let running=0;
+
+    supplierLedgerRows=all.map(r=>{
+      running += num(r.purchase_amount)-num(r.paid_amount);
+      return {...r,balance:running};
+    });
+
+    renderSupplierLedger();
+
+  }catch(error){
+    const body=document.getElementById("supplierLedgerBody");
+    if(body){
+      body.innerHTML=`<tr><td colspan="6" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+    }
+    showMessage("Supplier Ledger load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+  if(document.getElementById("soDate")) document.getElementById("soDate").value=today();
+});
 </script>
 
 </body>
