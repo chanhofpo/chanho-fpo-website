@@ -217,7 +217,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <button class="sidebar-link" data-title="GST Settings" onclick="showPanel('gstSettingsPanel',this)"><span class="ico">🧾</span>FPO GST Settings</button>
 
     <button class="sidebar-link" data-title="Receipt Entry" onclick="showPanel('receiptPanel',this)"><span class="ico">💰</span>Receipt Entry</button>
-    <button class="sidebar-link" data-title="Payment Entry" onclick="showPanel('paymentPanel',this)"><span class="ico">💸</span>Payment Entry</button>
+    <button class="sidebar-link" data-title="Payment Entry" onclick="showPanel('paymentPanel',this);loadPaymentAvailableBalance()"><span class="ico">💸</span>Payment Entry</button>
     <button class="sidebar-link" data-title="Journal / Contra" onclick="showPanel('journalPanel',this)"><span class="ico">📘</span>Journal / Contra</button>
 
     <button class="sidebar-link" data-title="Sales & Income" onclick="showPanel('salesPanel',this)"><span class="ico">🧾</span>Sales / Income</button>
@@ -233,6 +233,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <button class="sidebar-link" data-title="GST Bill History" onclick="showPanel('billHistoryPanel',this);loadBillHistory()"><span class="ico">🧾</span>GST Bill History</button>
     <button class="sidebar-link" data-title="Stock Register" onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
 
+    <button class="sidebar-link" data-title="Opening Balance" onclick="showPanel('openingBalancePanel',this);loadOpeningBalance()"><span class="ico">🏁</span>Opening Balance</button>
     <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this);loadCashBook()"><span class="ico">📗</span>Cash Book</button>
     <button class="sidebar-link" data-title="Bank Book" onclick="showPanel('bankbookPanel',this);loadBankBook()"><span class="ico">🏦</span>Bank Book</button>
     <button class="sidebar-link" data-title="Supplier Ledger" onclick="showPanel('supplierLedgerPanel',this);loadSupplierNames()"><span class="ico">📒</span>Supplier Ledger</button>
@@ -510,7 +511,11 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         </div>
         <div class="field"><label>Amount (₹) *</label><input id="pyAmount" type="number" min="0.01" step="0.01"></div>
         <div class="field"><label>Mode *</label>
-          <select id="pyMode"><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
+          <select id="pyMode" onchange="paymentModeBalanceChanged()"><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
+        </div>
+        <div class="field">
+          <label>Available Balance</label>
+          <input id="pyAvailableBalance" readonly value="₹0.00">
         </div>
         <div class="field"><label>Reference No.</label><input id="pyRef" placeholder="UTR / Cheque / Bill No."></div>
         <div class="field"><label>Ledger</label><input id="pyLedger" placeholder="Ledger / Account Head"></div>
@@ -1221,6 +1226,74 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           <tbody id="stockRegisterBody"></tbody>
         </table>
       </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="openingBalancePanel" class="portal-panel">
+  <div class="section">
+    <h2>Opening Cash / Bank Balance</h2>
+    <div class="section-body">
+
+      <div class="note">
+        Ye balance sirf system start karte samay ka actual <b>Cash in Hand</b> aur
+        <b>Bank Balance</b> hai. Daily receipt/payment ko Opening Balance me include na karein.
+        Save hone ke baad ye Cash Book, Bank Book aur Dashboard me automatically add ho jayega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field">
+          <label>Opening Date *</label>
+          <input id="obDate" type="date">
+        </div>
+
+        <div class="field">
+          <label>Opening Cash in Hand (₹)</label>
+          <input id="obCash" type="number" min="0" step="0.01" value="0">
+        </div>
+
+        <div class="field">
+          <label>Opening Bank Balance (₹)</label>
+          <input id="obBank" type="number" min="0" step="0.01" value="0">
+        </div>
+      </div>
+
+      <br>
+
+      <button class="primary-btn" onclick="saveOpeningBalance()">
+        Save Opening Balance
+      </button>
+
+      <hr>
+
+      <div class="stats">
+        <div class="stat">
+          <h3>Saved Opening Cash</h3>
+          <p id="obSavedCash">₹0.00</p>
+          <small>Cash in Hand</small>
+        </div>
+
+        <div class="stat">
+          <h3>Saved Opening Bank</h3>
+          <p id="obSavedBank">₹0.00</p>
+          <small>Bank Opening</small>
+        </div>
+
+        <div class="stat">
+          <h3>Current Cash Balance</h3>
+          <p id="obCurrentCash">₹0.00</p>
+          <small>Opening + Receipts − Payments</small>
+        </div>
+
+        <div class="stat">
+          <h3>Current Bank Balance</h3>
+          <p id="obCurrentBank">₹0.00</p>
+          <small>Opening + Bank/UPI/Cheque</small>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -5854,6 +5927,203 @@ document.addEventListener("DOMContentLoaded",()=>{
       }
     }catch(e){}
   },1600);
+});
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS OPENING BALANCE + PAYMENT BALANCE SAFETY UI
+   ============================================================ */
+
+let cbmsAvailableCashBalance=0;
+let cbmsAvailableBankBalance=0;
+
+window.loadOpeningBalance=async function(){
+  try{
+    const [
+      {data:opening,error:oErr},
+      {data:summary,error:sErr}
+    ]=await Promise.all([
+      authDb.rpc("cbms_get_opening_balance"),
+      authDb.rpc("cbms_accountant_dashboard_summary")
+    ]);
+
+    if(oErr) throw oErr;
+    if(sErr) throw sErr;
+
+    const o=opening?.[0]||{};
+    const s=summary?.[0]||{};
+
+    document.getElementById("obDate").value=
+      o.opening_date || today();
+
+    document.getElementById("obCash").value=
+      num(o.cash_opening).toFixed(2);
+
+    document.getElementById("obBank").value=
+      num(o.bank_opening).toFixed(2);
+
+    document.getElementById("obSavedCash").textContent=
+      money(o.cash_opening);
+
+    document.getElementById("obSavedBank").textContent=
+      money(o.bank_opening);
+
+    document.getElementById("obCurrentCash").textContent=
+      money(s.cash_balance);
+
+    document.getElementById("obCurrentBank").textContent=
+      money(s.bank_balance);
+
+  }catch(error){
+    showMessage(
+      "Opening Balance load error: "+liveErrorMessage(error),
+      "error"
+    );
+  }
+};
+
+
+window.saveOpeningBalance=async function(){
+  try{
+    const date=document.getElementById("obDate").value||today();
+    const cash=num(document.getElementById("obCash").value);
+    const bank=num(document.getElementById("obBank").value);
+
+    if(cash<0 || bank<0){
+      throw new Error("Opening balance negative nahi ho sakta.");
+    }
+
+    const ok=window.confirm(
+      "Opening Balance save/update karna hai?\n\n"+
+      "Opening Cash: "+money(cash)+"\n"+
+      "Opening Bank: "+money(bank)
+    );
+
+    if(!ok) return;
+
+    const {data,error}=await authDb.rpc(
+      "cbms_set_opening_balance",
+      {
+        p_as_on_date:date,
+        p_cash_amount:cash,
+        p_bank_amount:bank
+      }
+    );
+
+    if(error) throw error;
+
+    await Promise.all([
+      loadOpeningBalance(),
+      loadCashBook(),
+      loadBankBook(),
+      typeof loadDashboardSummary==="function"
+        ? loadDashboardSummary()
+        : Promise.resolve()
+    ]);
+
+    await loadPaymentAvailableBalance(false);
+
+    showMessage("Opening Balance save ho gaya.");
+
+  }catch(error){
+    showMessage(
+      "Opening Balance save error: "+liveErrorMessage(error),
+      "error"
+    );
+  }
+};
+
+
+window.loadPaymentAvailableBalance=async function(showError=true){
+  try{
+    const {data,error}=await authDb.rpc(
+      "cbms_accountant_dashboard_summary"
+    );
+
+    if(error) throw error;
+
+    const s=data?.[0]||{};
+
+    cbmsAvailableCashBalance=num(s.cash_balance);
+    cbmsAvailableBankBalance=num(s.bank_balance);
+
+    paymentModeBalanceChanged();
+
+    return {
+      cash:cbmsAvailableCashBalance,
+      bank:cbmsAvailableBankBalance
+    };
+
+  }catch(error){
+    if(showError){
+      showMessage(
+        "Available Balance load error: "+liveErrorMessage(error),
+        "error"
+      );
+    }
+    return {cash:0,bank:0};
+  }
+};
+
+
+window.paymentModeBalanceChanged=function(){
+  const mode=document.getElementById("pyMode")?.value||"Cash";
+  const el=document.getElementById("pyAvailableBalance");
+
+  if(!el) return;
+
+  if(mode==="Cash"){
+    el.value=money(cbmsAvailableCashBalance);
+  }else{
+    el.value=money(cbmsAvailableBankBalance);
+  }
+};
+
+
+/* Wrap latest payment save function with balance check */
+const cbmsBaseSavePaymentVoucher=window.savePaymentVoucher;
+
+window.savePaymentVoucher=async function(){
+  try{
+    const mode=document.getElementById("pyMode")?.value||"Cash";
+    const amount=num(document.getElementById("pyAmount")?.value);
+
+    const balances=await loadPaymentAvailableBalance(false);
+
+    if(mode==="Cash" && amount>num(balances.cash)){
+      throw new Error(
+        "Cash Balance insufficient hai. Available Cash: "+
+        money(balances.cash)
+      );
+    }
+
+    return await cbmsBaseSavePaymentVoucher();
+
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+
+/* Refresh visible balance after Clear */
+const cbmsBaseClearPaymentVoucher=window.clearPaymentVoucher;
+
+window.clearPaymentVoucher=function(){
+  cbmsBaseClearPaymentVoucher();
+  loadPaymentAvailableBalance(false);
+};
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+  if(document.getElementById("obDate")){
+    document.getElementById("obDate").value=today();
+  }
+
+  setTimeout(()=>{
+    loadPaymentAvailableBalance(false);
+  },1800);
 });
 </script>
 
