@@ -984,7 +984,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <div class="section-body">
       <div class="note">
         Purane finalized bills ko search, view, reprint aur CSV me export kar sakte hain.
-        Final bill ka accounting record history me safe rahega.
+        Final bill direct delete/edit nahi hoga. Galti hone par <b>Cancel Bill</b> se stock reverse hoga aur accounting receipt bhi cancel ho jayegi.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -4456,6 +4456,153 @@ document.addEventListener("DOMContentLoaded",()=>{
     loadDashboardSummary().catch(()=>{});
   },1500);
 });
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS GST BILL CANCEL / REVERSAL
+   ============================================================ */
+
+window.renderBillHistory=function(){
+  const body=document.getElementById("billHistoryBody");
+  if(!body) return;
+
+  const from=document.getElementById("bhFrom")?.value || "";
+  const to=document.getElementById("bhTo")?.value || "";
+  const mode=document.getElementById("bhMode")?.value || "";
+  const status=document.getElementById("bhStatus")?.value || "";
+  const q=(document.getElementById("bhSearch")?.value || "").trim().toLowerCase();
+
+  filteredBillHistoryRows=(billHistoryRows||[]).filter(b=>{
+    const date=b.invoice_date || "";
+
+    if(from && date<from) return false;
+    if(to && date>to) return false;
+    if(mode && String(b.payment_mode||"")!==mode) return false;
+    if(status && String(b.status||"")!==status) return false;
+
+    if(q){
+      const hay=[
+        b.invoice_no,
+        b.customer_name,
+        b.customer_mobile,
+        b.farmer_registration_no,
+        b.buyer_gstin,
+        b.payment_mode,
+        b.reference_no,
+        b.cancellation_reason
+      ].join(" ").toLowerCase();
+
+      if(!hay.includes(q)) return false;
+    }
+
+    return true;
+  });
+
+  const finalRows=filteredBillHistoryRows.filter(b=>b.status!=="Cancelled");
+  const gstTotal=finalRows.reduce((s,b)=>s+num(b.gst_amount),0);
+  const grandTotal=finalRows.reduce((s,b)=>s+num(b.grand_total),0);
+
+  document.getElementById("bhBillCount").textContent=String(filteredBillHistoryRows.length);
+  document.getElementById("bhGstTotal").textContent=money(gstTotal);
+  document.getElementById("bhGrandTotal").textContent=money(grandTotal);
+
+  body.innerHTML=filteredBillHistoryRows.length
+    ? filteredBillHistoryRows.map(b=>{
+        const isCancelled=b.status==="Cancelled";
+
+        return `
+        <tr style="${isCancelled?'opacity:.68':''}">
+          <td>
+            <b>${escapeHtml(b.invoice_no||"-")}</b>
+            ${isCancelled && b.cancellation_reason
+              ? `<br><small title="${escapeHtml(b.cancellation_reason)}">Reason: ${escapeHtml(b.cancellation_reason)}</small>`
+              : ""}
+          </td>
+
+          <td>${escapeHtml(b.invoice_date||"")}</td>
+          <td>${escapeHtml(b.customer_name||"")}</td>
+          <td>${escapeHtml(b.customer_mobile||"-")}</td>
+          <td>${billHistoryItemCounts[b.id]||0}</td>
+          <td>${money(b.taxable_amount)}</td>
+          <td>${money(b.gst_amount)}</td>
+          <td><b>${money(b.grand_total)}</b></td>
+          <td>${escapeHtml(b.payment_mode||"-")}</td>
+
+          <td>
+            <span class="badge ${isCancelled?"red":"green"}">
+              ${escapeHtml(b.status||"Final")}
+            </span>
+          </td>
+
+          <td style="white-space:nowrap">
+            <button type="button" class="small-btn" onclick="printBill('${b.id}')">
+              View / Print
+            </button>
+
+            ${!isCancelled
+              ? `<button type="button" class="small-btn" style="margin-left:4px" onclick="cancelSalesInvoice('${b.id}','${String(b.invoice_no||"").replace(/'/g,"\\'")}')">
+                   Cancel Bill
+                 </button>`
+              : ""}
+          </td>
+        </tr>`;
+      }).join("")
+    : `<tr><td colspan="11" class="muted">Is filter me koi GST bill nahi mila.</td></tr>`;
+};
+
+
+window.cancelSalesInvoice=async function(invoiceId, invoiceNo){
+  try{
+    const reason=window.prompt(
+      "Bill "+invoiceNo+" cancel karne ka reason likhiye:"
+    );
+
+    if(reason===null) return;
+
+    if(reason.trim().length<3){
+      throw new Error("Cancellation reason kam se kam 3 characters ka hona chahiye.");
+    }
+
+    const ok=window.confirm(
+      "Confirm karein:\n\n"+
+      invoiceNo+" ko CANCEL karna hai?\n\n"+
+      "Isse sold stock wapas inventory me aa jayega aur linked Sales Receipt bhi cancel ho jayega."
+    );
+
+    if(!ok) return;
+
+    const {data,error}=await authDb.rpc(
+      "cbms_cancel_sales_invoice",
+      {
+        p_invoice_id:invoiceId,
+        p_reason:reason.trim()
+      }
+    );
+
+    if(error) throw error;
+
+    const result=data?.[0] || {};
+
+    await Promise.all([
+      loadBillHistory(),
+      typeof liveLoadInventory==="function" ? liveLoadInventory() : Promise.resolve(),
+      typeof loadDashboardSummary==="function" ? loadDashboardSummary() : Promise.resolve(),
+      typeof loadCashBook==="function" ? loadCashBook() : Promise.resolve(),
+      typeof loadBankBook==="function" ? loadBankBook() : Promise.resolve()
+    ]);
+
+    showMessage(
+      "Bill "+(result.invoice_no || invoiceNo)+
+      " Cancelled. Stock Returned: "+
+      num(result.stock_returned).toFixed(3)
+    );
+
+  }catch(error){
+    showMessage("Bill Cancel error: "+liveErrorMessage(error),"error");
+  }
+};
 </script>
 
 </body>
