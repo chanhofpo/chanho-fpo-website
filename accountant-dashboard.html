@@ -232,8 +232,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <button class="sidebar-link" data-title="GST Bill History" onclick="showPanel('billHistoryPanel',this);loadBillHistory()"><span class="ico">🧾</span>GST Bill History</button>
     <button class="sidebar-link" data-title="Stock Register" onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
 
-    <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this)"><span class="ico">📗</span>Cash Book</button>
-    <button class="sidebar-link" data-title="Bank Book" onclick="showPanel('bankbookPanel',this)"><span class="ico">🏦</span>Bank Book</button>
+    <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this);loadCashBook()"><span class="ico">📗</span>Cash Book</button>
+    <button class="sidebar-link" data-title="Bank Book" onclick="showPanel('bankbookPanel',this);loadBankBook()"><span class="ico">🏦</span>Bank Book</button>
+    <button class="sidebar-link" data-title="Supplier Ledger" onclick="showPanel('supplierLedgerPanel',this);loadSupplierNames()"><span class="ico">📒</span>Supplier Ledger</button>
     <button class="sidebar-link" data-title="Ledger" onclick="showPanel('ledgerPanel',this)"><span class="ico">📚</span>Ledger</button>
 
     <button class="sidebar-link" data-title="Receivable / Payable" onclick="showPanel('duesPanel',this)"><span class="ico">⏳</span>Receivable / Payable</button>
@@ -437,10 +438,11 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Receipt Entry</h2>
     <div class="section-body">
-      <div class="form-grid">
-        <div class="field"><label>Date</label><input type="date"></div>
-        <div class="field"><label>Receipt Type</label>
-          <select>
+      <div class="note">Manual receipt yahan save hoga. GST Sales Bill ka Cash/Bank/UPI/Cheque receipt automatically books me aa jayega.</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Date *</label><input id="rcDate" type="date"></div>
+        <div class="field"><label>Receipt Type *</label>
+          <select id="rcType">
             <option>Membership Fee</option>
             <option>Sales Receipt</option>
             <option>Service Income</option>
@@ -449,19 +451,19 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
             <option>Other Income</option>
           </select>
         </div>
-        <div class="field"><label>Received From</label><input placeholder="Farmer / Customer / Agency"></div>
-        <div class="field"><label>Amount (₹)</label><input type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Mode</label>
-          <select><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
+        <div class="field"><label>Received From *</label><input id="rcParty" placeholder="Farmer / Customer / Agency"></div>
+        <div class="field"><label>Amount (₹) *</label><input id="rcAmount" type="number" min="0.01" step="0.01"></div>
+        <div class="field"><label>Mode *</label>
+          <select id="rcMode"><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
         </div>
-        <div class="field"><label>Reference No.</label><input placeholder="UTR / Cheque / Receipt ref"></div>
-        <div class="field"><label>Ledger</label><input placeholder="Ledger / Account Head"></div>
-        <div class="field"><label>Farmer Reg. No. (optional)</label><input placeholder="CBMS/2026/01"></div>
-        <div class="field"><label>Supporting Document</label><input type="file"></div>
+        <div class="field"><label>Reference No.</label><input id="rcRef" placeholder="UTR / Cheque / Receipt ref"></div>
+        <div class="field"><label>Ledger</label><input id="rcLedger" placeholder="Ledger / Account Head"></div>
+        <div class="field"><label>Farmer Reg. No.</label><input id="rcFarmerReg" placeholder="Optional"></div>
       </div>
-      <div class="field" style="margin-top:12px"><label>Narration</label><textarea placeholder="Transaction details"></textarea></div>
+      <div class="field" style="margin-top:12px"><label>Narration</label><textarea id="rcNarration" placeholder="Transaction details"></textarea></div>
       <br>
-      <button class="primary-btn">Save Receipt Voucher</button>
+      <button class="primary-btn" onclick="saveReceiptVoucher()">Save Receipt Voucher</button>
+      <button class="secondary-btn" onclick="clearReceiptVoucher()">Clear</button>
     </div>
   </div>
 </section>
@@ -471,10 +473,11 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Payment Entry</h2>
     <div class="section-body">
-      <div class="form-grid">
-        <div class="field"><label>Date</label><input type="date"></div>
-        <div class="field"><label>Expense Head</label>
-          <select>
+      <div class="note">Supplier payment ke liye Expense Head = Purchase Payment select karke supplier ka exact naam choose/type karein.</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Date *</label><input id="pyDate" type="date"></div>
+        <div class="field"><label>Expense Head *</label>
+          <select id="pyType" onchange="updatePaymentSupplierHelp()">
             <option>Office Expense</option>
             <option>Training Expense</option>
             <option>Travel / Exposure Visit</option>
@@ -485,19 +488,20 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
             <option>Other Expense</option>
           </select>
         </div>
-        <div class="field"><label>Paid To</label><input placeholder="Vendor / Person / Agency"></div>
-        <div class="field"><label>Amount (₹)</label><input type="number" min="0" step="0.01"></div>
-        <div class="field"><label>Mode</label>
-          <select><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
+        <div class="field"><label>Paid To *</label><input id="pyParty" list="supplierNameList" placeholder="Vendor / Person / Agency"></div>
+        <datalist id="supplierNameList"></datalist>
+        <div class="field"><label>Amount (₹) *</label><input id="pyAmount" type="number" min="0.01" step="0.01"></div>
+        <div class="field"><label>Mode *</label>
+          <select id="pyMode"><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
         </div>
-        <div class="field"><label>Reference No.</label><input placeholder="UTR / Cheque / Bill No."></div>
-        <div class="field"><label>Ledger</label><input placeholder="Ledger / Account Head"></div>
-        <div class="field"><label>Bill / Invoice No.</label><input placeholder="Bill number"></div>
-        <div class="field"><label>Supporting Document</label><input type="file"></div>
+        <div class="field"><label>Reference No.</label><input id="pyRef" placeholder="UTR / Cheque / Bill No."></div>
+        <div class="field"><label>Ledger</label><input id="pyLedger" placeholder="Ledger / Account Head"></div>
+        <div class="field"><label>Bill / Invoice No.</label><input id="pyBill" placeholder="Optional"></div>
       </div>
-      <div class="field" style="margin-top:12px"><label>Narration</label><textarea></textarea></div>
+      <div class="field" style="margin-top:12px"><label>Narration</label><textarea id="pyNarration"></textarea></div>
       <br>
-      <button class="primary-btn">Save Payment Voucher</button>
+      <button class="primary-btn" onclick="savePaymentVoucher()">Save Payment Voucher</button>
+      <button class="secondary-btn" onclick="clearPaymentVoucher()">Clear</button>
     </div>
   </div>
 </section>
@@ -1072,15 +1076,23 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Cash Book</h2>
     <div class="section-body">
       <div class="grid-3">
-        <div class="stat"><h3>Opening Cash</h3><p>₹0.00</p></div>
-        <div class="stat"><h3>Cash Received</h3><p class="amount-positive">₹0.00</p></div>
-        <div class="stat"><h3>Cash Paid</h3><p class="amount-negative">₹0.00</p></div>
+        <div class="stat"><h3>Cash Received</h3><p id="cashReceived" class="amount-positive">₹0.00</p></div>
+        <div class="stat"><h3>Cash Paid</h3><p id="cashPaid" class="amount-negative">₹0.00</p></div>
+        <div class="stat"><h3>Current Cash Balance</h3><p id="cashBalance">₹0.00</p></div>
       </div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>From Date</label><input id="cashFrom" type="date" onchange="renderCashBook()"></div>
+        <div class="field"><label>To Date</label><input id="cashTo" type="date" onchange="renderCashBook()"></div>
+        <div class="field"><label>Search</label><input id="cashSearch" placeholder="Voucher / Party / Particular" oninput="renderCashBook()"></div>
+      </div>
+      <br>
+      <button class="secondary-btn" onclick="loadCashBook()">Refresh</button>
+      <button class="primary-btn" onclick="exportCashBookCSV()">Export CSV</button>
       <hr>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Voucher</th><th>Particular</th><th>Receipt</th><th>Payment</th><th>Balance</th></tr></thead>
-          <tbody><tr><td colspan="6" class="muted">No cash transactions.</td></tr></tbody>
+          <thead><tr><th>Date</th><th>Voucher</th><th>Particular</th><th>Reference</th><th>Receipt</th><th>Payment</th><th>Balance</th></tr></thead>
+          <tbody id="cashBookBody"><tr><td colspan="7" class="muted">No cash transactions.</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -1092,16 +1104,64 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Bank Book</h2>
     <div class="section-body">
-      <div class="form-grid">
-        <div class="field"><label>Bank Account</label><select><option>Select Bank Account</option></select></div>
-        <div class="field"><label>From Date</label><input type="date"></div>
-        <div class="field"><label>To Date</label><input type="date"></div>
+      <div class="grid-3">
+        <div class="stat"><h3>Deposit</h3><p id="bankDeposit" class="amount-positive">₹0.00</p></div>
+        <div class="stat"><h3>Withdrawal</h3><p id="bankWithdrawal" class="amount-negative">₹0.00</p></div>
+        <div class="stat"><h3>Current Bank Balance</h3><p id="bankBalance">₹0.00</p></div>
+      </div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Mode</label>
+          <select id="bankMode" onchange="loadBankBook()">
+            <option value="">All Bank Modes</option>
+            <option>Bank</option>
+            <option>UPI</option>
+            <option>Cheque</option>
+          </select>
+        </div>
+        <div class="field"><label>From Date</label><input id="bankFrom" type="date" onchange="renderBankBook()"></div>
+        <div class="field"><label>To Date</label><input id="bankTo" type="date" onchange="renderBankBook()"></div>
+        <div class="field"><label>Search</label><input id="bankSearch" placeholder="Voucher / Party / Particular" oninput="renderBankBook()"></div>
       </div>
       <br>
+      <button class="secondary-btn" onclick="loadBankBook()">Refresh</button>
+      <button class="primary-btn" onclick="exportBankBookCSV()">Export CSV</button>
+      <hr>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Voucher</th><th>Particular</th><th>Deposit</th><th>Withdrawal</th><th>Balance</th></tr></thead>
-          <tbody><tr><td colspan="6" class="muted">No bank transactions.</td></tr></tbody>
+          <thead><tr><th>Date</th><th>Voucher</th><th>Particular</th><th>Mode</th><th>Reference</th><th>Deposit</th><th>Withdrawal</th><th>Balance</th></tr></thead>
+          <tbody id="bankBookBody"><tr><td colspan="8" class="muted">No bank transactions.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="supplierLedgerPanel" class="portal-panel">
+  <div class="section">
+    <h2>Supplier Ledger</h2>
+    <div class="section-body">
+      <div class="note">Stock Inward / Purchase amount payable badhata hai. Payment Entry me "Purchase Payment" supplier ko diya amount payable kam karta hai.</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Supplier *</label><select id="supplierLedgerSelect" onchange="loadSupplierLedger()"><option value="">Select Supplier</option></select></div>
+        <div class="field"><label>From Date</label><input id="supplierFrom" type="date" onchange="renderSupplierLedger()"></div>
+        <div class="field"><label>To Date</label><input id="supplierTo" type="date" onchange="renderSupplierLedger()"></div>
+      </div>
+      <br>
+      <button class="secondary-btn" onclick="loadSupplierLedger()">Refresh</button>
+      <button class="primary-btn" onclick="exportSupplierLedgerCSV()">Export CSV</button>
+
+      <div class="grid-3" style="margin-top:16px">
+        <div class="stat"><h3>Total Purchase</h3><p id="supplierPurchaseTotal">₹0.00</p></div>
+        <div class="stat"><h3>Total Paid</h3><p id="supplierPaidTotal">₹0.00</p></div>
+        <div class="stat"><h3>Payable Balance</h3><p id="supplierBalance">₹0.00</p></div>
+      </div>
+
+      <hr>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Reference</th><th>Particular</th><th>Purchase</th><th>Paid</th><th>Balance</th></tr></thead>
+          <tbody id="supplierLedgerBody"><tr><td colspan="6" class="muted">Supplier select karein.</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -3747,6 +3807,360 @@ document.addEventListener("DOMContentLoaded",async()=>{
       try{ await loadBillHistory(); }catch(e){}
     },1200);
   }catch(e){}
+});
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS LIVE CASH BOOK + BANK BOOK + SUPPLIER LEDGER
+   ============================================================ */
+
+let cashBookRows = [];
+let filteredCashBookRows = [];
+let bankBookRows = [];
+let filteredBankBookRows = [];
+let supplierLedgerRows = [];
+let filteredSupplierLedgerRows = [];
+let supplierNamesCache = [];
+
+function accDateDefault(id){
+  const el=document.getElementById(id);
+  if(el && !el.value) el.value=today();
+}
+
+window.clearReceiptVoucher=function(){
+  accDateDefault("rcDate");
+  ["rcParty","rcAmount","rcRef","rcLedger","rcFarmerReg","rcNarration"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value="";
+  });
+  if(document.getElementById("rcType")) document.getElementById("rcType").value="Membership Fee";
+  if(document.getElementById("rcMode")) document.getElementById("rcMode").value="Cash";
+};
+
+window.clearPaymentVoucher=function(){
+  accDateDefault("pyDate");
+  ["pyParty","pyAmount","pyRef","pyLedger","pyBill","pyNarration"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value="";
+  });
+  if(document.getElementById("pyType")) document.getElementById("pyType").value="Office Expense";
+  if(document.getElementById("pyMode")) document.getElementById("pyMode").value="Cash";
+};
+
+window.updatePaymentSupplierHelp=function(){
+  const isPurchase=document.getElementById("pyType")?.value==="Purchase Payment";
+  const party=document.getElementById("pyParty");
+  if(party){
+    party.placeholder=isPurchase
+      ? "Supplier name - list se select karein"
+      : "Vendor / Person / Agency";
+  }
+};
+
+window.saveReceiptVoucher=async function(){
+  try{
+    const party=document.getElementById("rcParty").value.trim();
+    const amount=num(document.getElementById("rcAmount").value);
+    if(!party) throw new Error("Received From भरें.");
+    if(amount<=0) throw new Error("Amount zero se zyada hona chahiye.");
+
+    const {data,error}=await authDb.rpc("cbms_create_account_voucher",{
+      p_voucher_date:document.getElementById("rcDate").value || today(),
+      p_voucher_type:"RECEIPT",
+      p_entry_type:document.getElementById("rcType").value,
+      p_party_name:party,
+      p_amount:amount,
+      p_mode:document.getElementById("rcMode").value,
+      p_reference_no:document.getElementById("rcRef").value.trim(),
+      p_ledger_name:document.getElementById("rcLedger").value.trim(),
+      p_farmer_registration_no:document.getElementById("rcFarmerReg").value.trim(),
+      p_bill_invoice_no:"",
+      p_narration:document.getElementById("rcNarration").value.trim()
+    });
+
+    if(error) throw error;
+    const no=data?.[0]?.voucher_no || "";
+    clearReceiptVoucher();
+    await Promise.all([loadCashBook(),loadBankBook()]);
+    showMessage("Receipt Voucher save ho gaya"+(no?" — "+no:"")+".");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.savePaymentVoucher=async function(){
+  try{
+    const party=document.getElementById("pyParty").value.trim();
+    const amount=num(document.getElementById("pyAmount").value);
+    const type=document.getElementById("pyType").value;
+
+    if(!party) throw new Error("Paid To भरें.");
+    if(amount<=0) throw new Error("Amount zero se zyada hona chahiye.");
+
+    if(type==="Purchase Payment" && supplierNamesCache.length){
+      const ok=supplierNamesCache.some(x=>x.toLowerCase()===party.toLowerCase());
+      if(!ok){
+        throw new Error("Purchase Payment ke liye supplier list ka exact naam select karein.");
+      }
+    }
+
+    const {data,error}=await authDb.rpc("cbms_create_account_voucher",{
+      p_voucher_date:document.getElementById("pyDate").value || today(),
+      p_voucher_type:"PAYMENT",
+      p_entry_type:type,
+      p_party_name:party,
+      p_amount:amount,
+      p_mode:document.getElementById("pyMode").value,
+      p_reference_no:document.getElementById("pyRef").value.trim(),
+      p_ledger_name:document.getElementById("pyLedger").value.trim(),
+      p_farmer_registration_no:"",
+      p_bill_invoice_no:document.getElementById("pyBill").value.trim(),
+      p_narration:document.getElementById("pyNarration").value.trim()
+    });
+
+    if(error) throw error;
+    const no=data?.[0]?.voucher_no || "";
+    clearPaymentVoucher();
+    await Promise.all([loadCashBook(),loadBankBook(),loadSupplierNames()]);
+    showMessage("Payment Voucher save ho gaya"+(no?" — "+no:"")+".");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+/* ---------------- CASH BOOK ---------------- */
+
+window.loadCashBook=async function(){
+  try{
+    const {data,error}=await authDb.rpc("cbms_cash_book");
+    if(error) throw error;
+    cashBookRows=data||[];
+    renderCashBook();
+  }catch(error){
+    const body=document.getElementById("cashBookBody");
+    if(body) body.innerHTML=`<tr><td colspan="7" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+window.renderCashBook=function(){
+  const body=document.getElementById("cashBookBody");
+  if(!body) return;
+
+  const from=document.getElementById("cashFrom")?.value||"";
+  const to=document.getElementById("cashTo")?.value||"";
+  const q=(document.getElementById("cashSearch")?.value||"").trim().toLowerCase();
+
+  filteredCashBookRows=(cashBookRows||[]).filter(r=>{
+    if(from && r.txn_date<from) return false;
+    if(to && r.txn_date>to) return false;
+    if(q && ![r.voucher_no,r.particular,r.reference_no].join(" ").toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const received=filteredCashBookRows.reduce((s,r)=>s+num(r.receipt),0);
+  const paid=filteredCashBookRows.reduce((s,r)=>s+num(r.payment),0);
+  const balance=received-paid;
+
+  document.getElementById("cashReceived").textContent=money(received);
+  document.getElementById("cashPaid").textContent=money(paid);
+  document.getElementById("cashBalance").textContent=money(balance);
+
+  body.innerHTML=filteredCashBookRows.length
+    ? filteredCashBookRows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.txn_date||"")}</td>
+        <td>${escapeHtml(r.voucher_no||"-")}</td>
+        <td>${escapeHtml(r.particular||"-")}</td>
+        <td>${escapeHtml(r.reference_no||"-")}</td>
+        <td>${num(r.receipt)>0?money(r.receipt):"-"}</td>
+        <td>${num(r.payment)>0?money(r.payment):"-"}</td>
+        <td><b>${money(r.balance)}</b></td>
+      </tr>`).join("")
+    : `<tr><td colspan="7" class="muted">No cash transactions.</td></tr>`;
+};
+
+window.exportCashBookCSV=function(){
+  if(!filteredCashBookRows.length){
+    showMessage("Export ke liye Cash Book entry nahi hai.","error"); return;
+  }
+  downloadCSV("CBMS-Cash-Book.csv",
+    ["Date","Voucher","Particular","Reference","Receipt","Payment","Running Balance"],
+    filteredCashBookRows.map(r=>[
+      r.txn_date||"",r.voucher_no||"",r.particular||"",r.reference_no||"",
+      num(r.receipt).toFixed(2),num(r.payment).toFixed(2),num(r.balance).toFixed(2)
+    ])
+  );
+};
+
+/* ---------------- BANK BOOK ---------------- */
+
+window.loadBankBook=async function(){
+  try{
+    const mode=document.getElementById("bankMode")?.value||null;
+    const {data,error}=await authDb.rpc("cbms_bank_book",{p_mode:mode});
+    if(error) throw error;
+    bankBookRows=data||[];
+    renderBankBook();
+  }catch(error){
+    const body=document.getElementById("bankBookBody");
+    if(body) body.innerHTML=`<tr><td colspan="8" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+window.renderBankBook=function(){
+  const body=document.getElementById("bankBookBody");
+  if(!body) return;
+
+  const from=document.getElementById("bankFrom")?.value||"";
+  const to=document.getElementById("bankTo")?.value||"";
+  const q=(document.getElementById("bankSearch")?.value||"").trim().toLowerCase();
+
+  filteredBankBookRows=(bankBookRows||[]).filter(r=>{
+    if(from && r.txn_date<from) return false;
+    if(to && r.txn_date>to) return false;
+    if(q && ![r.voucher_no,r.particular,r.reference_no,r.mode].join(" ").toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  const deposit=filteredBankBookRows.reduce((s,r)=>s+num(r.deposit),0);
+  const withdrawal=filteredBankBookRows.reduce((s,r)=>s+num(r.withdrawal),0);
+  const balance=deposit-withdrawal;
+
+  document.getElementById("bankDeposit").textContent=money(deposit);
+  document.getElementById("bankWithdrawal").textContent=money(withdrawal);
+  document.getElementById("bankBalance").textContent=money(balance);
+
+  body.innerHTML=filteredBankBookRows.length
+    ? filteredBankBookRows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.txn_date||"")}</td>
+        <td>${escapeHtml(r.voucher_no||"-")}</td>
+        <td>${escapeHtml(r.particular||"-")}</td>
+        <td>${escapeHtml(r.mode||"-")}</td>
+        <td>${escapeHtml(r.reference_no||"-")}</td>
+        <td>${num(r.deposit)>0?money(r.deposit):"-"}</td>
+        <td>${num(r.withdrawal)>0?money(r.withdrawal):"-"}</td>
+        <td><b>${money(r.balance)}</b></td>
+      </tr>`).join("")
+    : `<tr><td colspan="8" class="muted">No bank transactions.</td></tr>`;
+};
+
+window.exportBankBookCSV=function(){
+  if(!filteredBankBookRows.length){
+    showMessage("Export ke liye Bank Book entry nahi hai.","error"); return;
+  }
+  downloadCSV("CBMS-Bank-Book.csv",
+    ["Date","Voucher","Particular","Mode","Reference","Deposit","Withdrawal","Running Balance"],
+    filteredBankBookRows.map(r=>[
+      r.txn_date||"",r.voucher_no||"",r.particular||"",r.mode||"",r.reference_no||"",
+      num(r.deposit).toFixed(2),num(r.withdrawal).toFixed(2),num(r.balance).toFixed(2)
+    ])
+  );
+};
+
+/* ---------------- SUPPLIER LEDGER ---------------- */
+
+window.loadSupplierNames=async function(){
+  try{
+    const {data,error}=await authDb.rpc("cbms_supplier_names");
+    if(error) throw error;
+    supplierNamesCache=(data||[]).map(x=>x.supplier_name).filter(Boolean);
+
+    const select=document.getElementById("supplierLedgerSelect");
+    const current=select?.value||"";
+    if(select){
+      select.innerHTML='<option value="">Select Supplier</option>'+
+        supplierNamesCache.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+      if(supplierNamesCache.includes(current)) select.value=current;
+    }
+
+    const datalist=document.getElementById("supplierNameList");
+    if(datalist){
+      datalist.innerHTML=supplierNamesCache.map(n=>`<option value="${escapeHtml(n)}"></option>`).join("");
+    }
+
+    if(select?.value) await loadSupplierLedger();
+  }catch(error){
+    showMessage("Supplier list load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.loadSupplierLedger=async function(){
+  const supplier=document.getElementById("supplierLedgerSelect")?.value||"";
+  if(!supplier){
+    supplierLedgerRows=[];
+    renderSupplierLedger();
+    return;
+  }
+
+  try{
+    const {data,error}=await authDb.rpc("cbms_supplier_ledger",{p_supplier_name:supplier});
+    if(error) throw error;
+    supplierLedgerRows=data||[];
+    renderSupplierLedger();
+  }catch(error){
+    const body=document.getElementById("supplierLedgerBody");
+    if(body) body.innerHTML=`<tr><td colspan="6" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+window.renderSupplierLedger=function(){
+  const body=document.getElementById("supplierLedgerBody");
+  if(!body) return;
+
+  const from=document.getElementById("supplierFrom")?.value||"";
+  const to=document.getElementById("supplierTo")?.value||"";
+
+  filteredSupplierLedgerRows=(supplierLedgerRows||[]).filter(r=>{
+    if(from && r.txn_date<from) return false;
+    if(to && r.txn_date>to) return false;
+    return true;
+  });
+
+  const purchases=filteredSupplierLedgerRows.reduce((s,r)=>s+num(r.purchase_amount),0);
+  const paid=filteredSupplierLedgerRows.reduce((s,r)=>s+num(r.paid_amount),0);
+  const balance=purchases-paid;
+
+  document.getElementById("supplierPurchaseTotal").textContent=money(purchases);
+  document.getElementById("supplierPaidTotal").textContent=money(paid);
+  document.getElementById("supplierBalance").textContent=money(balance);
+
+  body.innerHTML=filteredSupplierLedgerRows.length
+    ? filteredSupplierLedgerRows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.txn_date||"")}</td>
+        <td>${escapeHtml(r.ref_no||"-")}</td>
+        <td>${escapeHtml(r.particular||"-")}</td>
+        <td>${num(r.purchase_amount)>0?money(r.purchase_amount):"-"}</td>
+        <td>${num(r.paid_amount)>0?money(r.paid_amount):"-"}</td>
+        <td><b>${money(r.balance)}</b></td>
+      </tr>`).join("")
+    : `<tr><td colspan="6" class="muted">${document.getElementById("supplierLedgerSelect")?.value?"No ledger entry.":"Supplier select karein."}</td></tr>`;
+};
+
+window.exportSupplierLedgerCSV=function(){
+  const supplier=document.getElementById("supplierLedgerSelect")?.value||"Supplier";
+  if(!filteredSupplierLedgerRows.length){
+    showMessage("Export ke liye Supplier Ledger entry nahi hai.","error"); return;
+  }
+  downloadCSV(
+    "CBMS-Supplier-Ledger-"+supplier.replace(/[^a-z0-9]+/gi,"-")+".csv",
+    ["Date","Reference","Particular","Purchase","Paid","Running Balance"],
+    filteredSupplierLedgerRows.map(r=>[
+      r.txn_date||"",r.ref_no||"",r.particular||"",
+      num(r.purchase_amount).toFixed(2),num(r.paid_amount).toFixed(2),num(r.balance).toFixed(2)
+    ])
+  );
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  accDateDefault("rcDate");
+  accDateDefault("pyDate");
+  setTimeout(async()=>{
+    try{ await loadSupplierNames(); }catch(e){}
+    try{ await loadCashBook(); }catch(e){}
+    try{ await loadBankBook(); }catch(e){}
+  },1400);
 });
 </script>
 
