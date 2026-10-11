@@ -227,7 +227,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <button class="sidebar-link" data-title="Stock Inward" onclick="showPanel('stockInPanel',this)"><span class="ico">⬇️</span>Stock Inward / Purchase</button>
     <button class="sidebar-link" data-title="Seed Stock / Transfer" onclick="showPanel('seedTransferPanel',this)"><span class="ico">🌱</span>Seed Stock / Transfer</button>
     <button class="sidebar-link" data-title="Seed Distribution" onclick="showPanel('seedDistributionPanel',this)"><span class="ico">🌾</span>Seed Distribution</button>
+    <button class="sidebar-link" data-title="Seed Distribution Report" onclick="showPanel('seedReportPanel',this);loadSeedDistributionReport()"><span class="ico">📋</span>Seed Distribution Report</button>
     <button class="sidebar-link" data-title="Sales Billing" onclick="showPanel('billingPanel',this)"><span class="ico">🧾</span>Fertilizer/Plant Billing</button>
+    <button class="sidebar-link" data-title="GST Bill History" onclick="showPanel('billHistoryPanel',this);loadBillHistory()"><span class="ico">🧾</span>GST Bill History</button>
     <button class="sidebar-link" data-title="Stock Register" onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
 
     <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this)"><span class="ico">📗</span>Cash Book</button>
@@ -907,6 +909,135 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   </div>
 </section>
 
+
+
+<section id="seedReportPanel" class="portal-panel">
+  <div class="section">
+    <h2>Seed Distribution Report</h2>
+    <div class="section-body">
+      <div class="note">
+        Date, Mission, Year, Crop, Variety ya Farmer ke hisaab se distribution report dekhein.
+        Aadhaar report me masked rahega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>From Date</label><input id="sdrFrom" type="date" onchange="renderSeedDistributionReport()"></div>
+        <div class="field"><label>To Date</label><input id="sdrTo" type="date" onchange="renderSeedDistributionReport()"></div>
+        <div class="field"><label>Mission Name</label><select id="sdrMission" onchange="renderSeedDistributionReport()"><option value="">All Mission</option></select></div>
+        <div class="field"><label>Year</label><select id="sdrYear" onchange="renderSeedDistributionReport()"><option value="">All Year</option></select></div>
+        <div class="field"><label>Crop / Product</label><select id="sdrCrop" onchange="renderSeedDistributionReport()"><option value="">All Crop</option></select></div>
+        <div class="field"><label>Variety</label><select id="sdrVariety" onchange="renderSeedDistributionReport()"><option value="">All Variety</option></select></div>
+        <div class="field"><label>Search Farmer / Mobile / Village</label><input id="sdrSearch" placeholder="Search..." oninput="renderSeedDistributionReport()"></div>
+      </div>
+
+      <br>
+      <button class="secondary-btn" onclick="clearSeedReportFilters()">Clear Filters</button>
+      <button class="secondary-btn" onclick="loadSeedDistributionReport()">Refresh</button>
+      <button class="primary-btn" onclick="exportSeedDistributionCSV()">Export CSV</button>
+      <button class="secondary-btn" onclick="printSeedDistributionReport()">Print / Save PDF</button>
+
+      <div class="grid-3" style="margin-top:16px">
+        <div class="stat"><h3>Distribution Entries</h3><p id="sdrEntryCount">0</p></div>
+        <div class="stat"><h3>Total Distributed</h3><p id="sdrTotalQty">0.000</p></div>
+        <div class="stat"><h3>Villages Covered</h3><p id="sdrVillageCount">0</p></div>
+      </div>
+
+      <hr>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Distribution No.</th>
+              <th>Mission</th>
+              <th>Year</th>
+              <th>Crop</th>
+              <th>Variety</th>
+              <th>Farmer</th>
+              <th>Mobile</th>
+              <th>Aadhaar</th>
+              <th>Block</th>
+              <th>Panchayat</th>
+              <th>Village</th>
+              <th>Qty</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody id="seedReportBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="billHistoryPanel" class="portal-panel">
+  <div class="section">
+    <h2>GST Bill History</h2>
+    <div class="section-body">
+      <div class="note">
+        Purane finalized bills ko search, view, reprint aur CSV me export kar sakte hain.
+        Final bill ka accounting record history me safe rahega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>From Date</label><input id="bhFrom" type="date" onchange="renderBillHistory()"></div>
+        <div class="field"><label>To Date</label><input id="bhTo" type="date" onchange="renderBillHistory()"></div>
+        <div class="field"><label>Payment Mode</label>
+          <select id="bhMode" onchange="renderBillHistory()">
+            <option value="">All Modes</option>
+            <option>Cash</option>
+            <option>UPI</option>
+            <option>Bank</option>
+            <option>Credit</option>
+          </select>
+        </div>
+        <div class="field"><label>Status</label>
+          <select id="bhStatus" onchange="renderBillHistory()">
+            <option value="">All Status</option>
+            <option value="Final">Final</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="field"><label>Search Bill / Customer / Mobile</label><input id="bhSearch" placeholder="Search..." oninput="renderBillHistory()"></div>
+      </div>
+
+      <br>
+      <button class="secondary-btn" onclick="clearBillHistoryFilters()">Clear Filters</button>
+      <button class="secondary-btn" onclick="loadBillHistory()">Refresh</button>
+      <button class="primary-btn" onclick="exportBillHistoryCSV()">Export CSV</button>
+
+      <div class="grid-3" style="margin-top:16px">
+        <div class="stat"><h3>Total Bills</h3><p id="bhBillCount">0</p></div>
+        <div class="stat"><h3>Total GST</h3><p id="bhGstTotal">₹0.00</p></div>
+        <div class="stat"><h3>Grand Total</h3><p id="bhGrandTotal">₹0.00</p></div>
+      </div>
+
+      <hr>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Bill No.</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Mobile</th>
+              <th>Items</th>
+              <th>Taxable</th>
+              <th>GST</th>
+              <th>Grand Total</th>
+              <th>Mode</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="billHistoryBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="stockPanel" class="portal-panel">
   <div class="section">
@@ -3233,6 +3364,390 @@ window.clearSeedDistributionForm=function(){
 
   refreshSeedDistributionItems();
 };
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS REPORTS: SEED DISTRIBUTION + GST BILL HISTORY
+   ============================================================ */
+
+let seedDistributionReportRows = [];
+let filteredSeedDistributionReportRows = [];
+let billHistoryRows = [];
+let billHistoryItemCounts = {};
+let filteredBillHistoryRows = [];
+
+function csvSafe(value){
+  const s=String(value ?? "");
+  return '"' + s.replace(/"/g,'""') + '"';
+}
+
+function downloadCSV(filename, headers, rows){
+  const content=[
+    headers.map(csvSafe).join(","),
+    ...rows.map(row=>row.map(csvSafe).join(","))
+  ].join("\r\n");
+
+  const blob=new Blob(["\ufeff"+content],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+
+function uniqueSorted(values){
+  return [...new Set(values.filter(v=>v!==null && v!==undefined && String(v).trim()!=="").map(v=>String(v)))]
+    .sort((a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"}));
+}
+
+function setSelectOptions(id, firstLabel, values){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const current=el.value;
+  el.innerHTML=`<option value="">${escapeHtml(firstLabel)}</option>`+
+    uniqueSorted(values).map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+  if([...el.options].some(o=>o.value===current)) el.value=current;
+}
+
+/* ---------------- SEED DISTRIBUTION REPORT ---------------- */
+
+window.loadSeedDistributionReport=async function(){
+  try{
+    if(!liveInventoryItems?.length && typeof liveLoadInventory==="function"){
+      await liveLoadInventory();
+    }
+
+    const {data,error}=await authDb
+      .from("seed_distributions")
+      .select("*")
+      .order("distribution_date",{ascending:false})
+      .order("created_at",{ascending:false})
+      .limit(5000);
+
+    if(error) throw error;
+
+    seedDistributionReportRows=(data||[]).map(x=>{
+      const item=(liveInventoryItems||[]).find(i=>i.id===x.item_id);
+      return {
+        ...x,
+        crop:x.seed_name_snapshot || item?.name || "Seed",
+        variety:item?.brand || "",
+        mission:item?.missionName || x.scheme_program_name || "",
+        year:item?.seedYear || "",
+        unit:x.unit || item?.unit || "Kg"
+      };
+    });
+
+    setSelectOptions("sdrMission","All Mission",seedDistributionReportRows.map(r=>r.mission || r.scheme_program_name));
+    setSelectOptions("sdrYear","All Year",seedDistributionReportRows.map(r=>r.year));
+    setSelectOptions("sdrCrop","All Crop",seedDistributionReportRows.map(r=>r.crop));
+    setSelectOptions("sdrVariety","All Variety",seedDistributionReportRows.map(r=>r.variety));
+
+    renderSeedDistributionReport();
+  }catch(error){
+    const body=document.getElementById("seedReportBody");
+    if(body) body.innerHTML=`<tr><td colspan="14" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+    showMessage("Seed report load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.renderSeedDistributionReport=function(){
+  const body=document.getElementById("seedReportBody");
+  if(!body) return;
+
+  const from=document.getElementById("sdrFrom")?.value || "";
+  const to=document.getElementById("sdrTo")?.value || "";
+  const mission=document.getElementById("sdrMission")?.value || "";
+  const year=document.getElementById("sdrYear")?.value || "";
+  const crop=document.getElementById("sdrCrop")?.value || "";
+  const variety=document.getElementById("sdrVariety")?.value || "";
+  const q=(document.getElementById("sdrSearch")?.value || "").trim().toLowerCase();
+
+  filteredSeedDistributionReportRows=(seedDistributionReportRows||[]).filter(r=>{
+    const date=r.distribution_date || "";
+    if(from && date<from) return false;
+    if(to && date>to) return false;
+    if(mission && String(r.mission || r.scheme_program_name || "")!==mission) return false;
+    if(year && String(r.year||"")!==year) return false;
+    if(crop && String(r.crop||"")!==crop) return false;
+    if(variety && String(r.variety||"")!==variety) return false;
+
+    if(q){
+      const hay=[
+        r.distribution_no,r.farmer_registration_no,r.farmer_name,r.father_husband_name,
+        r.mobile,r.block,r.panchayat,r.village,r.crop,r.variety,r.mission,r.year
+      ].join(" ").toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const totalQty=filteredSeedDistributionReportRows.reduce((s,r)=>s+num(r.quantity),0);
+  const villages=new Set(filteredSeedDistributionReportRows.map(r=>(r.village||"").trim()).filter(Boolean));
+
+  document.getElementById("sdrEntryCount").textContent=String(filteredSeedDistributionReportRows.length);
+  document.getElementById("sdrTotalQty").textContent=totalQty.toFixed(3);
+  document.getElementById("sdrVillageCount").textContent=String(villages.size);
+
+  body.innerHTML=filteredSeedDistributionReportRows.length
+    ? filteredSeedDistributionReportRows.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.distribution_date||"")}</td>
+        <td>${escapeHtml(r.distribution_no||"-")}</td>
+        <td>${escapeHtml(r.mission || r.scheme_program_name || "-")}</td>
+        <td>${escapeHtml(String(r.year||"-"))}</td>
+        <td>${escapeHtml(r.crop||"-")}</td>
+        <td>${escapeHtml(r.variety||"-")}</td>
+        <td><b>${escapeHtml(r.farmer_name||"")}</b></td>
+        <td>${escapeHtml(r.mobile||"-")}</td>
+        <td>${escapeHtml(maskDistributionAadhaar(r.aadhar_number))}</td>
+        <td>${escapeHtml(r.block||"-")}</td>
+        <td>${escapeHtml(r.panchayat||"-")}</td>
+        <td>${escapeHtml(r.village||"-")}</td>
+        <td>${num(r.quantity).toFixed(3)}</td>
+        <td>${escapeHtml(r.unit||"Kg")}</td>
+      </tr>`).join("")
+    : `<tr><td colspan="14" class="muted">Is filter me koi seed distribution record nahi mila.</td></tr>`;
+};
+
+window.clearSeedReportFilters=function(){
+  ["sdrFrom","sdrTo","sdrMission","sdrYear","sdrCrop","sdrVariety","sdrSearch"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+  renderSeedDistributionReport();
+};
+
+window.exportSeedDistributionCSV=function(){
+  const rows=filteredSeedDistributionReportRows||[];
+  if(!rows.length){
+    showMessage("Export ke liye seed distribution record nahi hai.","error");
+    return;
+  }
+
+  downloadCSV(
+    "CBMS-Seed-Distribution-Report.csv",
+    ["Date","Distribution No","Mission","Year","Crop","Variety","Farmer","Father/Husband","Mobile","Aadhaar","Block","Panchayat","Village","Quantity","Unit"],
+    rows.map(r=>[
+      r.distribution_date||"",
+      r.distribution_no||"",
+      r.mission || r.scheme_program_name || "",
+      r.year||"",
+      r.crop||"",
+      r.variety||"",
+      r.farmer_name||"",
+      r.father_husband_name||"",
+      r.mobile||"",
+      maskDistributionAadhaar(r.aadhar_number),
+      r.block||"",
+      r.panchayat||"",
+      r.village||"",
+      num(r.quantity).toFixed(3),
+      r.unit||"Kg"
+    ])
+  );
+};
+
+window.printSeedDistributionReport=function(){
+  const rows=filteredSeedDistributionReportRows||[];
+  if(!rows.length){
+    showMessage("Print ke liye seed distribution record nahi hai.","error");
+    return;
+  }
+
+  const total=rows.reduce((s,r)=>s+num(r.quantity),0);
+  const gst=getGstSettings ? getGstSettings() : {};
+  const w=window.open("","_blank","width=1100,height=800");
+
+  if(!w){
+    showMessage("Browser popup allow kijiye.","error");
+    return;
+  }
+
+  const tableRows=rows.map((r,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${escapeHtml(r.distribution_date||"")}</td>
+      <td>${escapeHtml(r.mission || r.scheme_program_name || "-")}</td>
+      <td>${escapeHtml(String(r.year||"-"))}</td>
+      <td>${escapeHtml(r.crop||"-")}</td>
+      <td>${escapeHtml(r.variety||"-")}</td>
+      <td>${escapeHtml(r.farmer_name||"")}</td>
+      <td>${escapeHtml(r.mobile||"-")}</td>
+      <td>${escapeHtml(r.village||"-")}</td>
+      <td>${num(r.quantity).toFixed(3)} ${escapeHtml(r.unit||"Kg")}</td>
+    </tr>`).join("");
+
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Seed Distribution Report</title>
+  <style>
+  body{font-family:Arial,sans-serif;padding:22px;color:#111}
+  h2{margin:0 0 5px;color:#176b3a}.sub{font-size:12px;margin-bottom:15px}
+  table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #999;padding:6px;text-align:left}
+  th{background:#edf6ef}.summary{margin:12px 0;font-weight:bold}
+  @media print{button{display:none}}
+  </style></head><body>
+  <h2>${escapeHtml(gst.legalName || "Chanho Birsa Munda Sangathan Producer Company Limited")}</h2>
+  <div class="sub">Seed Distribution Report</div>
+  <div class="summary">Entries: ${rows.length} &nbsp; | &nbsp; Total Distributed: ${total.toFixed(3)}</div>
+  <table><thead><tr>
+    <th>#</th><th>Date</th><th>Mission</th><th>Year</th><th>Crop</th><th>Variety</th>
+    <th>Farmer</th><th>Mobile</th><th>Village</th><th>Quantity</th>
+  </tr></thead><tbody>${tableRows}</tbody></table>
+  <div style="margin-top:20px;text-align:center"><button onclick="window.print()">Print / Save PDF</button></div>
+  </body></html>`);
+  w.document.close();
+};
+
+
+/* ---------------- GST BILL HISTORY ---------------- */
+
+window.loadBillHistory=async function(){
+  try{
+    const {data:bills,error:billError}=await authDb
+      .from("sales_invoices")
+      .select("*")
+      .order("invoice_date",{ascending:false})
+      .order("created_at",{ascending:false})
+      .limit(5000);
+
+    if(billError) throw billError;
+
+    billHistoryRows=bills||[];
+    billHistoryItemCounts={};
+
+    const ids=billHistoryRows.map(b=>b.id);
+    if(ids.length){
+      // Supabase URL limits are safer with batches.
+      for(let i=0;i<ids.length;i+=150){
+        const batch=ids.slice(i,i+150);
+        const {data:items,error:itemError}=await authDb
+          .from("sales_invoice_items")
+          .select("invoice_id")
+          .in("invoice_id",batch);
+
+        if(itemError) throw itemError;
+
+        (items||[]).forEach(x=>{
+          billHistoryItemCounts[x.invoice_id]=(billHistoryItemCounts[x.invoice_id]||0)+1;
+        });
+      }
+    }
+
+    renderBillHistory();
+  }catch(error){
+    const body=document.getElementById("billHistoryBody");
+    if(body) body.innerHTML=`<tr><td colspan="11" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+    showMessage("Bill History load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.renderBillHistory=function(){
+  const body=document.getElementById("billHistoryBody");
+  if(!body) return;
+
+  const from=document.getElementById("bhFrom")?.value || "";
+  const to=document.getElementById("bhTo")?.value || "";
+  const mode=document.getElementById("bhMode")?.value || "";
+  const status=document.getElementById("bhStatus")?.value || "";
+  const q=(document.getElementById("bhSearch")?.value || "").trim().toLowerCase();
+
+  filteredBillHistoryRows=(billHistoryRows||[]).filter(b=>{
+    const date=b.invoice_date || "";
+    if(from && date<from) return false;
+    if(to && date>to) return false;
+    if(mode && String(b.payment_mode||"")!==mode) return false;
+    if(status && String(b.status||"")!==status) return false;
+
+    if(q){
+      const hay=[
+        b.invoice_no,b.customer_name,b.customer_mobile,b.farmer_registration_no,
+        b.buyer_gstin,b.payment_mode,b.reference_no
+      ].join(" ").toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const gstTotal=filteredBillHistoryRows.reduce((s,b)=>s+num(b.gst_amount),0);
+  const grandTotal=filteredBillHistoryRows.reduce((s,b)=>s+num(b.grand_total),0);
+
+  document.getElementById("bhBillCount").textContent=String(filteredBillHistoryRows.length);
+  document.getElementById("bhGstTotal").textContent=money(gstTotal);
+  document.getElementById("bhGrandTotal").textContent=money(grandTotal);
+
+  body.innerHTML=filteredBillHistoryRows.length
+    ? filteredBillHistoryRows.map(b=>`
+      <tr>
+        <td><b>${escapeHtml(b.invoice_no||"-")}</b></td>
+        <td>${escapeHtml(b.invoice_date||"")}</td>
+        <td>${escapeHtml(b.customer_name||"")}</td>
+        <td>${escapeHtml(b.customer_mobile||"-")}</td>
+        <td>${billHistoryItemCounts[b.id]||0}</td>
+        <td>${money(b.taxable_amount)}</td>
+        <td>${money(b.gst_amount)}</td>
+        <td><b>${money(b.grand_total)}</b></td>
+        <td>${escapeHtml(b.payment_mode||"-")}</td>
+        <td><span class="badge ${b.status==="Cancelled"?"red":"green"}">${escapeHtml(b.status||"Final")}</span></td>
+        <td><button class="small-btn" onclick="printBill('${b.id}')">View / Print</button></td>
+      </tr>`).join("")
+    : `<tr><td colspan="11" class="muted">Is filter me koi GST bill nahi mila.</td></tr>`;
+};
+
+window.clearBillHistoryFilters=function(){
+  ["bhFrom","bhTo","bhMode","bhStatus","bhSearch"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+  renderBillHistory();
+};
+
+window.exportBillHistoryCSV=function(){
+  const rows=filteredBillHistoryRows||[];
+  if(!rows.length){
+    showMessage("Export ke liye bill record nahi hai.","error");
+    return;
+  }
+
+  downloadCSV(
+    "CBMS-GST-Bill-History.csv",
+    ["Bill No","Date","Customer","Mobile","Farmer Reg No","Buyer GSTIN","Items","Taxable","CGST","SGST","IGST","Total GST","Discount","Grand Total","Payment Mode","Reference No","Status","Accountant ID"],
+    rows.map(b=>[
+      b.invoice_no||"",
+      b.invoice_date||"",
+      b.customer_name||"",
+      b.customer_mobile||"",
+      b.farmer_registration_no||"",
+      b.buyer_gstin||"",
+      billHistoryItemCounts[b.id]||0,
+      num(b.taxable_amount).toFixed(2),
+      num(b.cgst_amount).toFixed(2),
+      num(b.sgst_amount).toFixed(2),
+      num(b.igst_amount).toFixed(2),
+      num(b.gst_amount).toFixed(2),
+      num(b.discount_amount).toFixed(2),
+      num(b.grand_total).toFixed(2),
+      b.payment_mode||"",
+      b.reference_no||"",
+      b.status||"",
+      b.created_by_accountant_id||""
+    ])
+  );
+};
+
+document.addEventListener("DOMContentLoaded",async()=>{
+  try{
+    // Preload reports quietly after authentication settles.
+    setTimeout(async()=>{
+      try{ await loadSeedDistributionReport(); }catch(e){}
+      try{ await loadBillHistory(); }catch(e){}
+    },1200);
+  }catch(e){}
+});
 </script>
 
 </body>
