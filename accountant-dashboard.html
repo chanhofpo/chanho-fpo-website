@@ -212,7 +212,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   </div>
 
   <nav class="sidebar-nav">
-    <button class="sidebar-link active" data-title="Accountant Dashboard" onclick="showPanel('dashboardPanel',this);loadDashboardSummary()"><span class="ico">⌂</span>Dashboard</button>
+    <button class="sidebar-link active" data-title="Accountant Dashboard" onclick="showPanel('dashboardPanel',this);loadDashboardSummary();loadLowStockAlert()"><span class="ico">⌂</span>Dashboard</button>
     <button class="sidebar-link" data-title="Accountant Profile" onclick="showPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
     <button class="sidebar-link" data-title="GST Settings" onclick="showPanel('gstSettingsPanel',this)"><span class="ico">🧾</span>FPO GST Settings</button>
 
@@ -330,6 +330,48 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           <h3>This Month Expense</h3>
           <p id="dashMonthExpense" class="amount-negative">₹0.00</p>
           <small>Payment Vouchers</small>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top:14px">
+        <h2>Low Stock Alert</h2>
+        <div class="section-body">
+
+          <div class="stats">
+            <div class="stat">
+              <h3>Low Stock Items</h3>
+              <p id="dashLowStockCount">0</p>
+              <small>Minimum level tak pahunch gaye</small>
+            </div>
+
+            <div class="stat">
+              <h3>Out of Stock</h3>
+              <p id="dashOutStockCount" class="amount-negative">0</p>
+              <small>Stock zero hai</small>
+            </div>
+          </div>
+
+          <div id="dashLowStockNote" class="note" style="margin-top:12px">
+            Item Master me Minimum Stock Alert Level set karne par warning yahan dikhegi.
+          </div>
+
+          <div class="table-wrap" style="margin-top:12px">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Alert Level</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dashLowStockBody">
+                <tr><td colspan="5" class="muted">No low stock alert.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
         </div>
       </div>
 
@@ -661,7 +703,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <div class="field"><label>Sale Rate (₹) *</label><input id="imSaleRate" type="number" min="0" step="0.01"></div>
         <div class="field"><label>Opening Stock</label><input id="imOpeningStock" type="number" min="0" step="0.001" value="0"></div>
 
-        <div class="field"><label>Reorder Level</label><input id="imReorder" type="number" min="0" step="0.001" value="0"></div>
+        <div class="field"><label>Minimum Stock Alert Level</label><input id="imReorder" type="number" min="0" step="0.001" value="0" placeholder="Jaise: 5"></div>
         <div class="field"><label>Status</label>
           <select id="imStatus"><option>Active</option><option>Inactive</option></select>
         </div>
@@ -6124,6 +6166,104 @@ document.addEventListener("DOMContentLoaded",()=>{
   setTimeout(()=>{
     loadPaymentAvailableBalance(false);
   },1800);
+});
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS LOW STOCK ALERT
+   Uses Item Master -> Minimum Stock Alert Level (reorder_level)
+   ============================================================ */
+
+window.loadLowStockAlert = async function(){
+  try{
+    if(typeof liveLoadInventory==="function"){
+      await liveLoadInventory();
+    }
+
+    const items=(liveInventoryItems||[])
+      .filter(i=>String(i.status||"Active")==="Active");
+
+    // Low-stock alerts need a configured minimum level.
+    const low=items
+      .filter(i=>num(i.reorderLevel)>0 && num(i.currentStock)>0 && num(i.currentStock)<=num(i.reorderLevel))
+      .sort((a,b)=>num(a.currentStock)-num(b.currentStock));
+
+    // Out-of-stock for normal paid stock. Seed is excluded unless a future
+    // seed minimum-level workflow is introduced.
+    const out=items
+      .filter(i=>String(i.category||"")!=="Seed" && num(i.currentStock)<=0)
+      .sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
+
+    const alerts=[...out,...low.filter(i=>!out.some(o=>o.id===i.id))];
+
+    const lowCount=document.getElementById("dashLowStockCount");
+    const outCount=document.getElementById("dashOutStockCount");
+    if(lowCount) lowCount.textContent=String(low.length);
+    if(outCount) outCount.textContent=String(out.length);
+
+    const note=document.getElementById("dashLowStockNote");
+    if(note){
+      if(alerts.length){
+        note.innerHTML=
+          '<b>Attention:</b> '+alerts.length+
+          ' item(s) ko stock refill / purchase planning ki zarurat hai.';
+      }else{
+        note.textContent=
+          'Sabhi configured items ka stock minimum alert level se upar hai.';
+      }
+    }
+
+    const body=document.getElementById("dashLowStockBody");
+    if(!body) return;
+
+    body.innerHTML=alerts.length
+      ? alerts.map(i=>{
+          const stock=num(i.currentStock);
+          const reorder=num(i.reorderLevel);
+          const isOut=stock<=0;
+
+          return `
+            <tr>
+              <td><b>${escapeHtml(i.name||"Item")}</b>${i.brand?`<br><small>${escapeHtml(i.brand)}</small>`:""}</td>
+              <td>${escapeHtml(i.category||"-")}</td>
+              <td><b>${stock.toFixed(3)} ${escapeHtml(i.unit||"")}</b></td>
+              <td>${reorder>0 ? reorder.toFixed(3)+" "+escapeHtml(i.unit||"") : "-"}</td>
+              <td>
+                ${isOut
+                  ? '<span class="badge red">Out of Stock</span>'
+                  : '<span class="badge orange">Low Stock</span>'}
+              </td>
+            </tr>`;
+        }).join("")
+      : '<tr><td colspan="5" class="muted">No low stock alert.</td></tr>';
+
+  }catch(error){
+    const body=document.getElementById("dashLowStockBody");
+    if(body){
+      body.innerHTML=
+        `<tr><td colspan="5" class="muted">Low Stock load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+    }
+  }
+};
+
+
+// Refresh alert after Item Master save/edit, purchase inward,
+// return/damage/expired and billing/stock movements.
+const cbmsLowStockBaseSaveItemMaster=window.saveItemMaster;
+if(typeof cbmsLowStockBaseSaveItemMaster==="function"){
+  window.saveItemMaster=async function(){
+    const result=await cbmsLowStockBaseSaveItemMaster.apply(this,arguments);
+    try{ await loadLowStockAlert(); }catch(e){}
+    return result;
+  };
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(()=>{
+    loadLowStockAlert().catch(()=>{});
+  },2200);
 });
 </script>
 
