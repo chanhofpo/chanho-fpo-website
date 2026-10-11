@@ -711,8 +711,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       </div>
 
       <br>
-      <button class="primary-btn" onclick="saveItemMaster()">Save Item</button>
-      <button class="secondary-btn" onclick="clearItemMasterForm()">Clear</button>
+      <button id="imSaveBtn" class="primary-btn" onclick="saveItemMaster()">Save Item</button>
+      <button id="imClearBtn" class="secondary-btn" onclick="clearItemMasterForm()">Clear</button>
 
       <hr>
 
@@ -6265,6 +6265,277 @@ document.addEventListener("DOMContentLoaded",()=>{
     loadLowStockAlert().catch(()=>{});
   },2200);
 });
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS ITEM MASTER EDIT SUPPORT
+   - Adds Edit button
+   - Existing item can be updated
+   - Item Code stays unchanged
+   - Category / Unit / Opening Stock are locked during edit
+     so historical stock is not disturbed.
+   ============================================================ */
+
+let cbmsEditingItemId = null;
+
+const cbmsItemEditBaseClear = window.clearItemMasterForm;
+
+window.clearItemMasterForm = function(){
+  cbmsEditingItemId = null;
+
+  if(typeof cbmsItemEditBaseClear === "function"){
+    cbmsItemEditBaseClear();
+  }
+
+  const category=document.getElementById("imCategory");
+  const unit=document.getElementById("imUnit");
+  const opening=document.getElementById("imOpeningStock");
+
+  if(category) category.disabled=false;
+  if(unit) unit.disabled=false;
+  if(opening) opening.disabled=false;
+
+  const saveBtn=document.getElementById("imSaveBtn");
+  const clearBtn=document.getElementById("imClearBtn");
+
+  if(saveBtn) saveBtn.textContent="Save Item";
+  if(clearBtn) clearBtn.textContent="Clear";
+
+  if(document.getElementById("imCode")){
+    document.getElementById("imCode").value="Auto on Save";
+  }
+
+  try{ updateSeedItemMasterMode(); }catch(e){}
+};
+
+
+window.editItemMaster = function(itemId){
+  const i=(liveInventoryItems||[]).find(x=>x.id===itemId);
+
+  if(!i){
+    showMessage("Item nahi mila.","error");
+    return;
+  }
+
+  cbmsEditingItemId=itemId;
+
+  document.getElementById("imName").value=i.name||"";
+  document.getElementById("imCategory").value=i.category||"";
+  document.getElementById("imBrand").value=i.brand||"";
+
+  try{ updateSeedItemMasterMode(); }catch(e){}
+
+  const mission=document.getElementById("imMissionName");
+  const seedYear=document.getElementById("imSeedYear");
+
+  if(mission) mission.value=i.missionName||"";
+  if(seedYear) seedYear.value=i.seedYear||"";
+
+  document.getElementById("imUnit").value=i.unit||"Kg";
+  document.getElementById("imHsn").value=i.hsn||"";
+  document.getElementById("imGst").value=num(i.gst);
+  document.getElementById("imPurchaseRate").value=num(i.purchaseRate);
+  document.getElementById("imSaleRate").value=num(i.saleRate);
+  document.getElementById("imOpeningStock").value=num(i.openingStock);
+  document.getElementById("imReorder").value=num(i.reorderLevel);
+  document.getElementById("imStatus").value=i.status||"Active";
+  document.getElementById("imCode").value=i.code||"";
+
+  // Do not allow structural/history-sensitive fields to change.
+  document.getElementById("imCategory").disabled=true;
+  document.getElementById("imUnit").disabled=true;
+  document.getElementById("imOpeningStock").disabled=true;
+
+  const saveBtn=document.getElementById("imSaveBtn");
+  const clearBtn=document.getElementById("imClearBtn");
+
+  if(saveBtn) saveBtn.textContent="Update Item";
+  if(clearBtn) clearBtn.textContent="Cancel Edit";
+
+  document.getElementById("itemMasterPanel")?.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+
+  showMessage(
+    "Edit mode: "+(i.name||"Item")+
+    ". Minimum Stock Alert Level badal kar Update Item kijiye."
+  );
+};
+
+
+window.saveItemMaster = async function(){
+  try{
+    const name=document.getElementById("imName").value.trim();
+    const category=document.getElementById("imCategory").value;
+    const variety=document.getElementById("imBrand").value.trim();
+    const isSeed=category==="Seed";
+
+    if(!name || !category){
+      throw new Error("Product/Item Name aur Category bharें.");
+    }
+
+    const mission=(document.getElementById("imMissionName")?.value || "").trim();
+    const yearText=(document.getElementById("imSeedYear")?.value || "").trim();
+
+    if(isSeed){
+      if(!variety) throw new Error("Variety bharें.");
+      if(!mission) throw new Error("Mission Name bharें.");
+      if(!/^\d{4}$/.test(yearText)){
+        throw new Error("Year 4 digit me bharें, jaise 2026.");
+      }
+    }
+
+    // Duplicate check, but ignore the item currently being edited.
+    const {data:existing,error:dupError}=await authDb
+      .from("inventory_items")
+      .select("id,item_name,brand_variety,mission_name,seed_year")
+      .eq("category",category)
+      .eq("item_name",name);
+
+    if(dupError) throw dupError;
+
+    const duplicate=(existing||[]).find(x =>
+      x.id !== cbmsEditingItemId &&
+      String(x.brand_variety||"").trim().toLowerCase()===variety.toLowerCase() &&
+      (!isSeed || (
+        String(x.mission_name||"").trim().toLowerCase()===mission.toLowerCase() &&
+        Number(x.seed_year||0)===Number(yearText)
+      ))
+    );
+
+    if(duplicate){
+      throw new Error(
+        isSeed
+          ? "Same Product, Variety, Mission aur Year pehle se saved hai."
+          : "Same Item / Brand pehle se saved hai."
+      );
+    }
+
+    const payload={
+      item_name:name,
+      brand_variety:variety || null,
+      mission_name:isSeed?mission:null,
+      seed_year:isSeed?Number(yearText):null,
+
+      hsn_code:isSeed?null:(document.getElementById("imHsn").value.trim() || null),
+      gst_percent:isSeed?0:num(document.getElementById("imGst").value),
+      purchase_rate:isSeed?0:num(document.getElementById("imPurchaseRate").value),
+      sale_rate:isSeed?0:num(document.getElementById("imSaleRate").value),
+      reorder_level:isSeed?0:num(document.getElementById("imReorder").value),
+      status:isSeed?"Active":document.getElementById("imStatus").value
+    };
+
+    let savedCode="";
+
+    if(cbmsEditingItemId){
+      const editingId=cbmsEditingItemId;
+
+      const {data,error}=await authDb
+        .from("inventory_items")
+        .update(payload)
+        .eq("id",editingId)
+        .select("item_code")
+        .single();
+
+      if(error) throw error;
+
+      savedCode=data?.item_code || document.getElementById("imCode").value || "";
+
+      clearItemMasterForm();
+      await liveLoadInventory();
+
+      if(typeof loadLowStockAlert==="function"){
+        await loadLowStockAlert();
+      }
+
+      showMessage(
+        (isSeed?"Seed Product":"Item")+" update ho gaya. Item Code: "+savedCode
+      );
+
+    }else{
+      payload.category=category;
+      payload.unit=isSeed?"Kg":document.getElementById("imUnit").value;
+      payload.opening_stock=isSeed?0:num(document.getElementById("imOpeningStock").value);
+
+      const {data,error}=await authDb
+        .from("inventory_items")
+        .insert(payload)
+        .select("item_code")
+        .single();
+
+      if(error) throw error;
+
+      savedCode=data?.item_code || "";
+
+      clearItemMasterForm();
+      await liveLoadInventory();
+
+      if(typeof loadLowStockAlert==="function"){
+        await loadLowStockAlert();
+      }
+
+      showMessage(
+        (isSeed?"Seed Product":"Item")+" save ho gaya. Item Code: "+savedCode
+      );
+    }
+
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+
+window.renderItemMaster=function(){
+  const body=document.getElementById("itemMasterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("itemSearch")?.value||"").trim().toLowerCase();
+  const cat=document.getElementById("itemCategoryFilter")?.value||"";
+
+  const items=(liveInventoryItems||[]).filter(i=>{
+    const hay=[
+      i.code,i.name,i.category,i.brand,i.missionName,i.seedYear
+    ].join(" ").toLowerCase();
+
+    return (!q||hay.includes(q)) && (!cat||i.category===cat);
+  });
+
+  body.innerHTML=items.length
+    ? items.map(i=>`
+      <tr>
+        <td>${escapeHtml(i.code)}</td>
+        <td>
+          <b>${escapeHtml(i.name)}</b>
+          ${i.category==="Seed"&&i.missionName
+            ? `<br><small>${escapeHtml(i.missionName)} / ${escapeHtml(String(i.seedYear||""))}</small>`
+            : ""}
+        </td>
+        <td>${escapeHtml(i.category)}</td>
+        <td>${escapeHtml(i.brand||"-")}</td>
+        <td>${escapeHtml(i.unit)}</td>
+        <td>${i.category==="Seed"?"Free":money(i.saleRate)}</td>
+        <td class="${stockClass(i)}">
+          ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+        </td>
+        <td>
+          <span class="badge ${i.status==="Active"?"green":"red"}">
+            ${escapeHtml(i.status)}
+          </span>
+        </td>
+        <td style="white-space:nowrap">
+          <button class="small-btn" onclick="editItemMaster('${i.id}')">Edit</button>
+          <button class="small-btn" onclick="toggleItemStatus('${i.id}')">
+            ${i.status==="Active"?"Deactivate":"Activate"}
+          </button>
+          <button class="small-btn" onclick="deleteItem('${i.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="9" class="muted">No items in live Item Master.</td></tr>`;
+};
 </script>
 
 </body>
