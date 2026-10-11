@@ -438,11 +438,11 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Receipt Entry</h2>
     <div class="section-body">
-      <div class="note">Manual receipt yahan save hoga. GST Sales Bill ka Cash/Bank/UPI/Cheque receipt automatically books me aa jayega.</div>
+      <div class="note"><b>Live Receipt Entry</b> — sirf Date, Receipt Type, Received From, Amount aur Mode required hain. Baaki fields optional hain.</div>
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Date *</label><input id="rcDate" type="date"></div>
         <div class="field"><label>Receipt Type *</label>
-          <select id="rcType">
+          <select id="rcType" onchange="updateReceiptLedger()">
             <option>Membership Fee</option>
             <option>Sales Receipt</option>
             <option>Service Income</option>
@@ -457,13 +457,13 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           <select id="rcMode"><option>Cash</option><option>Bank</option><option>UPI</option><option>Cheque</option></select>
         </div>
         <div class="field"><label>Reference No.</label><input id="rcRef" placeholder="UTR / Cheque / Receipt ref"></div>
-        <div class="field"><label>Ledger</label><input id="rcLedger" placeholder="Ledger / Account Head"></div>
+        <input id="rcLedger" type="hidden" value="Membership Fee">
         <div class="field"><label>Farmer Reg. No.</label><input id="rcFarmerReg" placeholder="Optional"></div>
       </div>
       <div class="field" style="margin-top:12px"><label>Narration</label><textarea id="rcNarration" placeholder="Transaction details"></textarea></div>
       <br>
-      <button class="primary-btn" onclick="saveReceiptVoucher()">Save Receipt Voucher</button>
-      <button class="secondary-btn" onclick="clearReceiptVoucher()">Clear</button>
+      <button type="button" class="primary-btn" onclick="saveReceiptVoucher()">Save Receipt Voucher</button>
+      <button type="button" class="secondary-btn" onclick="clearReceiptVoucher()">Clear</button>
     </div>
   </div>
 </section>
@@ -4161,6 +4161,99 @@ document.addEventListener("DOMContentLoaded",()=>{
     try{ await loadCashBook(); }catch(e){}
     try{ await loadBankBook(); }catch(e){}
   },1400);
+});
+</script>
+
+
+<script>
+/* CBMS RECEIPT BUTTON FIX V2 */
+
+window.updateReceiptLedger=function(){
+  const type=document.getElementById("rcType")?.value || "";
+  const ledgerMap={
+    "Membership Fee":"Membership Fee",
+    "Sales Receipt":"Sales",
+    "Service Income":"Service Income",
+    "Grant/Subsidy":"Grant / Subsidy",
+    "Loan Received":"Loan",
+    "Other Income":"Other Income"
+  };
+  const ledger=document.getElementById("rcLedger");
+  if(ledger) ledger.value=ledgerMap[type] || type || "Receipt";
+};
+
+window.clearReceiptVoucher=function(){
+  const date=document.getElementById("rcDate");
+  if(date) date.value=today();
+
+  ["rcParty","rcAmount","rcRef","rcFarmerReg","rcNarration"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  const type=document.getElementById("rcType");
+  if(type) type.value="Membership Fee";
+
+  const mode=document.getElementById("rcMode");
+  if(mode) mode.value="Cash";
+
+  updateReceiptLedger();
+};
+
+window.saveReceiptVoucher=async function(){
+  const btn=event?.currentTarget;
+  const oldText=btn?.textContent;
+
+  try{
+    if(btn){
+      btn.disabled=true;
+      btn.textContent="Saving...";
+    }
+
+    const party=document.getElementById("rcParty")?.value.trim() || "";
+    const amount=num(document.getElementById("rcAmount")?.value);
+
+    if(!party) throw new Error("Received From bharna zaroori hai.");
+    if(amount<=0) throw new Error("Amount zero se zyada hona chahiye.");
+
+    updateReceiptLedger();
+
+    const {data,error}=await authDb.rpc("cbms_create_account_voucher",{
+      p_voucher_date:document.getElementById("rcDate")?.value || today(),
+      p_voucher_type:"RECEIPT",
+      p_entry_type:document.getElementById("rcType")?.value || "Other Income",
+      p_party_name:party,
+      p_amount:amount,
+      p_mode:document.getElementById("rcMode")?.value || "Cash",
+      p_reference_no:document.getElementById("rcRef")?.value.trim() || "",
+      p_ledger_name:document.getElementById("rcLedger")?.value || "",
+      p_farmer_registration_no:document.getElementById("rcFarmerReg")?.value.trim() || "",
+      p_bill_invoice_no:"",
+      p_narration:document.getElementById("rcNarration")?.value.trim() || ""
+    });
+
+    if(error) throw error;
+
+    const no=data?.[0]?.voucher_no || "";
+    clearReceiptVoucher();
+
+    try{
+      await Promise.all([loadCashBook(),loadBankBook()]);
+    }catch(e){}
+
+    showMessage("Receipt save ho gaya"+(no?" — "+no:"")+".");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.textContent=oldText || "Save Receipt Voucher";
+    }
+  }
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  updateReceiptLedger();
 });
 </script>
 
