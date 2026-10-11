@@ -4257,5 +4257,145 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 </script>
 
+
+<script>
+/* ============================================================
+   CBMS SUPPLIER LEDGER FIX V2
+   Directly reads purchase + payment tables instead of RPC.
+   ============================================================ */
+
+window.loadSupplierNames=async function(){
+  try{
+    const [{data:purchases,error:pErr},{data:payments,error:vErr}] = await Promise.all([
+      authDb.from("inventory_purchases")
+        .select("supplier_name")
+        .order("supplier_name",{ascending:true}),
+      authDb.from("account_vouchers")
+        .select("party_name,entry_type,voucher_type,status")
+        .eq("voucher_type","PAYMENT")
+        .eq("status","Final")
+    ]);
+
+    if(pErr) throw pErr;
+    if(vErr) throw vErr;
+
+    const names=[
+      ...(purchases||[]).map(x=>x.supplier_name),
+      ...(payments||[])
+        .filter(x=>String(x.entry_type||"").toLowerCase()==="purchase payment")
+        .map(x=>x.party_name)
+    ]
+      .filter(Boolean)
+      .map(x=>String(x).trim())
+      .filter(Boolean);
+
+    supplierNamesCache=[...new Set(names)].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:"base"}));
+
+    const select=document.getElementById("supplierLedgerSelect");
+    const current=select?.value||"";
+    if(select){
+      select.innerHTML='<option value="">Select Supplier</option>'+
+        supplierNamesCache.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+      if(supplierNamesCache.includes(current)) select.value=current;
+    }
+
+    const datalist=document.getElementById("supplierNameList");
+    if(datalist){
+      datalist.innerHTML=supplierNamesCache.map(n=>`<option value="${escapeHtml(n)}"></option>`).join("");
+    }
+
+    if(select?.value) await loadSupplierLedger();
+  }catch(error){
+    showMessage("Supplier list load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.loadSupplierLedger=async function(){
+  const supplier=document.getElementById("supplierLedgerSelect")?.value||"";
+
+  if(!supplier){
+    supplierLedgerRows=[];
+    renderSupplierLedger();
+    return;
+  }
+
+  try{
+    const {data:purchases,error:pErr}=await authDb
+      .from("inventory_purchases")
+      .select("id,purchase_no,purchase_date,supplier_name,created_at")
+      .ilike("supplier_name",supplier);
+
+    if(pErr) throw pErr;
+
+    const purchaseIds=(purchases||[]).map(p=>p.id);
+    let purchaseItems=[];
+
+    if(purchaseIds.length){
+      const {data,error}=await authDb
+        .from("inventory_purchase_items")
+        .select("purchase_id,line_amount")
+        .in("purchase_id",purchaseIds);
+
+      if(error) throw error;
+      purchaseItems=data||[];
+    }
+
+    const totalsByPurchase={};
+    purchaseItems.forEach(x=>{
+      totalsByPurchase[x.purchase_id]=(totalsByPurchase[x.purchase_id]||0)+num(x.line_amount);
+    });
+
+    const purchaseRows=(purchases||[]).map(p=>({
+      txn_date:p.purchase_date,
+      ref_no:p.purchase_no,
+      particular:"Purchase - "+p.supplier_name,
+      purchase_amount:totalsByPurchase[p.id]||0,
+      paid_amount:0,
+      created_at:p.created_at,
+      source_type:"PURCHASE"
+    }));
+
+    const {data:payments,error:payErr}=await authDb
+      .from("account_vouchers")
+      .select("voucher_date,voucher_no,entry_type,party_name,amount,created_at,status,voucher_type")
+      .eq("voucher_type","PAYMENT")
+      .eq("status","Final")
+      .ilike("party_name",supplier);
+
+    if(payErr) throw payErr;
+
+    const paymentRows=(payments||[])
+      .filter(v=>String(v.entry_type||"").toLowerCase()==="purchase payment")
+      .map(v=>({
+        txn_date:v.voucher_date,
+        ref_no:v.voucher_no,
+        particular:v.entry_type+" - "+v.party_name,
+        purchase_amount:0,
+        paid_amount:num(v.amount),
+        created_at:v.created_at,
+        source_type:"PAYMENT"
+      }));
+
+    const all=[...purchaseRows,...paymentRows].sort((a,b)=>{
+      const da=(a.txn_date||"")+" "+(a.created_at||"");
+      const db=(b.txn_date||"")+" "+(b.created_at||"");
+      return da.localeCompare(db);
+    });
+
+    let running=0;
+    supplierLedgerRows=all.map(r=>{
+      running += num(r.purchase_amount)-num(r.paid_amount);
+      return {...r,balance:running};
+    });
+
+    renderSupplierLedger();
+  }catch(error){
+    const body=document.getElementById("supplierLedgerBody");
+    if(body) body.innerHTML=`<tr><td colspan="6" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+    showMessage("Supplier Ledger load error: "+liveErrorMessage(error),"error");
+  }
+};
+</script>
+
 </body>
 </html>
