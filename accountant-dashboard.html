@@ -234,8 +234,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
     <button class="sidebar-link" data-title="Item Master" onclick="showPanel('itemMasterPanel',this)"><span class="ico">📦</span>Seed/Fertilizer/Plant Item Master</button>
     <button class="sidebar-link" data-title="Stock Inward" onclick="showPanel('stockInPanel',this)"><span class="ico">⬇️</span>Stock Inward / Purchase</button>
+    <button class="sidebar-link" data-title="Seed Stock / Transfer" onclick="showPanel('seedTransferPanel',this)"><span class="ico">🌱</span>Seed Stock / Transfer</button>
     <button class="sidebar-link" data-title="Seed Distribution" onclick="showPanel('seedDistributionPanel',this)"><span class="ico">🌾</span>Seed Distribution</button>
-    <button class="sidebar-link" data-title="Sales Billing" onclick="showPanel('billingPanel',this)"><span class="ico">🧾</span>Seed/Fertilizer/Plant Billing</button>
+    <button class="sidebar-link" data-title="Sales Billing" onclick="showPanel('billingPanel',this)"><span class="ico">🧾</span>Fertilizer/Plant Billing</button>
     <button class="sidebar-link" data-title="Stock Register" onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
 
     <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this)"><span class="ico">📗</span>Cash Book</button>
@@ -572,14 +573,15 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Seed / Fertilizer / Plant Item Master</h2>
     <div class="section-body">
       <div class="note">
-        Tally ki tarah pehle har beej, khaad, pesticide, polyhouse plant/seedling ya anya stock item yahan master me add hoga.
-        Billing ke samay item dropdown me sirf yahi active items dikhenge.
+        Seed select karne par sirf Product Name, Variety, Mission Name aur Year bharna hoga.
+        Free Seed ke liye HSN, GST, Purchase Rate aur Sale Rate nahi chahiye.
+        Fertilizer, Pesticide, Plant/Seedling aur Other categories ke normal fields available rahenge.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Item Name *</label><input id="imName" placeholder="Jaise: DAP Fertilizer"></div>
         <div class="field"><label>Category *</label>
-          <select id="imCategory">
+          <select id="imCategory" onchange="updateSeedItemMasterMode()">
             <option value="">Select Category</option>
             <option>Seed</option>
             <option>Fertilizer</option>
@@ -591,6 +593,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           </select>
         </div>
         <div class="field"><label>Brand / Variety</label><input id="imBrand" placeholder="Brand / Variety"></div>
+        <div class="field" id="seedMissionField" style="display:none"><label>Mission Name *</label><input id="imMissionName" placeholder="Jaise: NFSM-OS"></div>
+        <div class="field" id="seedYearField" style="display:none"><label>Year *</label><input id="imSeedYear" type="number" min="2000" max="2100" placeholder="2026"></div>
 
         <div class="field"><label>Unit *</label>
           <select id="imUnit">
@@ -658,7 +662,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Stock Inward / Purchase Entry</h2>
     <div class="section-body">
       <div class="note">
-        Office/Polyhouse me jo bhi beej, khaad, plant/seedling ya anya stock aata hai uski inward entry yahan karein. Entry save hote hi stock badhega
+        Fertilizer, pesticide, plant/seedling ya anya paid stock ki inward entry yahan karein.
+        Free Seed ke liye "Seed Stock / Transfer" section use karein. Entry save hote hi stock badhega
         aur wahi quantity billing me available dikhegi.
       </div>
 
@@ -698,13 +703,71 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
 
 
+
+<section id="seedTransferPanel" class="portal-panel">
+  <div class="section">
+    <h2>Seed Stock / Transfer Register</h2>
+    <div class="section-body">
+      <div class="note">
+        Free Seed ka stock yahan maintain hoga. Formula:
+        <b>Available = Received by Transfer − Distributed</b>.
+        Available stock kabhi negative nahi hone diya jayega.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Received Date *</label><input id="stDate" type="date"></div>
+        <div class="field"><label>Product / Crop *</label><select id="stSeedItem" onchange="onSeedTransferItemChange()"></select></div>
+        <div class="field"><label>Variety</label><input id="stVariety" readonly></div>
+        <div class="field"><label>Mission Name</label><input id="stMission" readonly></div>
+        <div class="field"><label>Year</label><input id="stYear" readonly></div>
+        <div class="field"><label>Unit</label><input id="stUnit" readonly></div>
+        <div class="field"><label>Received by Transfer *</label><input id="stQty" type="number" min="0.001" step="0.001" placeholder="Quantity received"></div>
+        <div class="field"><label>Transfer / Reference No.</label><input id="stReference" placeholder="Optional"></div>
+        <div class="field"><label>Remark</label><input id="stRemark" placeholder="Optional note"></div>
+      </div>
+
+      <br>
+      <button class="primary-btn" onclick="saveSeedTransfer()">Save Received Stock</button>
+      <button class="secondary-btn" onclick="clearSeedTransferForm()">Clear</button>
+
+      <hr>
+
+      <h3>Seed Stock Register</h3>
+      <div class="inventory-toolbar">
+        <div class="field">
+          <label>Search</label>
+          <input id="seedStockSearch" placeholder="Crop / Variety / Mission / Year" oninput="renderSeedStockRegister()">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Crop / Product</th>
+              <th>Variety</th>
+              <th>Unit</th>
+              <th>Year</th>
+              <th>Mission Name</th>
+              <th>Received by Transfer</th>
+              <th>Distributed</th>
+              <th>Available</th>
+            </tr>
+          </thead>
+          <tbody id="seedStockRegisterBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="seedDistributionPanel" class="portal-panel">
   <div class="section">
     <h2>Seed Distribution Register</h2>
     <div class="section-body">
       <div class="note">
         Beej distribution ke samay farmer ki details aur live photo capture karein.
-        Sirf Item Master me Category = Seed wale Active items yahan dikhenge. Seed select karte hi variety, unit aur available stock auto show hoga; save hote hi distributed quantity stock se automatically kam hogi.
+        Seed Item Master se select hoga aur save hote hi distributed quantity stock se automatically kam hogi.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -722,10 +785,12 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <div class="field"><label>Village *</label><input id="sdVillage" placeholder="Village"></div>
 
         <div class="field"><label>Seed Name *</label><select id="sdSeedItem" onchange="onSeedDistributionItemChange()"></select></div>
-        <div class="field"><label>Variety</label><input id="sdSeedVariety" readonly placeholder="Auto from Item Master"></div>
-        <div class="field"><label>Available Stock</label><input id="sdAvailableStock" readonly placeholder="Auto from stock"></div>
+        <div class="field"><label>Variety</label><input id="sdSeedVariety" readonly placeholder="Auto"></div>
+        <div class="field"><label>Mission Name</label><input id="sdMissionName" readonly placeholder="Auto"></div>
+        <div class="field"><label>Year</label><input id="sdSeedYear" readonly placeholder="Auto"></div>
+        <div class="field"><label>Available</label><input id="sdAvailableStock" readonly placeholder="Auto"></div>
         <div class="field"><label>Quantity *</label><input id="sdQty" type="number" min="0.001" step="0.001" placeholder="Distributed quantity"></div>
-        <div class="field"><label>Unit</label><input id="sdUnit" readonly placeholder="Auto from Item Master"></div>
+        <div class="field"><label>Unit</label><input id="sdUnit" readonly placeholder="Auto"></div>
       </div>
 
       <hr>
@@ -798,11 +863,11 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
 <section id="billingPanel" class="portal-panel">
   <div class="section">
-    <h2>Seed / Fertilizer / Plant Sales Billing</h2>
+    <h2>Fertilizer / Plant / Other Sales Billing</h2>
     <div class="section-body">
       <div class="note">
-        Tally-style bill: Item column me Item Master ke active stock items dikhenge.
-        Quantity available stock se zyada nahi ho sakti. Bill save karte hi stock automatically ghatega.
+        Tally-style bill: Fertilizer, Plant/Seedling aur Other sale items yahan bill honge.
+        Free Seed is billing me nahi dikhega. Quantity available stock se zyada nahi ho sakti.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1468,16 +1533,12 @@ function refreshSeedDistributionItems(){
   const items=getStore(STORE_KEYS.items)
     .filter(i=>i.status==="Active" && i.category==="Seed" && num(i.currentStock)>0);
 
-  if(!items.length){
-    select.innerHTML='<option value="">No Seed available - Item Master me Seed add karein</option>';
-  }else{
-    select.innerHTML=['<option value="">Select Seed</option>']
-      .concat(items.map(i=>`
-        <option value="${i.id}">
-          ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
-        </option>
-      `)).join("");
-  }
+  select.innerHTML=['<option value="">Select Seed</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}">
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
 
   onSeedDistributionItemChange();
 }
@@ -1485,26 +1546,10 @@ function refreshSeedDistributionItems(){
 function onSeedDistributionItemChange(){
   const select=document.getElementById("sdSeedItem");
   const unit=document.getElementById("sdUnit");
-  const variety=document.getElementById("sdSeedVariety");
-  const available=document.getElementById("sdAvailableStock");
   if(!select || !unit) return;
 
   const item=getStore(STORE_KEYS.items).find(i=>i.id===select.value);
-
   unit.value=item ? (item.unit || "") : "";
-  if(variety) variety.value=item ? (item.brand || "") : "";
-  if(available){
-    available.value=item
-      ? `${num(item.currentStock).toFixed(3)} ${item.unit || ""}`
-      : "";
-  }
-
-  const qty=document.getElementById("sdQty");
-  if(qty && item){
-    qty.max=String(num(item.currentStock));
-  }else if(qty){
-    qty.removeAttribute("max");
-  }
 }
 
 function previewSeedDistributionPhoto(event){
@@ -1541,7 +1586,7 @@ function previewSeedDistributionPhoto(event){
 function clearSeedDistributionForm(){
   const ids=[
     "sdScheme","sdFarmerReg","sdFarmerName","sdFatherHusband","sdMobile","sdAadhaar",
-    "sdBlock","sdPanchayat","sdVillage","sdQty","sdUnit","sdSeedVariety","sdAvailableStock","sdRemark"
+    "sdBlock","sdPanchayat","sdVillage","sdQty","sdUnit","sdRemark"
   ];
   ids.forEach(id=>{
     const el=document.getElementById(id);
@@ -2105,5 +2150,1389 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 });
 </script>
 
+
+<script>
+
+/* ============================================================
+   CBMS LIVE SUPABASE ACCOUNTING OVERRIDES
+   Item Master + Stock Inward + Seed Distribution + GST Billing
+   ============================================================ */
+
+let liveInventoryItems = [];
+let liveSeedRows = [];
+let liveSalesInvoices = [];
+let livePurchaseRows = [];
+let liveAccountantProfile = null;
+
+function liveErrorMessage(error){
+  if(!error) return "Unknown error";
+  return error.message || error.details || error.hint || String(error);
+}
+
+async function getLiveAccountantProfile(){
+  if(liveAccountantProfile) return liveAccountantProfile;
+
+  const {data:{session}} = await authDb.auth.getSession();
+  if(!session?.user) throw new Error("Accountant login session nahi mila.");
+
+  const {data,error} = await authDb
+    .from("accountants")
+    .select("accountant_id,name,email,status")
+    .eq("auth_user_id",session.user.id)
+    .maybeSingle();
+
+  if(error) throw error;
+  if(!data || String(data.status||"").toLowerCase()!=="active"){
+    throw new Error("Active Accountant profile nahi mila.");
+  }
+
+  liveAccountantProfile=data;
+  return data;
+}
+
+async function liveLoadInventory(){
+  const {data,error}=await authDb.rpc("cbms_accountant_inventory_list");
+  if(error) throw error;
+
+  liveInventoryItems=(data||[]).map(i=>({
+    id:i.id,
+    code:i.item_code,
+    name:i.item_name,
+    category:i.category,
+    brand:i.brand_variety || "",
+    unit:i.unit,
+    hsn:i.hsn_code || "",
+    gst:num(i.gst_percent),
+    purchaseRate:num(i.purchase_rate),
+    saleRate:num(i.sale_rate),
+    openingStock:num(i.opening_stock),
+    currentStock:num(i.current_stock),
+    totalPurchased:num(i.total_purchased),
+    totalSold:num(i.total_sold),
+    reorderLevel:num(i.reorder_level),
+    status:i.status || "Active"
+  }));
+
+  // Keep local cache only for older visual widgets. Supabase remains source of truth.
+  try{ setStore(STORE_KEYS.items, liveInventoryItems); }catch(e){}
+
+  renderItemMaster();
+  refreshItemDropdowns();
+  refreshSeedDistributionItems();
+  renderStockRegister();
+  refreshBillItemSelects();
+  return liveInventoryItems;
+}
+
+function refreshBillItemSelects(){
+  document.querySelectorAll(".billItemSelect").forEach(select=>{
+    const current=select.value;
+    select.innerHTML=billItemOptions(current);
+    if(current && liveInventoryItems.some(i=>i.id===current)) select.value=current;
+    onBillItemChange(select);
+  });
+}
+
+/* ---------------- GST SETTINGS: LIVE ---------------- */
+
+window.getGstSettings=function(){
+  try{
+    return {
+      ...defaultGstSettings(),
+      ...JSON.parse(localStorage.getItem(STORE_KEYS.gst) || "{}")
+    };
+  }catch(e){
+    return defaultGstSettings();
+  }
+};
+
+window.loadGstSettings=async function(){
+  try{
+    const {data,error}=await authDb
+      .from("fpo_gst_settings")
+      .select("legal_name,gstin,state_name,state_code,registered_address,invoice_prefix")
+      .eq("id",1)
+      .single();
+
+    if(error) throw error;
+
+    const settings={
+      legalName:data.legal_name || "",
+      gstin:data.gstin || "",
+      state:data.state_name || "Jharkhand",
+      stateCode:data.state_code || "20",
+      address:data.registered_address || "",
+      invoicePrefix:data.invoice_prefix || "CBMS/TAX"
+    };
+
+    localStorage.setItem(STORE_KEYS.gst,JSON.stringify(settings));
+
+    if(document.getElementById("gstLegalName")) document.getElementById("gstLegalName").value=settings.legalName;
+    if(document.getElementById("gstGstin")) document.getElementById("gstGstin").value=settings.gstin;
+    if(document.getElementById("gstState")) document.getElementById("gstState").value=settings.state;
+    if(document.getElementById("gstStateCode")) document.getElementById("gstStateCode").value=settings.stateCode;
+    if(document.getElementById("gstAddress")) document.getElementById("gstAddress").value=settings.address;
+    if(document.getElementById("gstInvoicePrefix")) document.getElementById("gstInvoicePrefix").value=settings.invoicePrefix;
+
+    const pos=document.getElementById("placeOfSupply");
+    if(pos && !pos.value) pos.value=settings.state;
+  }catch(error){
+    showMessage("GST Settings load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+window.saveGstSettings=async function(){
+  try{
+    const gstin=document.getElementById("gstGstin").value.trim().toUpperCase();
+    if(gstin && !/^[0-9A-Z]{15}$/.test(gstin)){
+      throw new Error("GSTIN 15 characters ka hona chahiye.");
+    }
+
+    const payload={
+      legal_name:document.getElementById("gstLegalName").value.trim(),
+      gstin:gstin || null,
+      state_name:document.getElementById("gstState").value.trim() || "Jharkhand",
+      state_code:document.getElementById("gstStateCode").value.trim() || "20",
+      registered_address:document.getElementById("gstAddress").value.trim(),
+      invoice_prefix:document.getElementById("gstInvoicePrefix").value.trim() || "CBMS/TAX",
+      updated_at:new Date().toISOString()
+    };
+
+    const {error}=await authDb
+      .from("fpo_gst_settings")
+      .update(payload)
+      .eq("id",1);
+
+    if(error) throw error;
+    await loadGstSettings();
+    showMessage("FPO GST Settings Supabase me save ho gaya.");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+/* ---------------- ITEM MASTER: LIVE ---------------- */
+
+window.clearItemMasterForm=function(){
+  document.getElementById("imName").value="";
+  document.getElementById("imCategory").value="";
+  document.getElementById("imBrand").value="";
+  document.getElementById("imUnit").value="Kg";
+  document.getElementById("imHsn").value="";
+  document.getElementById("imGst").value="0";
+  document.getElementById("imPurchaseRate").value="";
+  document.getElementById("imSaleRate").value="";
+  document.getElementById("imOpeningStock").value="0";
+  document.getElementById("imReorder").value="0";
+  document.getElementById("imStatus").value="Active";
+  document.getElementById("imCode").value="Auto on Save";
+};
+
+window.saveItemMaster=async function(){
+  try{
+    const name=document.getElementById("imName").value.trim();
+    const category=document.getElementById("imCategory").value;
+    const brand=document.getElementById("imBrand").value.trim();
+    const saleRate=num(document.getElementById("imSaleRate").value);
+
+    if(!name || !category) throw new Error("Item Name aur Category भरें।");
+    if(saleRate<0) throw new Error("Sale Rate valid hona chahiye.");
+
+    const duplicate=liveInventoryItems.find(i=>
+      String(i.name).trim().toLowerCase()===name.toLowerCase() &&
+      String(i.brand||"").trim().toLowerCase()===brand.toLowerCase()
+    );
+    if(duplicate) throw new Error("Same Item Name / Brand pehle se Item Master me hai.");
+
+    const payload={
+      item_name:name,
+      category,
+      brand_variety:brand || null,
+      unit:document.getElementById("imUnit").value,
+      hsn_code:document.getElementById("imHsn").value.trim() || null,
+      gst_percent:num(document.getElementById("imGst").value),
+      purchase_rate:num(document.getElementById("imPurchaseRate").value),
+      sale_rate:saleRate,
+      opening_stock:num(document.getElementById("imOpeningStock").value),
+      reorder_level:num(document.getElementById("imReorder").value),
+      status:document.getElementById("imStatus").value
+    };
+
+    const {data,error}=await authDb
+      .from("inventory_items")
+      .insert(payload)
+      .select("item_code")
+      .single();
+
+    if(error) throw error;
+
+    clearItemMasterForm();
+    await liveLoadInventory();
+    showMessage("Item Master save ho gaya. Item Code: "+data.item_code);
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.toggleItemStatus=async function(id){
+  try{
+    const item=liveInventoryItems.find(i=>i.id===id);
+    if(!item) throw new Error("Item nahi mila.");
+
+    const next=item.status==="Active"?"Inactive":"Active";
+    const {error}=await authDb
+      .from("inventory_items")
+      .update({status:next})
+      .eq("id",id);
+
+    if(error) throw error;
+    await liveLoadInventory();
+    showMessage("Item status "+next+" ho gaya.");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.deleteItem=function(){
+  showMessage("Live accounting me Item delete disabled hai. Deactivate button use karein.","error");
+};
+
+window.renderItemMaster=function(){
+  const body=document.getElementById("itemMasterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("itemSearch")?.value||"").trim().toLowerCase();
+  const cat=document.getElementById("itemCategoryFilter")?.value||"";
+
+  const items=liveInventoryItems.filter(i=>{
+    const hay=[i.code,i.name,i.category,i.brand].join(" ").toLowerCase();
+    return (!q||hay.includes(q)) && (!cat||i.category===cat);
+  });
+
+  body.innerHTML=items.length?items.map(i=>`
+    <tr>
+      <td>${escapeHtml(i.code)}</td>
+      <td><b>${escapeHtml(i.name)}</b></td>
+      <td>${escapeHtml(i.category)}</td>
+      <td>${escapeHtml(i.brand||"-")}</td>
+      <td>${escapeHtml(i.unit)}</td>
+      <td>${money(i.saleRate)}</td>
+      <td class="${stockClass(i)}">${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}</td>
+      <td><span class="badge ${i.status==="Active"?"green":"red"}">${escapeHtml(i.status)}</span></td>
+      <td>
+        <button class="small-btn" onclick="toggleItemStatus('${i.id}')">${i.status==="Active"?"Deactivate":"Activate"}</button>
+        <button class="small-btn" onclick="deleteItem('${i.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join(""):`<tr><td colspan="9" class="muted">No items in live Item Master.</td></tr>`;
+};
+
+window.refreshItemDropdowns=function(){
+  const items=liveInventoryItems.filter(i=>i.status==="Active");
+  const options=['<option value="">Select Item</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}">
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
+
+  const si=document.getElementById("siItem");
+  if(si) si.innerHTML=options;
+};
+
+/* ---------------- STOCK INWARD: LIVE ---------------- */
+
+window.saveStockInward=async function(){
+  try{
+    const itemId=document.getElementById("siItem").value;
+    const qty=num(document.getElementById("siQty").value);
+    const rate=num(document.getElementById("siRate").value);
+    const supplier=document.getElementById("siSupplier").value.trim();
+
+    if(!itemId || qty<=0 || rate<0 || !supplier){
+      throw new Error("Supplier, Item, Quantity aur valid Purchase Rate भरें।");
+    }
+
+    const payloadItems=[{
+      item_id:itemId,
+      quantity:qty,
+      purchase_rate:rate,
+      batch_no:document.getElementById("siBatch").value.trim(),
+      expiry_date:document.getElementById("siExpiry").value || ""
+    }];
+
+    const {data,error}=await authDb.rpc("cbms_create_inventory_purchase",{
+      p_purchase_date:document.getElementById("siDate").value || today(),
+      p_supplier_name:supplier,
+      p_supplier_bill_no:document.getElementById("siBillNo").value.trim(),
+      p_payment_status:document.getElementById("siPaymentStatus").value,
+      p_narration:document.getElementById("siNarration").value.trim(),
+      p_items:payloadItems
+    });
+
+    if(error) throw error;
+
+    document.getElementById("siQty").value="";
+    document.getElementById("siRate").value="";
+    document.getElementById("siBatch").value="";
+    document.getElementById("siExpiry").value="";
+    document.getElementById("siNarration").value="";
+
+    await liveLoadInventory();
+    await renderStockInward();
+
+    const ref=data?.[0]?.purchase_no || "";
+    showMessage("Stock inward save ho gaya"+(ref?" — "+ref:"")+".");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.renderStockInward=async function(){
+  const body=document.getElementById("stockInBody");
+  if(!body) return;
+
+  try{
+    const {data:items,error:itemErr}=await authDb
+      .from("inventory_purchase_items")
+      .select("id,purchase_id,item_id,quantity,purchase_rate,batch_no,line_amount,created_at")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    if(itemErr) throw itemErr;
+
+    if(!items?.length){
+      body.innerHTML=`<tr><td colspan="8" class="muted">No live stock inward entries yet.</td></tr>`;
+      return;
+    }
+
+    const purchaseIds=[...new Set(items.map(x=>x.purchase_id))];
+    const {data:purchases,error:purErr}=await authDb
+      .from("inventory_purchases")
+      .select("id,purchase_no,purchase_date,supplier_name")
+      .in("id",purchaseIds);
+
+    if(purErr) throw purErr;
+    const pmap=Object.fromEntries((purchases||[]).map(p=>[p.id,p]));
+    const imap=Object.fromEntries(liveInventoryItems.map(i=>[i.id,i]));
+
+    livePurchaseRows=items;
+
+    body.innerHTML=items.map(x=>{
+      const p=pmap[x.purchase_id]||{};
+      const i=imap[x.item_id]||{};
+      return `
+      <tr>
+        <td>${escapeHtml(p.purchase_date||"")}</td>
+        <td>${escapeHtml(p.purchase_no||"-")}</td>
+        <td>${escapeHtml(p.supplier_name||"-")}</td>
+        <td>${escapeHtml(i.name||"Item")}</td>
+        <td>${num(x.quantity).toFixed(3)}</td>
+        <td>${money(x.purchase_rate)}</td>
+        <td>${money(x.line_amount)}</td>
+        <td>${escapeHtml(x.batch_no||"-")}</td>
+      </tr>`;
+    }).join("");
+  }catch(error){
+    body.innerHTML=`<tr><td colspan="8" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+/* ---------------- SEED DISTRIBUTION: LIVE ---------------- */
+
+window.refreshSeedDistributionItems=function(){
+  const select=document.getElementById("sdSeedItem");
+  if(!select) return;
+
+  const items=liveInventoryItems.filter(i=>
+    i.status==="Active" &&
+    i.category==="Seed" &&
+    num(i.currentStock)>0
+  );
+
+  if(!items.length){
+    select.innerHTML='<option value="">No Seed available - Item Master me Seed add karein</option>';
+  }else{
+    select.innerHTML=['<option value="">Select Seed</option>']
+      .concat(items.map(i=>`
+        <option value="${i.id}">
+          ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+        </option>
+      `)).join("");
+  }
+  onSeedDistributionItemChange();
+};
+
+window.onSeedDistributionItemChange=function(){
+  const select=document.getElementById("sdSeedItem");
+  const item=liveInventoryItems.find(i=>i.id===select?.value);
+  const unit=document.getElementById("sdUnit");
+  const variety=document.getElementById("sdSeedVariety");
+  const available=document.getElementById("sdAvailableStock");
+  const qty=document.getElementById("sdQty");
+
+  if(unit) unit.value=item?.unit || "";
+  if(variety) variety.value=item?.brand || "";
+  if(available) available.value=item ? `${num(item.currentStock).toFixed(3)} ${item.unit}` : "";
+  if(qty){
+    if(item) qty.max=String(num(item.currentStock));
+    else qty.removeAttribute("max");
+  }
+};
+
+window.saveSeedDistribution=async function(){
+  let uploadedPath="";
+  try{
+    await getLiveAccountantProfile();
+
+    const itemId=document.getElementById("sdSeedItem").value;
+    const qty=num(document.getElementById("sdQty").value);
+    const mobile=document.getElementById("sdMobile").value.trim();
+    const aadhaar=document.getElementById("sdAadhaar").value.trim();
+    const file=document.getElementById("sdFarmerPhoto")?.files?.[0];
+
+    const required=[
+      ["Scheme / Program",document.getElementById("sdScheme").value.trim()],
+      ["Farmer Name",document.getElementById("sdFarmerName").value.trim()],
+      ["Father / Husband Name",document.getElementById("sdFatherHusband").value.trim()],
+      ["Block",document.getElementById("sdBlock").value.trim()],
+      ["Panchayat",document.getElementById("sdPanchayat").value.trim()],
+      ["Village",document.getElementById("sdVillage").value.trim()]
+    ];
+    for(const [label,value] of required){
+      if(!value) throw new Error(label+" भरें।");
+    }
+
+    if(!/^\d{10}$/.test(mobile)) throw new Error("Mobile number 10 digit ka hona chahiye.");
+    if(!/^\d{12}$/.test(aadhaar)) throw new Error("Aadhaar number 12 digit ka hona chahiye.");
+    if(!itemId) throw new Error("Seed Name select karein.");
+    if(qty<=0) throw new Error("Distribution Quantity zero se zyada honi chahiye.");
+    if(!file) throw new Error("Distribution ke samay farmer photo lena zaroori hai.");
+    if(!file.type.startsWith("image/")) throw new Error("Farmer photo image file hona chahiye.");
+    if(file.size>5*1024*1024) throw new Error("Farmer photo 5 MB se kam rakhein.");
+
+    const item=liveInventoryItems.find(i=>i.id===itemId);
+    if(!item || item.category!=="Seed") throw new Error("Selected item Seed category ka nahi hai.");
+    if(qty>num(item.currentStock)) throw new Error("Available seed stock se zyada distribution nahi kar sakte.");
+
+    const ext=(file.name.split(".").pop()||"jpg").replace(/[^a-zA-Z0-9]/g,"").toLowerCase() || "jpg";
+    const year=new Date().getFullYear();
+    uploadedPath=`seed-distribution-photo/${year}/${crypto.randomUUID()}.${ext}`;
+
+    const {error:uploadError}=await authDb.storage
+      .from("farmer-documents")
+      .upload(uploadedPath,file,{
+        cacheControl:"3600",
+        upsert:false,
+        contentType:file.type
+      });
+
+    if(uploadError) throw uploadError;
+
+    const {data,error}=await authDb.rpc("cbms_create_seed_distribution",{
+      p_distribution_date:document.getElementById("sdDate").value || today(),
+      p_scheme_program_name:document.getElementById("sdScheme").value.trim(),
+      p_farmer_registration_no:document.getElementById("sdFarmerReg").value.trim(),
+      p_farmer_name:document.getElementById("sdFarmerName").value.trim(),
+      p_father_husband_name:document.getElementById("sdFatherHusband").value.trim(),
+      p_mobile:mobile,
+      p_aadhar_number:aadhaar,
+      p_block:document.getElementById("sdBlock").value.trim(),
+      p_panchayat:document.getElementById("sdPanchayat").value.trim(),
+      p_village:document.getElementById("sdVillage").value.trim(),
+      p_item_id:itemId,
+      p_quantity:qty,
+      p_farmer_photo_path:uploadedPath,
+      p_remark:document.getElementById("sdRemark").value.trim()
+    });
+
+    if(error) throw error;
+
+    clearSeedDistributionForm();
+    await liveLoadInventory();
+    await renderSeedDistribution();
+
+    const no=data?.[0]?.distribution_no || "";
+    showMessage("Seed Distribution save ho gaya"+(no?" — "+no:"")+" aur stock deduct ho gaya.");
+  }catch(error){
+    if(uploadedPath){
+      try{
+        await authDb.storage.from("farmer-documents").remove([uploadedPath]);
+      }catch(e){}
+    }
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.renderSeedDistribution=async function(){
+  const body=document.getElementById("seedDistributionBody");
+  if(!body) return;
+
+  try{
+    const {data,error}=await authDb
+      .from("seed_distributions")
+      .select("*")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    if(error) throw error;
+    liveSeedRows=data||[];
+
+    const paths=liveSeedRows.map(x=>x.farmer_photo_path).filter(Boolean);
+    const signedMap={};
+
+    if(paths.length){
+      const {data:signedData}=await authDb.storage
+        .from("farmer-documents")
+        .createSignedUrls(paths,3600);
+
+      (signedData||[]).forEach((x,idx)=>{
+        if(x?.signedUrl) signedMap[paths[idx]]=x.signedUrl;
+      });
+    }
+
+    const q=(document.getElementById("sdSearch")?.value||"").trim().toLowerCase();
+    const rows=liveSeedRows.filter(x=>{
+      const item=liveInventoryItems.find(i=>i.id===x.item_id);
+      const hay=[
+        x.distribution_no,x.distribution_date,x.scheme_program_name,
+        x.farmer_registration_no,x.farmer_name,x.father_husband_name,
+        x.mobile,x.aadhar_number,x.block,x.panchayat,x.village,
+        x.seed_name_snapshot,item?.brand
+      ].join(" ").toLowerCase();
+      return !q || hay.includes(q);
+    });
+
+    body.innerHTML=rows.length?rows.map(x=>{
+      const item=liveInventoryItems.find(i=>i.id===x.item_id);
+      const img=signedMap[x.farmer_photo_path];
+      return `
+      <tr>
+        <td>${escapeHtml(x.distribution_date||"")}</td>
+        <td>${escapeHtml(x.scheme_program_name||"-")}</td>
+        <td>${escapeHtml(x.farmer_registration_no||"-")}</td>
+        <td><b>${escapeHtml(x.farmer_name||"")}</b></td>
+        <td>${escapeHtml(x.father_husband_name||"-")}</td>
+        <td>${escapeHtml(x.mobile||"-")}</td>
+        <td>${escapeHtml(maskDistributionAadhaar(x.aadhar_number))}</td>
+        <td>${escapeHtml(x.block||"-")}</td>
+        <td>${escapeHtml(x.panchayat||"-")}</td>
+        <td>${escapeHtml(x.village||"-")}</td>
+        <td>${escapeHtml(x.seed_name_snapshot||item?.name||"Seed")}${item?.brand?` - ${escapeHtml(item.brand)}`:""}</td>
+        <td>${num(x.quantity).toFixed(3)} ${escapeHtml(x.unit||item?.unit||"")}</td>
+        <td>${img?`<img src="${img}" alt="Farmer" style="width:45px;height:45px;object-fit:cover;border-radius:6px">`:"-"}</td>
+      </tr>`;
+    }).join(""):`<tr><td colspan="13" class="muted">No live seed distribution entries yet.</td></tr>`;
+  }catch(error){
+    body.innerHTML=`<tr><td colspan="13" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+/* ---------------- GST SALES BILLING: LIVE ---------------- */
+
+window.prepareBilling=function(){
+  const billNo=document.getElementById("billNo");
+  const billDate=document.getElementById("billDate");
+  if(billNo) billNo.value="Auto on Save";
+  if(billDate && !billDate.value) billDate.value=today();
+
+  const pos=document.getElementById("placeOfSupply");
+  if(pos && !pos.value) pos.value=getGstSettings().state||"Jharkhand";
+
+  const tbody=document.getElementById("billItemsBody");
+  if(tbody && !tbody.children.length) addBillRow();
+};
+
+window.billItemOptions=function(selected=""){
+  const items=liveInventoryItems.filter(i=>i.status==="Active" && num(i.currentStock)>0);
+  return ['<option value="">Select Item</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}" ${i.id===selected?"selected":""}>
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
+};
+
+window.addBillRow=function(){
+  const tbody=document.getElementById("billItemsBody");
+  if(!tbody) return;
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td class="rowNo"></td>
+    <td><select class="billItemSelect" onchange="onBillItemChange(this)">${billItemOptions()}</select></td>
+    <td class="billHsn">-</td>
+    <td class="availableStock">-</td>
+    <td><input class="billQty" type="number" min="0.001" step="0.001" value="1" oninput="recalculateBill()"></td>
+    <td class="billUnit">-</td>
+    <td><input class="billRate" type="number" min="0" step="0.01" value="0" oninput="recalculateBill()"></td>
+    <td><input class="billGst" type="number" min="0" step="0.01" value="0" readonly title="GST Item Master se automatic"></td>
+    <td class="billAmount">${money(0)}</td>
+    <td><button class="small-btn" onclick="removeBillRow(this)">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  renumberBillRows();
+};
+
+window.onBillItemChange=function(select){
+  const tr=select.closest("tr");
+  const item=liveInventoryItems.find(i=>i.id===select.value);
+
+  if(!item){
+    tr.querySelector(".billHsn").textContent="-";
+    tr.querySelector(".availableStock").textContent="-";
+    tr.querySelector(".billUnit").textContent="-";
+    tr.querySelector(".billRate").value="0";
+    tr.querySelector(".billGst").value="0";
+    recalculateBill();
+    return;
+  }
+
+  tr.querySelector(".billHsn").textContent=item.hsn || "-";
+  tr.querySelector(".availableStock").textContent=num(item.currentStock).toFixed(3)+" "+item.unit;
+  tr.querySelector(".billUnit").textContent=item.unit;
+  tr.querySelector(".billRate").value=num(item.saleRate).toFixed(2);
+  tr.querySelector(".billGst").value=num(item.gst).toFixed(2);
+  recalculateBill();
+};
+
+window.collectBillItems=function(){
+  const rows=[...document.querySelectorAll("#billItemsBody tr")];
+  const output=[];
+
+  for(const tr of rows){
+    const itemId=tr.querySelector(".billItemSelect")?.value;
+    if(!itemId) continue;
+
+    const item=liveInventoryItems.find(i=>i.id===itemId);
+    if(!item) throw new Error("Bill item Item Master me nahi mila.");
+
+    const qty=num(tr.querySelector(".billQty").value);
+    const rate=num(tr.querySelector(".billRate").value);
+
+    if(qty<=0) throw new Error(item.name+": Quantity zero se zyada honi chahiye.");
+    if(qty>num(item.currentStock)) throw new Error(item.name+": Available stock se zyada quantity nahi bech sakte.");
+
+    output.push({
+      item_id:item.id,
+      quantity:qty,
+      rate:rate
+    });
+  }
+
+  if(!output.length) throw new Error("Bill me kam se kam ek item add karein.");
+
+  const combined={};
+  output.forEach(x=>combined[x.item_id]=(combined[x.item_id]||0)+x.quantity);
+  for(const [itemId,qty] of Object.entries(combined)){
+    const item=liveInventoryItems.find(i=>i.id===itemId);
+    if(!item || qty>num(item.currentStock)){
+      throw new Error((item?.name||"Item")+": Total quantity available stock se zyada hai.");
+    }
+  }
+
+  return output;
+};
+
+window.saveSalesBill=async function(){
+  try{
+    const customer=document.getElementById("customerName").value.trim();
+    if(!customer) throw new Error("Customer / Farmer Name भरें।");
+
+    const buyerGstin=document.getElementById("buyerGstin").value.trim().toUpperCase();
+    if(buyerGstin && !/^[0-9A-Z]{15}$/.test(buyerGstin)){
+      throw new Error("Buyer GSTIN 15 characters ka hona chahiye.");
+    }
+
+    const lineItems=collectBillItems();
+
+    const {data,error}=await authDb.rpc("cbms_create_sales_invoice",{
+      p_invoice_date:document.getElementById("billDate").value || today(),
+      p_customer_type:document.getElementById("customerType").value,
+      p_customer_name:customer,
+      p_customer_mobile:document.getElementById("customerMobile").value.trim(),
+      p_farmer_registration_no:document.getElementById("customerFarmerReg").value.trim(),
+      p_buyer_gstin:buyerGstin,
+      p_place_of_supply_state:document.getElementById("placeOfSupply").value.trim() || "Jharkhand",
+      p_payment_mode:document.getElementById("billPaymentMode").value,
+      p_reference_no:document.getElementById("billRef").value.trim(),
+      p_discount_amount:num(document.getElementById("billDiscount").value),
+      p_items:lineItems
+    });
+
+    if(error) throw error;
+
+    const saved=data?.[0]||{};
+
+    document.getElementById("billNo").value="Auto on Save";
+    document.getElementById("customerName").value="";
+    document.getElementById("customerMobile").value="";
+    document.getElementById("customerFarmerReg").value="";
+    document.getElementById("buyerGstin").value="";
+    document.getElementById("billRef").value="";
+    document.getElementById("billDiscount").value="0";
+    document.getElementById("billItemsBody").innerHTML="";
+    addBillRow();
+    recalculateBill();
+
+    await liveLoadInventory();
+    await renderSalesBills();
+
+    showMessage(
+      "Bill save ho gaya — "+(saved.invoice_no||"Invoice")+
+      (saved.grand_total!=null?" | Total "+money(saved.grand_total):"")
+    );
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.renderSalesBills=async function(){
+  const body=document.getElementById("salesBillsBody");
+  if(!body) return;
+
+  try{
+    const {data,error}=await authDb
+      .from("sales_invoices")
+      .select("id,invoice_no,invoice_date,customer_name,payment_mode,grand_total,status,created_at")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    if(error) throw error;
+    liveSalesInvoices=data||[];
+
+    body.innerHTML=liveSalesInvoices.length?liveSalesInvoices.map(b=>`
+      <tr>
+        <td>${escapeHtml(b.invoice_no||"-")}</td>
+        <td>${escapeHtml(b.invoice_date||"")}</td>
+        <td>${escapeHtml(b.customer_name||"")}</td>
+        <td>-</td>
+        <td>${money(b.grand_total)}</td>
+        <td>${escapeHtml(b.payment_mode||"-")}</td>
+        <td><button class="small-btn" onclick="printBill('${b.id}')">View / Print</button></td>
+      </tr>
+    `).join(""):`<tr><td colspan="7" class="muted">No live sales bills yet.</td></tr>`;
+  }catch(error){
+    body.innerHTML=`<tr><td colspan="7" class="muted">Load error: ${escapeHtml(liveErrorMessage(error))}</td></tr>`;
+  }
+};
+
+window.printLastBill=function(){
+  if(!liveSalesInvoices.length){
+    showMessage("Abhi koi saved live bill nahi hai.","error");
+    return;
+  }
+  printBill(liveSalesInvoices[0].id);
+};
+
+window.printBill=async function(id){
+  const w=window.open("","_blank","width=950,height=760");
+  if(!w){
+    showMessage("Browser popup allow kijiye, phir Print dobara click karein.","error");
+    return;
+  }
+
+  w.document.write("<p style='font-family:Arial;padding:20px'>Bill load ho raha hai...</p>");
+
+  try{
+    const [{data:bill,error:billErr},{data:lines,error:lineErr},{data:gst,error:gstErr}]=await Promise.all([
+      authDb.from("sales_invoices").select("*").eq("id",id).single(),
+      authDb.from("sales_invoice_items").select("*").eq("invoice_id",id).order("created_at",{ascending:true}),
+      authDb.from("fpo_gst_settings").select("*").eq("id",1).single()
+    ]);
+
+    if(billErr) throw billErr;
+    if(lineErr) throw lineErr;
+    if(gstErr) throw gstErr;
+
+    const logoUrl=new URL("logo.png",window.location.href).href;
+
+    const rows=(lines||[]).map((x,idx)=>`
+      <tr>
+        <td>${idx+1}</td>
+        <td>${escapeHtml(x.item_name_snapshot||"")}${x.brand_variety_snapshot?`<br><small>${escapeHtml(x.brand_variety_snapshot)}</small>`:""}</td>
+        <td>${escapeHtml(x.hsn_code_snapshot||"-")}</td>
+        <td>${num(x.quantity).toFixed(3)} ${escapeHtml(x.unit||"")}</td>
+        <td>${money(x.rate)}</td>
+        <td>${num(x.gst_percent).toFixed(2)}%</td>
+        <td>${money(x.line_total)}</td>
+      </tr>
+    `).join("");
+
+    w.document.open();
+    w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(bill.invoice_no||"CBMS Invoice")}</title>
+<style>
+body{font-family:Arial,sans-serif;padding:20px;color:#111}
+.wrap{max-width:850px;margin:auto}
+.head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #075e88;padding-bottom:12px}
+.brand{display:flex;gap:12px;align-items:flex-start}
+.logo{width:72px;height:72px;object-fit:contain}
+h2{color:#075e88;margin:0;font-size:20px}.small{font-size:12px;line-height:1.55}
+.tax-title{font-size:21px;font-weight:800;color:#075e88;text-align:right}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{border:1px solid #bbb;padding:7px;font-size:12px;text-align:left}
+th{background:#f2f4f7}
+.totals{width:330px;margin-left:auto;margin-top:12px}.totals div{display:flex;justify-content:space-between;padding:5px}
+.grand{font-size:16px;font-weight:bold;border-top:1px solid #333}
+.sign{display:flex;justify-content:space-between;margin-top:55px;font-size:12px}
+.note{font-size:11px;color:#555;margin-top:25px}
+@media print{button{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="brand">
+      <img src="${logoUrl}" class="logo" alt="CBMS Logo">
+      <div>
+        <h2>${escapeHtml(gst.legal_name||"Chanho Birsa Munda Sangathan Producer Company Limited")}</h2>
+        <div class="small">
+          ${escapeHtml(gst.registered_address||"")}<br>
+          <b>GSTIN:</b> ${escapeHtml(gst.gstin||"-")}<br>
+          <b>State:</b> ${escapeHtml(gst.state_name||"Jharkhand")} (${escapeHtml(gst.state_code||"20")})
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="tax-title">TAX INVOICE</div>
+      <div class="small" style="text-align:right">
+        <b>Bill No:</b> ${escapeHtml(bill.invoice_no||"")}<br>
+        <b>Date:</b> ${escapeHtml(bill.invoice_date||"")}
+      </div>
+    </div>
+  </div>
+
+  <div class="small" style="margin-top:14px">
+    <b>Customer:</b> ${escapeHtml(bill.customer_name||"")}<br>
+    <b>Mobile:</b> ${escapeHtml(bill.customer_mobile||"-")}<br>
+    <b>Farmer Reg.:</b> ${escapeHtml(bill.farmer_registration_no||"-")}<br>
+    <b>Buyer GSTIN:</b> ${escapeHtml(bill.buyer_gstin||"Unregistered")}<br>
+    <b>Place of Supply:</b> ${escapeHtml(bill.place_of_supply_state||"-")}<br>
+    <b>Tax Type:</b> ${bill.tax_type==="INTRA"?"CGST + SGST":"IGST"}<br>
+    <b>Payment Mode:</b> ${escapeHtml(bill.payment_mode||"-")}
+  </div>
+
+  <table>
+    <thead><tr><th>#</th><th>Item</th><th>HSN</th><th>Qty</th><th>Rate</th><th>GST</th><th>Amount</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <div class="totals">
+    <div><span>Taxable</span><b>${money(bill.taxable_amount)}</b></div>
+    ${bill.tax_type==="INTRA"
+      ? `<div><span>CGST</span><b>${money(bill.cgst_amount)}</b></div><div><span>SGST</span><b>${money(bill.sgst_amount)}</b></div>`
+      : `<div><span>IGST</span><b>${money(bill.igst_amount)}</b></div>`}
+    <div><span>Total GST</span><b>${money(bill.gst_amount)}</b></div>
+    <div><span>Discount</span><b>${money(bill.discount_amount)}</b></div>
+    <div class="grand"><span>Grand Total</span><span>${money(bill.grand_total)}</span></div>
+  </div>
+
+  <div class="sign">
+    <div>Customer Signature</div>
+    <div style="text-align:right">Authorised Signatory<br>For CBMS</div>
+  </div>
+
+  <div class="note">Computer generated invoice.</div>
+
+  <div style="margin-top:25px;text-align:center">
+    <button onclick="window.print()">Print / Save PDF</button>
+  </div>
+</div>
+</body>
+</html>`);
+    w.document.close();
+  }catch(error){
+    w.document.open();
+    w.document.write("<p style='font-family:Arial;padding:20px;color:#b42318'>Bill load error: "+escapeHtml(liveErrorMessage(error))+"</p>");
+    w.document.close();
+  }
+};
+
+/* ---------------- STOCK REGISTER: LIVE ---------------- */
+
+window.renderStockRegister=function(){
+  const body=document.getElementById("stockRegisterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("stockSearch")?.value||"").trim().toLowerCase();
+  const cat=document.getElementById("stockCategoryFilter")?.value||"";
+
+  const items=liveInventoryItems.filter(i=>{
+    const hay=[i.code,i.name,i.brand,i.category].join(" ").toLowerCase();
+    return (!q||hay.includes(q)) && (!cat||i.category===cat);
+  });
+
+  body.innerHTML=items.length?items.map(i=>`
+    <tr>
+      <td>${escapeHtml(i.code)}</td>
+      <td><b>${escapeHtml(i.name)}</b></td>
+      <td>${escapeHtml(i.category)}</td>
+      <td>${escapeHtml(i.brand||"-")}</td>
+      <td>${escapeHtml(i.unit)}</td>
+      <td>${num(i.totalPurchased).toFixed(3)}</td>
+      <td>${num(i.totalSold).toFixed(3)}</td>
+      <td class="${stockClass(i)}">${num(i.currentStock).toFixed(3)}</td>
+      <td>${money(i.saleRate)}</td>
+      <td>${num(i.currentStock)<=0?'<span class="badge red">Out of Stock</span>':num(i.currentStock)<=num(i.reorderLevel)?'<span class="badge orange">Low Stock</span>':'<span class="badge green">Available</span>'}</td>
+    </tr>
+  `).join(""):`<tr><td colspan="10" class="muted">No live stock items.</td></tr>`;
+};
+
+
+/* ---------------- SECOND-PASS LIVE INITIALIZATION ---------------- */
+
+document.addEventListener("DOMContentLoaded",async ()=>{
+  try{
+    await getLiveAccountantProfile();
+    await loadGstSettings();
+    await liveLoadInventory();
+    await Promise.all([
+      renderStockInward(),
+      renderSeedDistribution(),
+      renderSalesBills()
+    ]);
+    clearItemMasterForm();
+    prepareBilling();
+  }catch(error){
+    showMessage(
+      "Live Supabase setup error: "+liveErrorMessage(error)+
+      " — pehle CBMS Live Backend SQL run kijiye.",
+      "error"
+    );
+  }
+});
+
+</script>
+<script>
+
+/* ============================================================
+   CBMS FREE SEED FINAL OVERRIDES
+   ============================================================ */
+
+let liveSeedStockRows = [];
+
+function seedOnlyItems(){
+  return (liveInventoryItems || []).filter(i =>
+    i.status === "Active" && i.category === "Seed"
+  );
+}
+
+window.updateSeedItemMasterMode=function(){
+  const category=document.getElementById("imCategory")?.value || "";
+  const isSeed=category==="Seed";
+
+  const mission=document.getElementById("seedMissionField");
+  const year=document.getElementById("seedYearField");
+  if(mission) mission.style.display=isSeed?"":"none";
+  if(year) year.style.display=isSeed?"":"none";
+
+  [
+    "imUnit","imHsn","imGst","imPurchaseRate","imSaleRate",
+    "imOpeningStock","imReorder","imStatus","imCode"
+  ].forEach(id=>{
+    const field=document.getElementById(id)?.closest(".field");
+    if(field) field.style.display=isSeed?"none":"";
+  });
+
+  const name=document.getElementById("imName");
+  const brand=document.getElementById("imBrand");
+  const nameLabel=name?.closest(".field")?.querySelector("label");
+  const brandLabel=brand?.closest(".field")?.querySelector("label");
+
+  if(nameLabel) nameLabel.textContent=isSeed?"Product Name *":"Item Name *";
+  if(brandLabel) brandLabel.textContent=isSeed?"Variety *":"Brand / Variety";
+
+  if(isSeed){
+    document.getElementById("imUnit").value="Kg";
+    document.getElementById("imHsn").value="";
+    document.getElementById("imGst").value="0";
+    document.getElementById("imPurchaseRate").value="0";
+    document.getElementById("imSaleRate").value="0";
+    document.getElementById("imOpeningStock").value="0";
+    document.getElementById("imReorder").value="0";
+    document.getElementById("imStatus").value="Active";
+  }
+};
+
+window.clearItemMasterForm=function(){
+  ["imName","imBrand","imMissionName","imSeedYear","imHsn","imPurchaseRate","imSaleRate"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  document.getElementById("imCategory").value="";
+  document.getElementById("imUnit").value="Kg";
+  document.getElementById("imGst").value="0";
+  document.getElementById("imOpeningStock").value="0";
+  document.getElementById("imReorder").value="0";
+  document.getElementById("imStatus").value="Active";
+  document.getElementById("imCode").value="Auto on Save";
+  updateSeedItemMasterMode();
+};
+
+window.saveItemMaster=async function(){
+  try{
+    const name=document.getElementById("imName").value.trim();
+    const category=document.getElementById("imCategory").value;
+    const variety=document.getElementById("imBrand").value.trim();
+    const isSeed=category==="Seed";
+
+    if(!name || !category) throw new Error("Product/Item Name aur Category bharें.");
+
+    const mission=(document.getElementById("imMissionName")?.value || "").trim();
+    const yearText=(document.getElementById("imSeedYear")?.value || "").trim();
+
+    if(isSeed){
+      if(!variety) throw new Error("Variety bharें.");
+      if(!mission) throw new Error("Mission Name bharें.");
+      if(!/^\d{4}$/.test(yearText)) throw new Error("Year 4 digit me bharें, jaise 2026.");
+    }
+
+    const {data:existing,error:dupError}=await authDb
+      .from("inventory_items")
+      .select("id,item_name,brand_variety,mission_name,seed_year")
+      .eq("category",category)
+      .eq("item_name",name);
+
+    if(dupError) throw dupError;
+
+    const duplicate=(existing||[]).find(x =>
+      String(x.brand_variety||"").trim().toLowerCase()===variety.toLowerCase() &&
+      (!isSeed || (
+        String(x.mission_name||"").trim().toLowerCase()===mission.toLowerCase() &&
+        Number(x.seed_year||0)===Number(yearText)
+      ))
+    );
+
+    if(duplicate){
+      throw new Error(isSeed
+        ? "Same Product, Variety, Mission aur Year pehle se saved hai."
+        : "Same Item / Brand pehle se saved hai."
+      );
+    }
+
+    const payload={
+      item_name:name,
+      category,
+      brand_variety:variety || null,
+      mission_name:isSeed?mission:null,
+      seed_year:isSeed?Number(yearText):null,
+
+      unit:isSeed?"Kg":document.getElementById("imUnit").value,
+      hsn_code:isSeed?null:(document.getElementById("imHsn").value.trim() || null),
+      gst_percent:isSeed?0:num(document.getElementById("imGst").value),
+      purchase_rate:isSeed?0:num(document.getElementById("imPurchaseRate").value),
+      sale_rate:isSeed?0:num(document.getElementById("imSaleRate").value),
+      opening_stock:isSeed?0:num(document.getElementById("imOpeningStock").value),
+      reorder_level:isSeed?0:num(document.getElementById("imReorder").value),
+      status:isSeed?"Active":document.getElementById("imStatus").value
+    };
+
+    const {data,error}=await authDb
+      .from("inventory_items")
+      .insert(payload)
+      .select("item_code")
+      .single();
+
+    if(error) throw error;
+
+    clearItemMasterForm();
+    await liveLoadInventory();
+    showMessage((isSeed?"Seed Product":"Item")+" save ho gaya. Item Code: "+data.item_code);
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+async function loadSeedStockRegister(){
+  const {data,error}=await authDb.rpc("cbms_seed_stock_register");
+  if(error) throw error;
+  liveSeedStockRows=data||[];
+  renderSeedStockRegister();
+}
+
+window.liveLoadInventory=async function(){
+  const {data,error}=await authDb.rpc("cbms_accountant_inventory_list");
+  if(error) throw error;
+
+  liveInventoryItems=(data||[]).map(i=>({
+    id:i.id,
+    code:i.item_code,
+    name:i.item_name,
+    category:i.category,
+    brand:i.brand_variety || "",
+    missionName:i.mission_name || "",
+    seedYear:i.seed_year || "",
+    unit:i.unit || "Kg",
+    hsn:i.hsn_code || "",
+    gst:num(i.gst_percent),
+    purchaseRate:num(i.purchase_rate),
+    saleRate:num(i.sale_rate),
+    openingStock:num(i.opening_stock),
+    currentStock:num(i.current_stock),
+    totalPurchased:num(i.total_purchased),
+    totalSold:num(i.total_sold),
+    reorderLevel:num(i.reorder_level),
+    status:i.status || "Active"
+  }));
+
+  try{ setStore(STORE_KEYS.items, liveInventoryItems); }catch(e){}
+
+  await loadSeedStockRegister();
+
+  renderItemMaster();
+  refreshItemDropdowns();
+  refreshSeedTransferItems();
+  refreshSeedDistributionItems();
+  renderStockRegister();
+  refreshBillItemSelects();
+
+  return liveInventoryItems;
+};
+
+window.renderItemMaster=function(){
+  const body=document.getElementById("itemMasterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("itemSearch")?.value||"").trim().toLowerCase();
+  const cat=document.getElementById("itemCategoryFilter")?.value||"";
+
+  const items=(liveInventoryItems||[]).filter(i=>{
+    const hay=[i.code,i.name,i.category,i.brand,i.missionName,i.seedYear].join(" ").toLowerCase();
+    return (!q||hay.includes(q)) && (!cat||i.category===cat);
+  });
+
+  body.innerHTML=items.length?items.map(i=>`
+    <tr>
+      <td>${escapeHtml(i.code)}</td>
+      <td><b>${escapeHtml(i.name)}</b>${i.category==="Seed"&&i.missionName?`<br><small>${escapeHtml(i.missionName)} / ${escapeHtml(String(i.seedYear||""))}</small>`:""}</td>
+      <td>${escapeHtml(i.category)}</td>
+      <td>${escapeHtml(i.brand||"-")}</td>
+      <td>${escapeHtml(i.unit)}</td>
+      <td>${i.category==="Seed"?"Free":money(i.saleRate)}</td>
+      <td class="${stockClass(i)}">${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}</td>
+      <td><span class="badge ${i.status==="Active"?"green":"red"}">${escapeHtml(i.status)}</span></td>
+      <td>
+        <button class="small-btn" onclick="toggleItemStatus('${i.id}')">${i.status==="Active"?"Deactivate":"Activate"}</button>
+        <button class="small-btn" onclick="deleteItem('${i.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join(""):`<tr><td colspan="9" class="muted">No items in live Item Master.</td></tr>`;
+};
+
+window.refreshItemDropdowns=function(){
+  const items=(liveInventoryItems||[]).filter(i =>
+    i.status==="Active" && i.category!=="Seed"
+  );
+
+  const options=['<option value="">Select Item</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}">
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock: ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
+
+  const si=document.getElementById("siItem");
+  if(si) si.innerHTML=options;
+};
+
+window.billItemOptions=function(selected=""){
+  const items=(liveInventoryItems||[]).filter(i =>
+    i.status==="Active" &&
+    i.category!=="Seed" &&
+    num(i.currentStock)>0
+  );
+
+  return ['<option value="">Select Item</option>']
+    .concat(items.map(i=>`
+      <option value="${i.id}" ${i.id===selected?"selected":""}>
+        ${escapeHtml(i.name)}${i.brand?` - ${escapeHtml(i.brand)}`:""} | Stock ${num(i.currentStock).toFixed(3)} ${escapeHtml(i.unit)}
+      </option>
+    `)).join("");
+};
+
+function refreshSeedTransferItems(){
+  const select=document.getElementById("stSeedItem");
+  if(!select) return;
+
+  const items=seedOnlyItems();
+  select.innerHTML=items.length
+    ? ['<option value="">Select Product / Crop</option>']
+        .concat(items.map(i=>`<option value="${i.id}">${escapeHtml(i.name)}</option>`))
+        .join("")
+    : '<option value="">No Seed Product found</option>';
+
+  onSeedTransferItemChange();
+}
+
+window.onSeedTransferItemChange=function(){
+  const item=(liveInventoryItems||[]).find(i =>
+    i.id===document.getElementById("stSeedItem")?.value
+  );
+
+  const values={
+    stVariety:item?.brand || "",
+    stMission:item?.missionName || "",
+    stYear:item?.seedYear || "",
+    stUnit:item?.unit || "Kg"
+  };
+
+  Object.entries(values).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el) el.value=val;
+  });
+};
+
+window.clearSeedTransferForm=function(){
+  document.getElementById("stDate").value=today();
+  document.getElementById("stSeedItem").value="";
+  ["stVariety","stMission","stYear","stUnit","stQty","stReference","stRemark"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+};
+
+window.saveSeedTransfer=async function(){
+  try{
+    const itemId=document.getElementById("stSeedItem").value;
+    const qty=num(document.getElementById("stQty").value);
+
+    if(!itemId) throw new Error("Product / Crop select karein.");
+    if(qty<=0) throw new Error("Received by Transfer quantity zero se zyada honi chahiye.");
+
+    const {data,error}=await authDb.rpc("cbms_create_seed_transfer",{
+      p_transfer_date:document.getElementById("stDate").value || today(),
+      p_item_id:itemId,
+      p_quantity:qty,
+      p_reference_no:document.getElementById("stReference").value.trim(),
+      p_remark:document.getElementById("stRemark").value.trim()
+    });
+
+    if(error) throw error;
+
+    clearSeedTransferForm();
+    await liveLoadInventory();
+
+    const no=data?.[0]?.transfer_no || "";
+    showMessage("Seed received stock save ho gaya"+(no?" — "+no:"")+".");
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+window.renderSeedStockRegister=function(){
+  const body=document.getElementById("seedStockRegisterBody");
+  if(!body) return;
+
+  const q=(document.getElementById("seedStockSearch")?.value || "").trim().toLowerCase();
+
+  const rows=(liveSeedStockRows||[]).filter(r=>{
+    const hay=[r.crop,r.variety,r.unit,r.seed_year,r.mission_name].join(" ").toLowerCase();
+    return !q || hay.includes(q);
+  });
+
+  body.innerHTML=rows.length ? rows.map(r=>{
+    const available=num(r.available);
+    return `
+      <tr>
+        <td><b>${escapeHtml(r.crop||"")}</b></td>
+        <td>${escapeHtml(r.variety||"-")}</td>
+        <td>${escapeHtml(r.unit||"Kg")}</td>
+        <td>${escapeHtml(String(r.seed_year||"-"))}</td>
+        <td>${escapeHtml(r.mission_name||"-")}</td>
+        <td>${num(r.received_by_transfer).toFixed(3)}</td>
+        <td>${num(r.distributed).toFixed(3)}</td>
+        <td><b>${available.toFixed(3)}</b></td>
+      </tr>`;
+  }).join("") : `<tr><td colspan="8" class="muted">No seed stock record yet.</td></tr>`;
+};
+
+window.refreshSeedDistributionItems=function(){
+  const select=document.getElementById("sdSeedItem");
+  if(!select) return;
+
+  const availableById=Object.fromEntries(
+    (liveSeedStockRows||[]).map(r=>[r.item_id,num(r.available)])
+  );
+
+  const items=seedOnlyItems().filter(i =>
+    (availableById[i.id] || 0) > 0
+  );
+
+  select.innerHTML=items.length
+    ? ['<option value="">Select Seed</option>']
+        .concat(items.map(i=>`<option value="${i.id}">${escapeHtml(i.name)}</option>`))
+        .join("")
+    : '<option value="">No Seed available</option>';
+
+  onSeedDistributionItemChange();
+};
+
+window.onSeedDistributionItemChange=function(){
+  const item=(liveInventoryItems||[]).find(i =>
+    i.id===document.getElementById("sdSeedItem")?.value
+  );
+  const stock=(liveSeedStockRows||[]).find(r=>r.item_id===item?.id);
+  const available=stock?num(stock.available):0;
+
+  const values={
+    sdSeedVariety:item?.brand || "",
+    sdMissionName:item?.missionName || "",
+    sdSeedYear:item?.seedYear || "",
+    sdAvailableStock:item?`${available.toFixed(3)} ${item.unit||"Kg"}`:"",
+    sdUnit:item?.unit || ""
+  };
+
+  Object.entries(values).forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el) el.value=val;
+  });
+
+  const qty=document.getElementById("sdQty");
+  if(qty){
+    if(item) qty.max=String(available);
+    else qty.removeAttribute("max");
+  }
+};
+
+window.clearSeedDistributionForm=function(){
+  const ids=[
+    "sdScheme","sdFarmerReg","sdFarmerName","sdFatherHusband","sdMobile","sdAadhaar",
+    "sdBlock","sdPanchayat","sdVillage","sdSeedVariety","sdMissionName","sdSeedYear",
+    "sdAvailableStock","sdQty","sdUnit","sdRemark"
+  ];
+
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  const seed=document.getElementById("sdSeedItem");
+  if(seed) seed.value="";
+
+  const photo=document.getElementById("sdFarmerPhoto");
+  if(photo) photo.value="";
+
+  if(typeof seedDistributionPhotoData!=="undefined") seedDistributionPhotoData="";
+
+  const preview=document.getElementById("sdPhotoPreview");
+  if(preview) preview.innerHTML="Camera se farmer photo khinchiye";
+
+  const date=document.getElementById("sdDate");
+  if(date) date.value=today();
+
+  refreshSeedDistributionItems();
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  const stDate=document.getElementById("stDate");
+  if(stDate) stDate.value=today();
+  updateSeedItemMasterMode();
+});
+
+</script>
 </body>
 </html>
