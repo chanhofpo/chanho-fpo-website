@@ -212,7 +212,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   </div>
 
   <nav class="sidebar-nav">
-    <button class="sidebar-link active" data-title="Accountant Dashboard" onclick="showPanel('dashboardPanel',this)"><span class="ico">⌂</span>Dashboard</button>
+    <button class="sidebar-link active" data-title="Accountant Dashboard" onclick="showPanel('dashboardPanel',this);loadDashboardSummary()"><span class="ico">⌂</span>Dashboard</button>
     <button class="sidebar-link" data-title="Accountant Profile" onclick="showPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
     <button class="sidebar-link" data-title="GST Settings" onclick="showPanel('gstSettingsPanel',this)"><span class="ico">🧾</span>FPO GST Settings</button>
 
@@ -282,49 +282,52 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <div class="stats">
         <div class="stat">
           <h3>Cash in Hand</h3>
-          <p class="amount-positive">₹0.00</p>
-          <small>Current Balance</small>
+          <p id="dashCashBalance" class="amount-positive">₹0.00</p>
+          <small>Current Cash Balance</small>
         </div>
 
         <div class="stat">
           <h3>Bank Balance</h3>
-          <p class="amount-positive">₹0.00</p>
-          <small>All Bank Accounts</small>
+          <p id="dashBankBalance" class="amount-positive">₹0.00</p>
+          <small>Bank + UPI + Cheque</small>
         </div>
 
         <div class="stat">
-          <h3>This Month Income</h3>
-          <p class="amount-positive">₹0.00</p>
-          <small>Receipt + Sales</small>
+          <h3>Total Sales</h3>
+          <p id="dashTotalSales" class="amount-positive">₹0.00</p>
+          <small>Final GST Bills</small>
         </div>
 
         <div class="stat">
-          <h3>This Month Expense</h3>
-          <p class="amount-negative">₹0.00</p>
-          <small>Payment + Purchase</small>
+          <h3>Total Purchase</h3>
+          <p id="dashTotalPurchase">₹0.00</p>
+          <small>Stock Purchase Value</small>
         </div>
       </div>
 
       <div class="stats">
         <div class="stat">
-          <h3>Receivable</h3>
-          <p>₹0.00</p>
-          <small>Amount to Receive</small>
+          <h3>Supplier Payable</h3>
+          <p id="dashSupplierPayable">₹0.00</p>
+          <small>Purchase − Supplier Paid</small>
         </div>
+
         <div class="stat">
-          <h3>Payable</h3>
-          <p>₹0.00</p>
-          <small>Amount to Pay</small>
+          <h3>Seed Distributed</h3>
+          <p id="dashSeedDistributed">0.000 Kg</p>
+          <small>Free Seed Distribution</small>
         </div>
+
         <div class="stat">
           <h3>Membership Collection</h3>
-          <p>₹0.00</p>
-          <small>Farmer Membership Fees</small>
+          <p id="dashMembershipCollection" class="amount-positive">₹0.00</p>
+          <small>Membership Fee Receipts</small>
         </div>
+
         <div class="stat">
-          <h3>Pending Vouchers</h3>
-          <p>0</p>
-          <small>Waiting for approval</small>
+          <h3>This Month Expense</h3>
+          <p id="dashMonthExpense" class="amount-negative">₹0.00</p>
+          <small>Payment Vouchers</small>
         </div>
       </div>
 
@@ -4395,6 +4398,64 @@ window.loadSupplierLedger=async function(){
     showMessage("Supplier Ledger load error: "+liveErrorMessage(error),"error");
   }
 };
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS LIVE DASHBOARD SUMMARY
+   ============================================================ */
+
+window.loadDashboardSummary=async function(){
+  try{
+    const {data,error}=await authDb.rpc("cbms_accountant_dashboard_summary");
+    if(error) throw error;
+
+    const s=data?.[0] || {};
+
+    const setMoney=(id,value)=>{
+      const el=document.getElementById(id);
+      if(el) el.textContent=money(num(value));
+    };
+
+    setMoney("dashCashBalance",s.cash_balance);
+    setMoney("dashBankBalance",s.bank_balance);
+    setMoney("dashTotalSales",s.total_sales);
+    setMoney("dashTotalPurchase",s.total_purchase);
+    setMoney("dashSupplierPayable",s.supplier_payable);
+    setMoney("dashMembershipCollection",s.membership_collection);
+    setMoney("dashMonthExpense",s.this_month_expense);
+
+    const seed=document.getElementById("dashSeedDistributed");
+    if(seed) seed.textContent=num(s.seed_distributed).toFixed(3)+" Kg";
+
+    const payable=document.getElementById("dashSupplierPayable");
+    if(payable){
+      payable.classList.remove("amount-positive","amount-negative");
+      payable.classList.add(num(s.supplier_payable)>0 ? "amount-negative" : "amount-positive");
+    }
+
+    const cash=document.getElementById("dashCashBalance");
+    if(cash){
+      cash.classList.remove("amount-positive","amount-negative");
+      cash.classList.add(num(s.cash_balance)>=0 ? "amount-positive" : "amount-negative");
+    }
+
+    const bank=document.getElementById("dashBankBalance");
+    if(bank){
+      bank.classList.remove("amount-positive","amount-negative");
+      bank.classList.add(num(s.bank_balance)>=0 ? "amount-positive" : "amount-negative");
+    }
+  }catch(error){
+    showMessage("Dashboard Summary load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(()=>{
+    loadDashboardSummary().catch(()=>{});
+  },1500);
+});
 </script>
 
 </body>
