@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Block Coordinator Login - Chanho FPO</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#eef5f8;color:#1f2937}
+header{background:linear-gradient(90deg,#075e88,#168cc3);color:#fff;padding:12px 18px}
+.brand{max-width:1000px;margin:auto;display:flex;align-items:center;gap:12px}
+.brand img{width:58px;height:58px;border-radius:50%;background:#fff;padding:3px;object-fit:contain}
+.brand h1{font-size:20px;margin:0}.brand p{font-size:12px;margin:4px 0 0;opacity:.92}
+main{min-height:calc(100vh - 82px);display:flex;align-items:center;justify-content:center;padding:24px 12px}
+.card{width:100%;max-width:440px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.13)}
+.head{text-align:center;padding:22px 20px 16px;border-bottom:1px solid #e8eef2}
+.ico{width:58px;height:58px;border-radius:50%;background:#e8f4fa;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:28px}
+.head h2{margin:0;color:#075e88}.head p{margin:6px 0 0;color:#667085;font-size:13px;line-height:1.5}
+.body{padding:20px}.step{display:flex;gap:8px;margin-bottom:18px}
+.step-item{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:12px;font-weight:700;background:#f1f5f9;color:#64748b}
+.step-item.active{background:#e0f2fe;color:#075e88;border:1px solid #7dd3fc}
+.step-item.done{background:#ecfdf3;color:#067647;border:1px solid #abefc6}
+.field{margin-bottom:15px}label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}
+input{width:100%;height:46px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
+.wrap{position:relative}.wrap input{padding-right:48px}.eye{position:absolute;right:5px;top:5px;width:38px;height:36px;border:0;background:transparent;cursor:pointer}
+.primary{width:100%;height:47px;border:0;border-radius:8px;background:linear-gradient(90deg,#075e88,#168cc3);color:#fff;font-size:15px;font-weight:700;cursor:pointer}
+.secondary{width:100%;height:42px;margin-top:9px;border:1px solid #168cc3;border-radius:8px;background:#fff;color:#075e88;font-size:14px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}#otpSection{display:none}
+.otp-email{margin:0 0 14px;padding:10px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;color:#475569;font-size:12px;line-height:1.5}
+.otp-code{text-align:center;letter-spacing:8px;font-size:21px;font-weight:700}
+.link-btn{display:block;margin:12px auto 0;border:0;background:transparent;color:#075e88;text-decoration:underline;font-weight:700;cursor:pointer}
+.msg{display:none;margin-top:13px;padding:10px;border-radius:8px;text-align:center;font-size:13px;line-height:1.5}
+.msg.error{display:block;background:#fef3f2;color:#b42318;border:1px solid #fecdca}
+.msg.success{display:block;background:#ecfdf3;color:#067647;border:1px solid #abefc6}
+.note{margin-top:14px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;color:#667085;font-size:11px;line-height:1.5}
+.back{display:block;margin-top:16px;text-align:center;color:#075e88;text-decoration:none;font-weight:700;font-size:13px}
+footer{text-align:center;padding:11px;color:#667085;font-size:11px}
+</style>
+</head>
+<body>
+<header><div class="brand"><img src="logo.png" alt="CBMS Logo"><div>
+<h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1>
+<p>Secure Block Coordinator Portal</p></div></div></header>
+
+<main><div class="card">
+<div class="head"><div class="ico">🏢</div><h2>Block Coordinator Login</h2>
+<p>पहले Password verify होगा, फिर registered email पर OTP आएगा।</p></div>
+
+<div class="body">
+<div class="step"><div id="step1" class="step-item active">1. Password</div><div id="step2" class="step-item">2. Email OTP</div></div>
+
+<div id="passwordSection">
+<div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" placeholder="Registered email"></div>
+<div class="field"><label>Password</label><div class="wrap"><input id="password" type="password" autocomplete="current-password" placeholder="Password"><button class="eye" type="button" onclick="togglePassword()">👁</button></div></div>
+<button id="continueBtn" class="primary" onclick="verifyPasswordAndSendOtp()">Continue & Send Email OTP</button>
+</div>
+
+<div id="otpSection">
+<div id="otpInfo" class="otp-email"></div>
+<div class="field"><label>Email OTP</label><input id="otp" class="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="OTP"></div>
+<button id="verifyOtpBtn" class="primary" onclick="verifyEmailOtp()">Verify OTP & Login</button>
+<button id="resendBtn" class="secondary" onclick="resendOtp()">Resend OTP</button>
+<button class="link-btn" onclick="startAgain()">← Email/Password से दोबारा शुरू करें</button>
+</div>
+
+<div id="msg" class="msg"></div>
+<div class="note">केवल Active Block Coordinator account ही इस portal में login कर सकता है।</div>
+<a class="back" href="index.html">← Home</a>
+</div></div></main>
+<footer>Chanho Birsa Munda Sangathan Producer Company Limited</footer>
+
+<script>
+const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const passwordDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+});
+
+let verifiedEmail="";
+let resendTimer=null;
+let resendSeconds=60;
+
+function showMessage(m,t="error"){const x=document.getElementById("msg");x.textContent=m;x.className="msg "+t}
+function clearMessage(){const x=document.getElementById("msg");x.textContent="";x.className="msg"}
+function togglePassword(){const p=document.getElementById("password");p.type=p.type==="password"?"text":"password"}
+function normalizeEmail(){return document.getElementById("email").value.trim().toLowerCase()}
+function maskEmail(email){const p=String(email||"").split("@");if(p.length!==2)return email;const n=p[0];return (n.length<=2?n[0]+"***":n.slice(0,2)+"***")+"@"+p[1]}
+
+async function verifyRole(userId,client=db){
+  const {data,error}=await client.from("block_coordinators")
+    .select("coordinator_id,name,block,status")
+    .eq("auth_user_id",userId).maybeSingle();
+  if(error) throw error;
+  if(!data) throw new Error("यह account अधिकृत Block Coordinator account नहीं है।");
+  if(String(data.status||"").trim().toLowerCase()!=="active") throw new Error("Block Coordinator account Active नहीं है।");
+  return data;
+}
+
+function startResendTimer(){
+  const btn=document.getElementById("resendBtn");
+  clearInterval(resendTimer);resendSeconds=60;btn.disabled=true;
+  btn.textContent="Resend OTP in "+resendSeconds+"s";
+  resendTimer=setInterval(()=>{resendSeconds--;if(resendSeconds<=0){clearInterval(resendTimer);btn.disabled=false;btn.textContent="Resend OTP";return}btn.textContent="Resend OTP in "+resendSeconds+"s"},1000);
+}
+
+async function sendOtpToVerifiedEmail(){
+  const {error}=await db.auth.signInWithOtp({email:verifiedEmail,options:{shouldCreateUser:false}});
+  if(error) throw error;
+}
+
+async function verifyPasswordAndSendOtp(){
+  clearMessage();
+  const email=normalizeEmail(), password=document.getElementById("password").value, btn=document.getElementById("continueBtn");
+  if(!email||!password){showMessage("Email और Password दोनों भरें।");return}
+  btn.disabled=true;btn.textContent="Password verify हो रहा है...";
+  try{
+    const {data,error}=await passwordDb.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    if(!data?.user||!data?.session?.access_token) throw new Error("Login session नहीं बना।");
+    await verifyRole(data.user.id,passwordDb);
+    verifiedEmail=String(data.user.email||email).trim().toLowerCase();
+    btn.textContent="Email OTP भेजा जा रहा है...";
+    await sendOtpToVerifiedEmail();
+    document.getElementById("passwordSection").style.display="none";
+    document.getElementById("otpSection").style.display="block";
+    document.getElementById("step1").className="step-item done";
+    document.getElementById("step2").className="step-item active";
+    document.getElementById("otpInfo").textContent="OTP "+maskEmail(verifiedEmail)+" पर भेजा गया है। Inbox/Spam check करें।";
+    document.getElementById("otp").value="";document.getElementById("otp").focus();
+    showMessage("Password सही है। अब email OTP verify करें।","success");startResendTimer();
+  }catch(e){showMessage(e.message||String(e))}
+  finally{btn.disabled=false;btn.textContent="Continue & Send Email OTP"}
+}
+
+async function resendOtp(){
+  clearMessage();
+  if(!verifiedEmail){startAgain();return}
+  try{await sendOtpToVerifiedEmail();showMessage("नया OTP email पर भेज दिया गया है।","success");startResendTimer()}
+  catch(e){showMessage("OTP resend failed: "+(e.message||e))}
+}
+
+async function verifyEmailOtp(){
+  clearMessage();
+  const token=document.getElementById("otp").value.trim(), btn=document.getElementById("verifyOtpBtn");
+  if(!verifiedEmail){startAgain();return}
+  if(!token){showMessage("Email में आया OTP डालें।");return}
+  btn.disabled=true;btn.textContent="OTP verify हो रहा है...";
+  try{
+    const {data,error}=await db.auth.verifyOtp({email:verifiedEmail,token,type:"email"});
+    if(error) throw error;
+    if(!data?.user) throw new Error("OTP verify हुआ लेकिन login session नहीं बना।");
+    await verifyRole(data.user.id);
+    document.getElementById("step2").className="step-item done";
+    showMessage("OTP verified. Dashboard खुल रहा है...","success");
+    window.location.href="block-coordinator-dashboard.html";
+  }catch(e){showMessage("OTP verification failed: "+(e.message||e))}
+  finally{btn.disabled=false;btn.textContent="Verify OTP & Login"}
+}
+
+async function startAgain(){
+  verifiedEmail="";clearInterval(resendTimer);
+  await db.auth.signOut();
+  await passwordDb.auth.signOut();
+  document.getElementById("passwordSection").style.display="block";
+  document.getElementById("otpSection").style.display="none";
+  document.getElementById("step1").className="step-item active";
+  document.getElementById("step2").className="step-item";
+  document.getElementById("otp").value="";clearMessage();
+}
+</script>
+</body>
+</html>
