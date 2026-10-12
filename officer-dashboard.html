@@ -100,7 +100,7 @@ tr:nth-child(even) td{background:#fafcfd}
 .profile-save-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
 .profile-help{font-size:11px;color:#667085;margin-top:7px;line-height:1.45}
 .portal-footer{background:#1d6587;color:#fff;text-align:center;padding:12px;font-size:11px;margin-top:auto}
-.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.dup-warning{margin-top:5px;font-size:10px;font-weight:700;color:#b45309;background:#fff7ed;border:1px solid #fed7aa;padding:3px 6px;border-radius:4px;display:inline-block}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
+.modal{display:none;position:fixed;z-index:2000;inset:0;background:rgba(0,0,0,.55);overflow:auto}.modal-box{background:#fff;width:92%;max-width:900px;margin:50px auto;border-radius:8px;padding:22px;position:relative}.modal-box h2{margin-top:0;color:var(--blue3)}.close{position:absolute;right:18px;top:10px;font-size:28px;cursor:pointer;color:#555}.profile-grid,.document-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.profile-item,.document-card{background:#f7f9fb;border:1px solid var(--line);padding:10px;border-radius:6px}.profile-item strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.document-card a{display:inline-block;margin-top:8px;color:var(--blue);font-weight:700;text-decoration:none}.document-item{border:1px solid var(--line);border-radius:7px;padding:13px;margin-bottom:12px;background:#fafcfd}.document-preview{max-width:300px;max-height:300px;display:block;margin:10px 0;border:1px solid var(--line);border-radius:6px;object-fit:contain;background:#fff}.no-document{color:#888;font-style:italic}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail{background:#f7f9fb;padding:10px;border-radius:6px}.detail strong{display:block;font-size:11px;color:#667085;margin-bottom:4px}.close-row{text-align:right;margin-top:12px}
 @media(max-width:1100px){.cards,.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.form-span-3{grid-column:1/-1}.profile-summary-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.main-shell{margin-left:0;width:100%}.menu-toggle{display:block}.top-logo{display:none}.filters,.download-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.form-span-2,.form-span-3{grid-column:auto}.user-text{max-width:135px}}
 @media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.officer-profile-layout{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
@@ -120,12 +120,8 @@ tr:nth-child(even) td{background:#fafcfd}
   <nav class="sidebar-nav">
     <button class="sidebar-link active" data-title="Officer Dashboard" onclick="showOfficerPanel('dashboardPanel',this)"><span class="ico">⌂</span>Dashboard</button>
     <button class="sidebar-link" data-title="Officer Profile" onclick="showOfficerPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
-    <button class="sidebar-link" data-title="Register New Staff" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">➕</span>Register Staff</button>
-    <button class="sidebar-link" data-title="Assign Admin Area" onclick="showOfficerPanel('assignAreaPanel',this)"><span class="ico">📍</span>Assign Admin Area</button>
-    <button class="sidebar-link" data-title="Assigned Areas" onclick="showOfficerPanel('assignedAreasPanel',this)"><span class="ico">▦</span>Assigned Areas</button>
-    <button class="sidebar-link" data-title="Admin Performance" onclick="showOfficerPanel('performancePanel',this)"><span class="ico">📊</span>Admin Performance</button>
-    <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
-    <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
+    <button class="sidebar-link" data-title="Block Coordinator Registration" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">➕</span>Register Block Coordinator</button>
+    <button class="sidebar-link" data-title="Block Coordinator Performance" onclick="showOfficerPanel('performancePanel',this);loadPerformance()"><span class="ico">📊</span>Coordinator Performance</button>
     <button class="sidebar-link" data-title="Farmer Applications" onclick="showOfficerPanel('farmersPanel',this)"><span class="ico">🌾</span>Farmer Applications</button>
     <button class="sidebar-link" data-title="Download Farmer Lists" onclick="showOfficerPanel('downloadsPanel',this)"><span class="ico">⬇</span>Download Reports</button>
   </nav>
@@ -155,7 +151,7 @@ tr:nth-child(even) td{background:#fafcfd}
       <div class="portal-card-title">ABOUT OFFICER DASHBOARD</div>
       <div class="portal-card-body">
         <h1 class="welcome-title">Welcome to Chanho FPO</h1>
-        <p class="welcome-text">Officer Dashboard se Admin registration, area assignment, Admin performance aur Farmer applications ka final approval ek hi portal se manage kiya ja sakta hai.</p>
+        <p class="welcome-text">Officer Dashboard se Block Coordinator registration, Coordinator performance aur Farmer applications ka final approval manage kiya ja sakta hai. Admin registration aur area assignment ab Block Coordinator ke paas rahega.</p>
         <div class="cards">
           <div class="card"><h3>Total Farmers</h3><div class="number" id="totalFarmers">0</div></div>
           <div class="card"><h3>Pending Admin Verification</h3><div class="number" id="pendingAdmin">0</div></div>
@@ -176,106 +172,125 @@ tr:nth-child(even) td{background:#fafcfd}
 
   <section id="adminRegistrationPanel" class="portal-panel">
     <div class="section">
-      <h2>Register New Staff</h2>
-      <p class="section-note">Designation select karke Admin ya Accountant register karein. Admin ka area assignment alag menu se hoga; Accountant ko area assignment nahi diya jayega.</p>
-      <form id="adminRegistrationForm" onsubmit="event.preventDefault();registerStaff();">
-        <div class="form-grid">
-          <div><label>Staff Name *</label><input id="adminName" required></div>
-          <div><label>Father / Husband Name</label><input id="adminFatherName"></div>
-          <div><label>Date of Birth</label><input type="date" id="adminDob"></div>
-          <div><label>Gender</label><select id="adminGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
-          <div><label>Mobile *</label><input id="adminMobile" inputmode="numeric" maxlength="10" required></div>
-          <div><label>Email *</label><input type="email" id="adminEmail" required></div>
-          <div><label>Aadhaar Number *</label><input id="adminAadhar" inputmode="numeric" maxlength="12" required></div>
-          <div><label>Designation *</label>
-        <select id="adminDesignation" required onchange="updateStaffDesignationUI()">
-          <option value="Admin">Admin</option>
-          <option value="Accountant">Accountant</option>
-        </select>
-      </div>
-          <div><label>Joining Date</label><input type="date" id="adminJoiningDate"></div>
-          <div><label>Village</label><input id="adminVillage"></div>
-          <div><label>Panchayat</label><input id="adminPanchayat"></div>
-          <div><label>Block</label><input id="adminBlock"></div>
-          <div><label>District</label><input id="adminDistrict" value="Ranchi"></div>
-          <div><label>State</label><input id="adminState" value="Jharkhand"></div>
-          <div><label>Status</label><select id="adminStatus"><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
-          <div class="form-span-3"><label>Full Address</label><textarea id="adminFullAddress"></textarea></div>
-        </div>
+      <h2>Register Block Coordinator</h2>
+      <p class="section-note">
+        Primary Block ke hisaab se Coordinator ID automatic बनेगा:
+        Chanho = <b>CBMS/BC/CHN/YYYY/..</b>,
+        Mandar = <b>CBMS/BC/MND/YYYY/..</b>.
+        Access Blocks me Chanho, Mandar ya dono diya ja sakta hai.
+      </p>
 
-        <h3 style="color:var(--blue3);margin:20px 0 10px">Bank Details</h3>
+      <form id="blockCoordinatorRegistrationForm" onsubmit="event.preventDefault();registerBlockCoordinator();">
         <div class="form-grid">
-          <div><label>Bank Name</label><input id="adminBankName"></div>
-          <div><label>Bank Branch</label><input id="adminBankBranch"></div>
-          <div><label>Account Number</label><input id="adminAccountNumber"></div>
-          <div><label>IFSC Code</label><input id="adminIfsc"></div>
-          <div><label>Payment Mode</label><select id="adminPaymentMode"><option value="">Select</option><option>Bank Transfer</option><option>UPI</option><option>Cash</option></select></div>
-        </div>
+          <div><label>Coordinator Name *</label><input id="bcName" required></div>
+          <div><label>Father / Husband Name</label><input id="bcFather"></div>
+          <div><label>Date of Birth</label><input type="date" id="bcDob"></div>
 
-        <h3 style="color:var(--blue3);margin:20px 0 10px">Qualification & Experience</h3>
-        <div class="form-grid">
-          <div><label>Qualification</label><input id="adminQualification"></div>
-          <div><label>Other Qualification</label><input id="adminOtherQualification"></div>
-          <div><label>Experience</label><input id="adminExperience" placeholder="e.g. 2 years"></div>
+          <div>
+            <label>Gender</label>
+            <select id="bcGender">
+              <option value="">Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div><label>Mobile *</label><input id="bcMobile" inputmode="numeric" maxlength="10" required></div>
+          <div><label>Email *</label><input type="email" id="bcEmail" required></div>
+          <div><label>Aadhaar Number *</label><input id="bcAadhaar" inputmode="numeric" maxlength="12" required></div>
+
+          <div>
+            <label>Primary / Login Block *</label>
+            <select id="bcPrimaryBlock" onchange="syncCoordinatorBlockAccess()" required>
+              <option value="Chanho">Chanho</option>
+              <option value="Mandar">Mandar</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Coordinator ID Preview</label>
+            <input id="bcIdPreview" value="CBMS/BC/CHN/YYYY/Auto" readonly>
+          </div>
+
+          <div>
+            <label>Joining Date</label>
+            <input type="date" id="bcJoiningDate">
+          </div>
+
+          <div>
+            <label>Status</label>
+            <select id="bcStatus">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="form-span-2">
+            <label>Block Access *</label>
+            <div style="display:flex;gap:18px;align-items:center;border:1px solid #cfd8df;border-radius:5px;padding:10px;background:#fff;min-height:40px">
+              <label style="margin:0;display:flex;gap:7px;align-items:center">
+                <input id="bcAccessChanho" type="checkbox" checked style="width:auto"> Chanho
+              </label>
+              <label style="margin:0;display:flex;gap:7px;align-items:center">
+                <input id="bcAccessMandar" type="checkbox" style="width:auto"> Mandar
+              </label>
+            </div>
+          </div>
+
+          <div class="form-span-3">
+            <label>Full Address</label>
+            <textarea id="bcAddress"></textarea>
+          </div>
+
+          <div><label>Qualification</label><input id="bcQualification"></div>
+          <div><label>Experience</label><input id="bcExperience" placeholder="e.g. 2 years"></div>
         </div>
 
         <h3 style="color:var(--blue3);margin:20px 0 10px">Documents</h3>
         <div class="form-grid">
-          <div><label>Aadhaar Document</label><input type="file" id="adminAadhaarFile" accept="image/*,.pdf"></div>
-          <div><label>Qualification Document</label><input type="file" id="adminQualificationFile" accept="image/*,.pdf"></div>
-          <div><label>Experience Document</label><input type="file" id="adminExperienceFile" accept="image/*,.pdf"></div>
-          <div><label>Address Proof</label><input type="file" id="adminAddressFile" accept="image/*,.pdf"></div>
-          <div><label>Bank Passbook</label><input type="file" id="adminBankFile" accept="image/*,.pdf"></div>
-          <div><label>Staff Photo</label><input type="file" id="adminPhotoFile" accept="image/*"></div>
-          <div><label>Signature</label><input type="file" id="adminSignatureFile" accept="image/*"></div>
+          <div><label>Coordinator Photo</label><input type="file" id="bcPhotoFile" accept="image/*"></div>
+          <div><label>Signature</label><input type="file" id="bcSignatureFile" accept="image/*"></div>
         </div>
-        <div style="margin-top:16px"><button type="submit" class="primary-btn" id="registerAdminBtn">Register Staff</button></div>
-        <div id="adminRegistrationResult" style="margin-top:12px"></div>
+
+        <div style="margin-top:16px">
+          <button type="submit" class="primary-btn" id="registerCoordinatorBtn">
+            Register Block Coordinator
+          </button>
+        </div>
+
+        <div id="coordinatorRegistrationResult" style="margin-top:12px"></div>
       </form>
     </div>
   </section>
 
-  <section id="assignAreaPanel" class="portal-panel">
-    <div class="section"><h2>Assign Admin Area</h2>
-      <div class="form-grid">
-        <div><label>Admin</label><select id="adminSelect"><option value="">Select Admin</option></select></div>
-        <div><label>Block</label><select id="blockSelect"><option value="">Select Block</option></select></div>
-        <div><label>Panchayat</label><select id="panchayatSelect"><option value="">Select Panchayat</option></select></div>
-        <div><label>Village</label><select id="villageSelect"><option value="">Select Village</option></select></div>
-        <div><label>Target Count</label><input type="number" id="targetCount" value="0" min="0"></div>
-        <div style="display:flex;align-items:end"><button class="primary-btn" onclick="assignArea()">Assign Area</button></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="assignedAreasPanel" class="portal-panel">
-    <div class="section"><h2>Assigned Areas</h2><div class="table-wrap"><table><thead><tr><th>Admin ID</th><th>Block</th><th>Panchayat</th><th>Village</th><th>Target</th><th>Status</th><th>Assigned Date</th></tr></thead><tbody id="assignmentTable"></tbody></table></div></div>
-  </section>
-
   <section id="performancePanel" class="portal-panel">
-    <div class="section"><h2>Admin Performance</h2><div class="table-wrap"><table><thead><tr><th>Admin ID</th><th>Name</th><th>Assigned Area</th><th>Total Farmers</th><th>Verified</th></tr></thead><tbody id="performanceTable"></tbody></table></div></div>
-  </section>
+    <div class="section">
+      <h2>Block Coordinator Performance</h2>
+      <p class="section-note">
+        Coordinator ke Admin registration, area assignment, Farmer registration/edit/verification aur Officer-approved Farmer ke basis par performance dikhega.
+      </p>
 
-  <section id="auditPanel" class="portal-panel">
-    <div class="portal-card">
-      <div class="portal-card-title">SYSTEM ACTIVITY / AUDIT LOG</div>
-      <div class="portal-card-body">
-        <p class="section-note">Farmer status changes, Admin registration, Auth linking aur area assignment ka recent activity record.</p>
-        <div style="margin-bottom:10px">
-          <button class="primary-btn" onclick="loadAuditLogs()">Refresh Audit Log</button>
-        </div>
-        <div id="auditLogContent"><div class="loading">Audit log load karne ke liye Refresh karein.</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="backupPanel" class="portal-panel">
-    <div class="portal-card">
-      <div class="portal-card-title">SYSTEM DATA BACKUP</div>
-      <div class="portal-card-body">
-        <p class="section-note">Officer apne authorized portal data ka JSON backup download kar sakta hai. Is file me sensitive data ho sakta hai; ise secure jagah par rakhein.</p>
-        <button class="primary-btn" id="backupBtn" onclick="downloadSystemBackup()">💾 Download JSON Backup</button>
-        <div id="backupMessage" style="margin-top:10px;font-size:12px;color:#667085"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Coordinator ID</th>
+              <th>Name</th>
+              <th>Primary Block</th>
+              <th>Access Blocks</th>
+              <th>Admin Registered</th>
+              <th>Area Assignment</th>
+              <th>Farmer Registered</th>
+              <th>Farmer Edited</th>
+              <th>Verified</th>
+              <th>Approved</th>
+              <th>Success %</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="performanceTable"></tbody>
+        </table>
       </div>
     </div>
   </section>
@@ -377,32 +392,18 @@ async function logout(){
 }
 
 
-
-function maskAadhaar(value){
-    const digits = String(value || "").replace(/\D/g,"");
-    if(digits.length < 4) return "-";
-    return "XXXX XXXX " + digits.slice(-4);
-}
-
-function maskAccount(value){
-    const text = String(value || "").trim();
-    if(!text) return "-";
-    if(text.length <= 4) return "XXXX";
-    return "XXXXXX" + text.slice(-4);
-}
-
-
 /* =========================
    DOCUMENT URL
 ========================= */
 
-async function getDocumentUrl(path){
+function getDocumentUrl(path){
 
     if(!path){
         return null;
     }
 
-    const value = String(path).trim();
+    const value =
+        String(path).trim();
 
     if(!value){
         return null;
@@ -412,18 +413,20 @@ async function getDocumentUrl(path){
         return value;
     }
 
-    const { data, error } = await db.storage
+    const result =
+        db.storage
         .from("farmer-documents")
-        .createSignedUrl(value, 600);
+        .getPublicUrl(value);
 
-    if(error){
-        console.error("Signed document URL error:", error);
-        return null;
+    if(
+        result &&
+        result.data &&
+        result.data.publicUrl
+    ){
+        return result.data.publicUrl;
     }
 
-    return data && data.signedUrl
-        ? data.signedUrl
-        : null;
+    return null;
 }
 
 
@@ -514,8 +517,8 @@ async function loadOfficer(){
 
     currentOfficer = data;
 
-    await updateOfficerHeader(data);
-    await renderOfficerProfile(data);
+    updateOfficerHeader(data);
+    renderOfficerProfile(data);
 
     return true;
 }
@@ -1004,90 +1007,78 @@ async function loadAssignments(){
 
 
 /* =========================
-   LOAD PERFORMANCE
+   LOAD BLOCK COORDINATOR PERFORMANCE
 ========================= */
 
 async function loadPerformance(){
-
-    const {
-        data:admins,
-        error
-    } =
-    await db
-    .from("admins")
-    .select(
-        "admin_id,name,status"
-    )
-    .order(
-        "admin_id",
-        {
-            ascending:true
-        }
-    );
-
-    if(error){
-
-        showError(error.message);
-
-        return;
-    }
-
-    const {
-        data:farmers
-    } =
-    await db
-    .from("farmer")
-    .select(
-        "admin_id,status"
-    );
 
     const tbody =
         document.getElementById(
             "performanceTable"
         );
 
-    tbody.innerHTML = "";
+    if(!tbody){
+        return;
+    }
 
-    (admins || []).forEach(function(admin){
+    tbody.innerHTML =
+        '<tr><td colspan="12" class="empty">Loading...</td></tr>';
 
-        const list =
-            (farmers || [])
-            .filter(
-                f =>
-                    f.admin_id ===
-                    admin.admin_id
-            );
+    const {
+        data,
+        error
+    } =
+    await db.rpc(
+        "cbms_officer_block_coordinator_performance"
+    );
 
-        const verified =
-            list.filter(
-                f =>
-                    String(
-                        f.status || ""
-                    )
-                    .toLowerCase() ===
-                    "verified"
-            ).length;
+    if(error){
+        showError(error.message);
+        tbody.innerHTML =
+            '<tr><td colspan="12" class="empty">Performance load failed.</td></tr>';
+        return;
+    }
 
-        const row =
-            document.createElement("tr");
+    const rows =
+        Array.isArray(data)
+        ? data
+        : [];
 
-        row.innerHTML = `
+    if(!rows.length){
+        tbody.innerHTML =
+            '<tr><td colspan="12" class="empty">No Block Coordinator registered.</td></tr>';
+        return;
+    }
 
-            <td>${escapeHtml(admin.admin_id || "-")}</td>
+    tbody.innerHTML =
+        rows.map(function(row){
 
-            <td>${escapeHtml(admin.name || "-")}</td>
+            const status =
+                String(row.status || "");
 
-            <td>${escapeHtml(admin.status || "-")}</td>
+            const badgeClass =
+                status.toLowerCase() === "active"
+                ? "badge-approved"
+                : "badge-rejected";
 
-            <td>${list.length}</td>
+            return `
+                <tr>
+                    <td><b>${escapeHtml(row.coordinator_id || "-")}</b></td>
+                    <td>${escapeHtml(row.name || "-")}</td>
+                    <td>${escapeHtml(row.primary_block || "-")}</td>
+                    <td>${escapeHtml(row.blocks || "-")}</td>
+                    <td>${escapeHtml(String(row.admins_registered ?? 0))}</td>
+                    <td>${escapeHtml(String(row.area_assignments ?? 0))}</td>
+                    <td>${escapeHtml(String(row.farmers_registered ?? 0))}</td>
+                    <td>${escapeHtml(String(row.farmers_edited ?? 0))}</td>
+                    <td>${escapeHtml(String(row.farmers_verified ?? 0))}</td>
+                    <td>${escapeHtml(String(row.farmers_approved ?? 0))}</td>
+                    <td><b>${escapeHtml(String(row.verification_success_percent ?? 0))}%</b></td>
+                    <td><span class="badge ${badgeClass}">${escapeHtml(status || "-")}</span></td>
+                </tr>
+            `;
 
-            <td>${verified}</td>
-
-        `;
-
-        tbody.appendChild(row);
-
-    });
+        }).join("");
 
 }
 
@@ -1637,7 +1628,7 @@ function renderOfficerFarmers(farmers){
 
                 <td>
                     ${escapeHtml(
-                        maskAadhaar(farmer.aadhar_number)
+                        farmer.aadhar_number || "-"
                     )}
                 </td>
 
@@ -1671,9 +1662,6 @@ function renderOfficerFarmers(farmers){
                             status || "-"
                         )}
                     </span>
-                    ${farmer.duplicate_warning
-                        ? `<div class="dup-warning">⚠ ${escapeHtml(farmer.duplicate_warning)}</div>`
-                        : ""}
                 </td>
 
                 <td>
@@ -1760,7 +1748,7 @@ function openProfileByIndex(index){
 
             ${profileItem(
                 "Aadhaar",
-                maskAadhaar(farmer.aadhar_number)
+                farmer.aadhar_number
             )}
 
             ${profileItem(
@@ -1825,7 +1813,7 @@ function openProfileByIndex(index){
 
             ${profileItem(
                 "Account No",
-                maskAccount(farmer.account_number)
+                farmer.account_number
             )}
 
             ${profileItem(
@@ -1926,7 +1914,7 @@ function profileItem(label,value){
    DOCUMENTS
 ========================= */
 
-async function openDocumentsByIndex(index){
+function openDocumentsByIndex(index){
 
     const farmer =
         officerFarmers[index];
@@ -1983,10 +1971,10 @@ async function openDocumentsByIndex(index){
         );
 
 
-    for (const doc of documents){
+    documents.forEach(function(doc){
 
         const url =
-            await getDocumentUrl(
+            getDocumentUrl(
                 doc.path
             );
 
@@ -2043,7 +2031,7 @@ async function openDocumentsByIndex(index){
 
         list.appendChild(card);
 
-    }
+    });
 
 
     openModal(
@@ -2448,10 +2436,6 @@ function showOfficerPanel(panelId, clicked){
         if(title && label) title.textContent = label;
     }
 
-    if(panelId === "auditPanel"){
-        loadAuditLogs();
-    }
-
     if(window.innerWidth <= 900){
         document.getElementById("sidebar").classList.remove("open");
     }
@@ -2461,7 +2445,7 @@ function toggleSidebar(){
     document.getElementById("sidebar").classList.toggle("open");
 }
 
-async function updateOfficerHeader(officer){
+function updateOfficerHeader(officer){
     const name = officer && officer.name ? officer.name : "Officer";
     const id = officer && officer.officer_id ? officer.officer_id : "-";
 
@@ -2474,7 +2458,7 @@ async function updateOfficerHeader(officer){
     if(idEl) idEl.textContent = id;
 
     const photoPath = officer && officer.photo_url ? officer.photo_url : null;
-    const photoUrl = photoPath ? await getDocumentUrl(photoPath) : null;
+    const photoUrl = photoPath ? getDocumentUrl(photoPath) : null;
 
     if(photoUrl && imgEl){
         imgEl.src = photoUrl;
@@ -2493,11 +2477,11 @@ async function updateOfficerHeader(officer){
     }
 }
 
-async function renderOfficerProfile(officer){
+function renderOfficerProfile(officer){
     const box = document.getElementById("officerProfileContent");
     if(!box || !officer) return;
 
-    const photoUrl = officer.photo_url ? await getDocumentUrl(officer.photo_url) : null;
+    const photoUrl = officer.photo_url ? getDocumentUrl(officer.photo_url) : null;
     const photoHtml = photoUrl
         ? `<img id="officerProfilePhotoPreview" class="officer-profile-photo" src="${escapeHtml(photoUrl)}" alt="Officer Photo" onerror="this.style.display='none';document.getElementById('officerProfilePhotoFallback').style.display='flex';">`
         : "";
@@ -2600,10 +2584,6 @@ async function uploadOfficerProfilePhoto(file){
         throw new Error("Sirf image file upload karein.");
     }
 
-    if(file.size > 5 * 1024 * 1024){
-        throw new Error("Officer photo की maximum size 5 MB होनी चाहिए।");
-    }
-
     const originalName = String(file.name || "photo.jpg");
     const extension = originalName.includes(".")
         ? originalName.split(".").pop().toLowerCase()
@@ -2683,8 +2663,8 @@ async function saveOfficerProfile(){
         if(!data) throw new Error("Officer profile update nahi hua.");
 
         currentOfficer = data;
-        await updateOfficerHeader(data);
-        await renderOfficerProfile(data);
+        updateOfficerHeader(data);
+        renderOfficerProfile(data);
         showSuccess("Officer profile successfully updated.");
 
     }catch(error){
@@ -2704,27 +2684,16 @@ async function saveOfficerProfile(){
    ADMIN REGISTRATION
 ========================= */
 
-async function uploadAdminFile(file, folder, rootFolder = "admin"){
+async function uploadAdminFile(file, folder){
     if(!file) return null;
-
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
-    const ALLOWED_EXTENSIONS = ["jpg","jpeg","png","webp","pdf"];
-
-    if(file.size > MAX_FILE_SIZE){
-        throw new Error("Admin document की maximum size 5 MB होनी चाहिए।");
-    }
 
     const originalName = String(file.name || "file");
     const extension = originalName.includes(".")
         ? originalName.split(".").pop().toLowerCase()
         : "bin";
 
-    if(!ALLOWED_EXTENSIONS.includes(extension)){
-        throw new Error("Admin documents के लिए JPG, JPEG, PNG, WEBP या PDF file upload करें।");
-    }
-
     const randomPart = Date.now() + "_" + Math.random().toString(36).slice(2,10);
-    const filePath = rootFolder + "/" + folder + "/" + randomPart + "." + extension;
+    const filePath = "admin/" + folder + "/" + randomPart + "." + extension;
 
     const { error } = await db.storage
         .from("farmer-documents")
@@ -2734,20 +2703,7 @@ async function uploadAdminFile(file, folder, rootFolder = "admin"){
     return filePath;
 }
 
-
-function updateStaffDesignationUI(){
-    const designation = document.getElementById("adminDesignation");
-    const btn = document.getElementById("registerAdminBtn");
-    if(!designation || !btn) return;
-
-    if(designation.value === "Accountant"){
-        btn.textContent = "Register Accountant";
-    }else{
-        btn.textContent = "Register Admin";
-    }
-}
-
-async function registerStaff(){
+async function registerAdmin(){
     const btn = document.getElementById("registerAdminBtn");
     const form = document.getElementById("adminRegistrationForm");
     const resultBox = document.getElementById("adminRegistrationResult");
@@ -2756,11 +2712,9 @@ async function registerStaff(){
     const mobile = document.getElementById("adminMobile").value.trim();
     const email = document.getElementById("adminEmail").value.trim();
     const aadhar = document.getElementById("adminAadhar").value.trim();
-    const designation = document.getElementById("adminDesignation").value || "Admin";
-    const isAccountant = designation === "Accountant";
 
     if(!name || !mobile || !email || !aadhar){
-        showError("Staff Name, Mobile, Email aur Aadhaar bharna zaroori hai.");
+        showError("Admin Name, Mobile, Email aur Aadhaar bharna zaroori hai.");
         return;
     }
 
@@ -2779,14 +2733,13 @@ async function registerStaff(){
     if(resultBox) resultBox.innerHTML = "";
 
     try{
-        const storageRoot = isAccountant ? "accountant" : "admin";
-        const aadhaarUrl = await uploadAdminFile(document.getElementById("adminAadhaarFile").files[0], "aadhaar", storageRoot);
-        const qualificationUrl = await uploadAdminFile(document.getElementById("adminQualificationFile").files[0], "qualification", storageRoot);
-        const experienceUrl = await uploadAdminFile(document.getElementById("adminExperienceFile").files[0], "experience", storageRoot);
-        const addressUrl = await uploadAdminFile(document.getElementById("adminAddressFile").files[0], "address-proof", storageRoot);
-        const bankUrl = await uploadAdminFile(document.getElementById("adminBankFile").files[0], "bank-passbook", storageRoot);
-        const photoUrl = await uploadAdminFile(document.getElementById("adminPhotoFile").files[0], "photo", storageRoot);
-        const signatureUrl = await uploadAdminFile(document.getElementById("adminSignatureFile").files[0], "signature", storageRoot);
+        const aadhaarUrl = await uploadAdminFile(document.getElementById("adminAadhaarFile").files[0], "aadhaar");
+        const qualificationUrl = await uploadAdminFile(document.getElementById("adminQualificationFile").files[0], "qualification");
+        const experienceUrl = await uploadAdminFile(document.getElementById("adminExperienceFile").files[0], "experience");
+        const addressUrl = await uploadAdminFile(document.getElementById("adminAddressFile").files[0], "address-proof");
+        const bankUrl = await uploadAdminFile(document.getElementById("adminBankFile").files[0], "bank-passbook");
+        const photoUrl = await uploadAdminFile(document.getElementById("adminPhotoFile").files[0], "photo");
+        const signatureUrl = await uploadAdminFile(document.getElementById("adminSignatureFile").files[0], "signature");
 
         const payload = {
             name: name,
@@ -2796,7 +2749,7 @@ async function registerStaff(){
             mobile: mobile,
             email: email,
             aadhar_number: aadhar,
-            designation: designation,
+            designation: document.getElementById("adminDesignation").value.trim() || "Admin",
             full_address: document.getElementById("adminFullAddress").value.trim() || null,
             village: document.getElementById("adminVillage").value.trim() || null,
             panchayat: document.getElementById("adminPanchayat").value.trim() || null,
@@ -2822,71 +2775,24 @@ async function registerStaff(){
             signature_url: signatureUrl
         };
 
-        const targetTable = isAccountant ? "accountants" : "admins";
-        const idColumn = isAccountant ? "accountant_id" : "admin_id";
-
         const { data, error } = await db
-            .from(targetTable)
+            .from("admins")
             .insert(payload)
-            .select(idColumn + ",name,mobile,email,status")
+            .select("admin_id,name,mobile,email,status")
             .single();
 
         if(error) throw error;
 
-        const staffId = data && data[idColumn]
-            ? data[idColumn]
-            : "Generated by database";
-
-        let authMessage = "";
-
-        try{
-            const functionName = isAccountant
-                ? "create-accountant-auth"
-                : "create-admin-auth";
-
-            const requestBody = isAccountant
-                ? { accountant_id: staffId, email: email }
-                : { admin_id: staffId, email: email };
-
-            const { data: inviteData, error: inviteError } =
-                await db.functions.invoke(functionName, {
-                    body: requestBody
-                });
-
-            if(inviteError){
-                throw inviteError;
-            }
-
-            authMessage =
-                inviteData && inviteData.message
-                ? inviteData.message
-                : (isAccountant
-                    ? "Accountant login invite email sent."
-                    : "Admin login invite email sent.");
-
-        }catch(inviteProblem){
-            console.warn("Staff Auth automation unavailable:", inviteProblem);
-            authMessage =
-                (isAccountant ? "Accountant" : "Admin") +
-                " record बन गया है, लेकिन Auth invite automatic नहीं हो पाया। Edge Function check करें।";
-        }
-
-        showSuccess(
-            (isAccountant ? "Accountant" : "Admin") +
-            " successfully registered: " +
-            staffId +
-            " | " +
-            authMessage
-        );
+        const adminId = data && data.admin_id ? data.admin_id : "Generated by database";
+        showSuccess("Admin successfully registered: " + adminId);
 
         if(resultBox){
             resultBox.innerHTML = `
                 <div class="registration-success">
-                    <strong>${isAccountant ? "Accountant" : "Admin"} Registration Successful</strong>
-                    <span>${isAccountant ? "Accountant" : "Admin"} ID: ${escapeHtml(staffId)}</span>
+                    <strong>Admin Registration Successful</strong>
+                    <span>Admin ID: ${escapeHtml(adminId)}</span>
                     <span>Name: ${escapeHtml(data && data.name ? data.name : name)}</span>
                     <span>Mobile: ${escapeHtml(mobile)}</span>
-                    <span>Login: ${escapeHtml(authMessage)}</span>
                 </div>
             `;
         }
@@ -2896,19 +2802,469 @@ async function registerStaff(){
         document.getElementById("adminState").value = "Jharkhand";
         document.getElementById("adminDesignation").value = "Admin";
         document.getElementById("adminStatus").value = "Active";
-        updateStaffDesignationUI();
-        if(!isAccountant){
-            await loadAdmins();
-        }
+        await loadAdmins();
 
     }catch(error){
         console.error(error);
-        showError("Staff registration failed: " + (error.message || error));
+        showError("Admin registration failed: " + (error.message || error));
     }finally{
         btn.disabled = false;
-        btn.textContent = "Register Staff";
+        btn.textContent = "Register Admin";
     }
 }
+
+/* =========================
+   BLOCK COORDINATOR REGISTRATION
+========================= */
+
+function syncCoordinatorBlockAccess(){
+
+    const primary =
+        document.getElementById(
+            "bcPrimaryBlock"
+        ).value;
+
+    const chanho =
+        document.getElementById(
+            "bcAccessChanho"
+        );
+
+    const mandar =
+        document.getElementById(
+            "bcAccessMandar"
+        );
+
+    if(primary === "Chanho"){
+        chanho.checked = true;
+    }
+
+    if(primary === "Mandar"){
+        mandar.checked = true;
+    }
+
+    const code =
+        primary === "Mandar"
+        ? "MND"
+        : "CHN";
+
+    document.getElementById(
+        "bcIdPreview"
+    ).value =
+        "CBMS/BC/" +
+        code +
+        "/" +
+        new Date().getFullYear() +
+        "/Auto";
+}
+
+
+async function uploadCoordinatorFile(
+    file,
+    folder
+){
+    if(!file){
+        return null;
+    }
+
+    const originalName =
+        String(
+            file.name || "file"
+        );
+
+    const extension =
+        originalName.includes(".")
+        ? originalName
+            .split(".")
+            .pop()
+            .toLowerCase()
+        : "bin";
+
+    const allowed =
+        [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "pdf"
+        ];
+
+    if(!allowed.includes(extension)){
+        throw new Error(
+            "Coordinator document ke liye JPG, JPEG, PNG, WEBP ya PDF file upload karein."
+        );
+    }
+
+    const randomPart =
+        Date.now() +
+        "_" +
+        Math.random()
+        .toString(36)
+        .slice(2,10);
+
+    const filePath =
+        "block-coordinator/" +
+        folder +
+        "/" +
+        randomPart +
+        "." +
+        extension;
+
+    const {
+        error
+    } =
+    await db.storage
+    .from("farmer-documents")
+    .upload(
+        filePath,
+        file,
+        {
+            cacheControl:"3600",
+            upsert:false
+        }
+    );
+
+    if(error){
+        throw error;
+    }
+
+    return filePath;
+}
+
+
+async function registerBlockCoordinator(){
+
+    const btn =
+        document.getElementById(
+            "registerCoordinatorBtn"
+        );
+
+    const form =
+        document.getElementById(
+            "blockCoordinatorRegistrationForm"
+        );
+
+    const resultBox =
+        document.getElementById(
+            "coordinatorRegistrationResult"
+        );
+
+    const name =
+        document.getElementById(
+            "bcName"
+        ).value.trim();
+
+    const mobile =
+        document.getElementById(
+            "bcMobile"
+        ).value.trim();
+
+    const email =
+        document.getElementById(
+            "bcEmail"
+        ).value.trim().toLowerCase();
+
+    const aadhaar =
+        document.getElementById(
+            "bcAadhaar"
+        ).value.trim();
+
+    const primaryBlock =
+        document.getElementById(
+            "bcPrimaryBlock"
+        ).value;
+
+    const accessChanho =
+        document.getElementById(
+            "bcAccessChanho"
+        ).checked;
+
+    const accessMandar =
+        document.getElementById(
+            "bcAccessMandar"
+        ).checked;
+
+    if(
+        !name ||
+        !mobile ||
+        !email ||
+        !aadhaar ||
+        !primaryBlock
+    ){
+        showError(
+            "Name, Mobile, Email, Aadhaar aur Primary Block bharna zaroori hai."
+        );
+        return;
+    }
+
+    if(!/^\d{10}$/.test(mobile)){
+        showError(
+            "Mobile number 10 digit ka hona chahiye."
+        );
+        return;
+    }
+
+    if(!/^\d{12}$/.test(aadhaar)){
+        showError(
+            "Aadhaar number 12 digit ka hona chahiye."
+        );
+        return;
+    }
+
+    if(!accessChanho && !accessMandar){
+        showError(
+            "Kam se kam ek Block Access select kijiye."
+        );
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent =
+        "Registering...";
+
+    if(resultBox){
+        resultBox.innerHTML = "";
+    }
+
+    try{
+
+        const photoUrl =
+            await uploadCoordinatorFile(
+                document
+                .getElementById(
+                    "bcPhotoFile"
+                )
+                .files[0],
+                "photo"
+            );
+
+        const signatureUrl =
+            await uploadCoordinatorFile(
+                document
+                .getElementById(
+                    "bcSignatureFile"
+                )
+                .files[0],
+                "signature"
+            );
+
+        const {
+            data,
+            error
+        } =
+        await db.rpc(
+            "cbms_officer_register_block_coordinator",
+            {
+                p_name:name,
+                p_father_name:
+                    document
+                    .getElementById(
+                        "bcFather"
+                    )
+                    .value
+                    .trim(),
+                p_date_of_birth:
+                    document
+                    .getElementById(
+                        "bcDob"
+                    )
+                    .value || null,
+                p_gender:
+                    document
+                    .getElementById(
+                        "bcGender"
+                    )
+                    .value || null,
+                p_mobile:mobile,
+                p_email:email,
+                p_aadhar_number:aadhaar,
+                p_primary_block:primaryBlock,
+                p_access_chanho:accessChanho,
+                p_access_mandar:accessMandar,
+                p_full_address:
+                    document
+                    .getElementById(
+                        "bcAddress"
+                    )
+                    .value
+                    .trim(),
+                p_qualification:
+                    document
+                    .getElementById(
+                        "bcQualification"
+                    )
+                    .value
+                    .trim(),
+                p_experience:
+                    document
+                    .getElementById(
+                        "bcExperience"
+                    )
+                    .value
+                    .trim(),
+                p_joining_date:
+                    document
+                    .getElementById(
+                        "bcJoiningDate"
+                    )
+                    .value || null,
+                p_status:
+                    document
+                    .getElementById(
+                        "bcStatus"
+                    )
+                    .value || "Active",
+                p_photo_url:photoUrl,
+                p_signature_url:signatureUrl
+            }
+        );
+
+        if(error){
+            throw error;
+        }
+
+        const coordinatorId =
+            data &&
+            data.coordinator_id
+            ? data.coordinator_id
+            : "";
+
+        if(!coordinatorId){
+            throw new Error(
+                "Coordinator ID generate nahi hua."
+            );
+        }
+
+        let authMessage = "";
+
+        try{
+
+            const {
+                data:inviteData,
+                error:inviteError
+            } =
+            await db.functions.invoke(
+                "create-block-coordinator-auth",
+                {
+                    body:{
+                        coordinator_id:
+                            coordinatorId,
+                        email:email
+                    }
+                }
+            );
+
+            if(inviteError){
+                throw inviteError;
+            }
+
+            authMessage =
+                inviteData &&
+                inviteData.message
+                ? inviteData.message
+                : "Block Coordinator login invite email sent.";
+
+        }catch(inviteProblem){
+
+            console.warn(
+                "Coordinator Auth automation unavailable:",
+                inviteProblem
+            );
+
+            authMessage =
+                "Coordinator record ban gaya hai, lekin login invite automatic nahi ho paya. create-block-coordinator-auth Edge Function check karein.";
+        }
+
+        const accessText =
+            [
+                accessChanho
+                ? "Chanho"
+                : null,
+                accessMandar
+                ? "Mandar"
+                : null
+            ]
+            .filter(Boolean)
+            .join(", ");
+
+        showSuccess(
+            "Block Coordinator registered: " +
+            coordinatorId
+        );
+
+        if(resultBox){
+            resultBox.innerHTML = `
+                <div class="registration-success">
+                    <strong>Block Coordinator Registration Successful</strong>
+                    <span>Coordinator ID: ${escapeHtml(coordinatorId)}</span>
+                    <span>Primary Block: ${escapeHtml(primaryBlock)}</span>
+                    <span>Access Blocks: ${escapeHtml(accessText)}</span>
+                    <span>Name: ${escapeHtml(name)}</span>
+                    <span>Email: ${escapeHtml(email)}</span>
+                    <span>Login: ${escapeHtml(authMessage)}</span>
+                </div>
+            `;
+        }
+
+        form.reset();
+
+        document.getElementById(
+            "bcPrimaryBlock"
+        ).value = "Chanho";
+
+        document.getElementById(
+            "bcStatus"
+        ).value = "Active";
+
+        document.getElementById(
+            "bcAccessChanho"
+        ).checked = true;
+
+        document.getElementById(
+            "bcAccessMandar"
+        ).checked = false;
+
+        syncCoordinatorBlockAccess();
+
+        await loadPerformance();
+
+    }catch(error){
+
+        console.error(error);
+
+        showError(
+            "Block Coordinator registration failed: " +
+            (error.message || error)
+        );
+
+    }finally{
+
+        btn.disabled = false;
+
+        btn.textContent =
+            "Register Block Coordinator";
+    }
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+        const joining =
+            document.getElementById(
+                "bcJoiningDate"
+            );
+
+        if(joining && !joining.value){
+            joining.value =
+                new Date()
+                .toISOString()
+                .slice(0,10);
+        }
+
+        syncCoordinatorBlockAccess();
+    }
+);
+
 
 /* =========================
    OFFICER DOWNLOAD LISTS
@@ -2947,7 +3303,7 @@ function officerDownloadRows(farmers){
             "Farmer Name": f.name || "",
             "Father/Husband Name": f.father_name || "",
             "Mobile": f.mobile || "",
-            "Aadhaar": maskAadhaar(f.aadhar_number),
+            "Aadhaar": f.aadhar_number || "",
             "Block": f.block || "",
             "Panchayat": f.panchayat || "",
             "Village": f.village || "",
@@ -3001,7 +3357,7 @@ function downloadOfficerPDF(farmers, type){
     doc.text("Date: " + new Date().toLocaleDateString("en-IN"),10,30);
     doc.text("Total Farmers: " + farmers.length,287,30,{align:"right"});
     const body = farmers.map(function(f,index){
-        return [index+1,f.registration_no||"",f.name||"",f.father_name||"",f.mobile||"",maskAadhaar(f.aadhar_number),f.block||"",f.panchayat||"",f.village||"",f.admin_id||"",f.status||""];
+        return [index+1,f.registration_no||"",f.name||"",f.father_name||"",f.mobile||"",f.aadhar_number||"",f.block||"",f.panchayat||"",f.village||"",f.admin_id||"",f.status||""];
     });
     doc.autoTable({
         startY:35,
@@ -3011,168 +3367,6 @@ function downloadOfficerPDF(farmers, type){
     const file = type === "approved" ? "Approved_Farmer_List.pdf" : type === "rejected" ? "Rejected_Farmer_List.pdf" : "Pending_Farmer_List.pdf";
     doc.save(file);
 }
-
-
-/* =========================
-   AUDIT LOG
-========================= */
-
-async function loadAuditLogs(){
-
-    const box = document.getElementById("auditLogContent");
-    if(!box) return;
-
-    box.innerHTML = '<div class="loading">Loading audit log...</div>';
-
-    const { data, error } = await db
-        .from("activity_logs")
-        .select("id,actor_role,action,entity_type,entity_id,details,created_at")
-        .order("created_at",{ascending:false})
-        .limit(100);
-
-    if(error){
-        console.error(error);
-        box.innerHTML = '<div class="empty">Audit log load नहीं हुआ: ' + escapeHtml(error.message) + '</div>';
-        return;
-    }
-
-    if(!data || !data.length){
-        box.innerHTML = '<div class="empty">अभी कोई audit activity उपलब्ध नहीं है।</div>';
-        return;
-    }
-
-    let html = `
-        <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Date/Time</th>
-                    <th>Actor</th>
-                    <th>Action</th>
-                    <th>Entity</th>
-                    <th>ID</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-    data.forEach(function(row){
-        const details = row.details
-            ? JSON.stringify(row.details)
-            : "-";
-
-        html += `
-            <tr>
-                <td>${escapeHtml(row.created_at ? new Date(row.created_at).toLocaleString("en-IN") : "-")}</td>
-                <td>${escapeHtml(row.actor_role || "-")}</td>
-                <td>${escapeHtml(row.action || "-")}</td>
-                <td>${escapeHtml(row.entity_type || "-")}</td>
-                <td>${escapeHtml(row.entity_id || "-")}</td>
-                <td style="max-width:360px;white-space:normal">${escapeHtml(details)}</td>
-            </tr>
-        `;
-    });
-
-    html += '</tbody></table></div>';
-    box.innerHTML = html;
-}
-
-
-/* =========================
-   SYSTEM BACKUP
-========================= */
-
-async function downloadSystemBackup(){
-
-    const btn = document.getElementById("backupBtn");
-    const msg = document.getElementById("backupMessage");
-
-    if(btn){
-        btn.disabled = true;
-        btn.textContent = "Preparing Backup...";
-    }
-
-    if(msg){
-        msg.textContent = "Authorized data collect किया जा रहा है...";
-    }
-
-    try{
-
-        const [
-            farmerResult,
-            adminResult,
-            assignmentResult,
-            locationResult,
-            auditResult
-        ] = await Promise.all([
-            db.from("farmer").select("*").order("id",{ascending:true}),
-            db.from("admins").select("*").order("admin_id",{ascending:true}),
-            db.from("admin_area_assignments").select("*").order("created_at",{ascending:true}),
-            db.from("location_master").select("*").order("block",{ascending:true}).order("panchayat",{ascending:true}),
-            db.from("activity_logs").select("*").order("created_at",{ascending:true})
-        ]);
-
-        const results = [
-            farmerResult,
-            adminResult,
-            assignmentResult,
-            locationResult,
-            auditResult
-        ];
-
-        const failed = results.find(function(result){
-            return result.error;
-        });
-
-        if(failed){
-            throw failed.error;
-        }
-
-        const backup = {
-            generated_at: new Date().toISOString(),
-            company: "Chanho Birsa Munda Sangathan Producer Company Limited",
-            warning: "CONFIDENTIAL - Contains personal and financial data. Store securely.",
-            farmer: farmerResult.data || [],
-            admins: adminResult.data || [],
-            admin_area_assignments: assignmentResult.data || [],
-            location_master: locationResult.data || [],
-            activity_logs: auditResult.data || []
-        };
-
-        const blob = new Blob(
-            [JSON.stringify(backup,null,2)],
-            {type:"application/json"}
-        );
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        const stamp = new Date().toISOString().slice(0,10);
-
-        a.href = url;
-        a.download = "CBMS_System_Backup_" + stamp + ".json";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-
-        if(msg){
-            msg.textContent = "Backup download complete.";
-        }
-
-    }catch(error){
-        console.error(error);
-        if(msg){
-            msg.textContent = "Backup failed: " + (error.message || error);
-        }
-    }finally{
-        if(btn){
-            btn.disabled = false;
-            btn.textContent = "💾 Download JSON Backup";
-        }
-    }
-}
-
 
 /* =========================
    INITIALIZE
@@ -3188,12 +3382,6 @@ async function initialize(){
         return;
     }
 
-
-    await loadAdmins();
-
-    await loadBlocks();
-
-    await loadAssignments();
 
     await loadPerformance();
 
