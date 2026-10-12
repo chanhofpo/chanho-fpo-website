@@ -78,7 +78,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   <div class="stats">
     <div class="stat"><h3>Total Admins</h3><p id="sumAdmins">0</p></div>
     <div class="stat"><h3>Total Farmers</h3><p id="sumFarmers">0</p></div>
-    <div class="stat"><h3>Pending Verification</h3><p id="sumPending">0</p></div>
+    <div class="stat"><h3>Pending Coordinator Verification</h3><p id="sumPending">0</p></div>
     <div class="stat"><h3>Pending Officer Approval</h3><p id="sumOfficer">0</p></div>
   </div>
 </section>
@@ -136,8 +136,9 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 </div></section>
 
 <section id="farmerVerifyPanel" class="panel">
+<div class="section"><div class="note"><b>Verification Flow:</b> Admin Verified → Block Coordinator Verification → Officer Final Approval.</div></div>
 <div class="section"><h2>Farmer Data Edit & Verification</h2>
-<div class="filters"><input id="fvSearch" placeholder="Name, Reg No, Mobile, Village..." oninput="renderFarmers()"><select id="fvStatus" onchange="renderFarmers()"><option value="">All Status</option><option>Pending Admin Verification</option><option>Pending Officer Approval</option><option>Approved</option><option>Rejected</option></select><button class="secondary" onclick="loadFarmers()">Refresh</button></div>
+<div class="filters"><input id="fvSearch" placeholder="Name, Reg No, Mobile, Village..." oninput="renderFarmers()"><select id="fvStatus" onchange="renderFarmers()"><option value="">All Status</option><option>Pending Admin Verification</option><option>Pending Block Coordinator Verification</option><option>Pending Officer Approval</option><option>Approved</option><option>Rejected</option></select><button class="secondary" onclick="loadFarmers()">Refresh</button></div>
 <div class="table-wrap"><table><thead><tr><th>Reg No</th><th>Name</th><th>Mobile</th><th>Panchayat</th><th>Village</th><th>Admin</th><th>Status</th><th>Action</th></tr></thead><tbody id="farmerBody"></tbody></table></div>
 </div></section>
 
@@ -191,7 +192,7 @@ let coordinator=null, activeBlock="", farmers=[], admins=[], assignments=[], per
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 function msg(t,type="success"){const b=document.getElementById("message");b.textContent=t;b.className="message "+type;setTimeout(()=>{b.style.display="none"},5000)}
 function showPanel(id,btn,title){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");document.getElementById("pageTitle").textContent=title}
-function statusBadge(s){const x=String(s||"").toLowerCase();return x==="approved"?"green":x.includes("reject")?"red":x.includes("officer")?"blue":"yellow"}
+function statusBadge(s){const x=String(s||"").toLowerCase();return x==="approved"?"green":x.includes("reject")?"red":x.includes("officer")?"blue":x.includes("block coordinator")?"yellow":"yellow"}
 function arr(data){return Array.isArray(data)?data:(data&&Array.isArray(data.data)?data.data:[])}
 
 async function logout(){await db.auth.signOut();location.href="block-coordinator-login.html"}
@@ -349,7 +350,7 @@ function renderFarmers(){
     <td>${esc(f.panchayat)}</td><td>${esc(f.village)}</td><td>${esc(f.admin_id||"-")}</td>
     <td><span class="badge ${statusBadge(f.status)}">${esc(f.status||"-")}</span></td>
     <td><button class="small edit" onclick="openEdit('${f.id}')">Edit</button>
-    ${!["approved","rejected","pending officer approval"].includes(String(f.status||"").toLowerCase())?`<button class="small verify" onclick="verifyFarmer('${f.id}','${esc(f.registration_no)}')">Verify</button>`:""}</td>
+    ${String(f.status||"").trim().toLowerCase()==="pending block coordinator verification"?`<button class="small verify" onclick="verifyFarmer('${f.id}','${esc(f.registration_no)}')">Verify & Send to Officer</button>`:""}</td>
   </tr>`).join(""):'<tr><td colspan="8">No farmer found.</td></tr>';
 }
 
@@ -389,8 +390,8 @@ async function saveFarmerEdit(){
 }
 
 async function verifyFarmer(id,reg){
-  if(!confirm((reg||"Farmer")+" ko verify karke Officer approval me bhejna hai?")) return;
-  try{await rpc("cbms_block_verify_farmer",{p_block:activeBlock,p_farmer_id:id});msg("Farmer verified. Officer approval ke liye bhej diya.");await loadFarmers();await loadSummary();await loadPerformance()}
+  if(!confirm((reg||"Farmer")+" ko Block Coordinator level par verify karke Officer Final Approval ke liye bhejna hai?")) return;
+  try{await rpc("cbms_block_verify_farmer",{p_block:activeBlock,p_farmer_id:id});msg("Farmer Block Coordinator se verified. Officer Final Approval ke liye bhej diya.");await loadFarmers();await loadSummary();await loadPerformance()}
   catch(e){msg("Verification failed: "+e.message,"error")}
 }
 
