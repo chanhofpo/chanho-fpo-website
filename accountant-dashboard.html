@@ -240,6 +240,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <button class="sidebar-link" data-title="Ledger" onclick="showPanel('ledgerPanel',this)"><span class="ico">📚</span>Ledger</button>
 
     <button class="sidebar-link" data-title="Receivable / Payable" onclick="showPanel('duesPanel',this)"><span class="ico">⏳</span>Receivable / Payable</button>
+    <button class="sidebar-link" data-title="Monthly Backup / Export" onclick="showPanel('monthlyBackupPanel',this);initMonthlyBackup()"><span class="ico">💾</span>Monthly Backup / Export</button>
     <button class="sidebar-link" data-title="Reports" onclick="showPanel('reportsPanel',this)"><span class="ico">📊</span>Reports</button>
     <button class="sidebar-link" data-title="Audit Trail" onclick="showPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Trail</button>
   </nav>
@@ -1480,6 +1481,160 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           </table>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section id="monthlyBackupPanel" class="portal-panel">
+  <div class="section">
+    <h2>Monthly Backup / Export</h2>
+    <div class="section-body">
+
+      <div class="note">
+        Month aur Year select karke Sales, Purchase, Cash Book, Bank Book,
+        Supplier Ledger aur Seed Distribution ka monthly backup CSV me download karein.
+        CSV file Excel me directly open ho jayegi.
+      </div>
+
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field">
+          <label>Month *</label>
+          <select id="mbMonth">
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Year *</label>
+          <input id="mbYear" type="number" min="2020" max="2100" step="1">
+        </div>
+
+        <div class="field">
+          <label>Period</label>
+          <input id="mbPeriod" readonly placeholder="Month load karne par auto">
+        </div>
+      </div>
+
+      <br>
+
+      <button class="primary-btn" onclick="loadMonthlyBackup()">Load Monthly Data</button>
+      <button class="secondary-btn" onclick="downloadMonthlyFullBackup()">Download Full Backup CSV</button>
+
+      <hr>
+
+      <div class="stats">
+        <div class="stat">
+          <h3>Sales</h3>
+          <p id="mbSalesTotal">₹0.00</p>
+          <small id="mbSalesCount">0 bills</small>
+        </div>
+
+        <div class="stat">
+          <h3>Purchase</h3>
+          <p id="mbPurchaseTotal">₹0.00</p>
+          <small id="mbPurchaseCount">0 purchases</small>
+        </div>
+
+        <div class="stat">
+          <h3>Cash Closing</h3>
+          <p id="mbCashClosing">₹0.00</p>
+          <small>Month-end cash balance</small>
+        </div>
+
+        <div class="stat">
+          <h3>Bank Closing</h3>
+          <p id="mbBankClosing">₹0.00</p>
+          <small>Bank + UPI + Cheque</small>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <h3>Supplier Payable</h3>
+          <p id="mbSupplierPayable">₹0.00</p>
+          <small>Closing outstanding</small>
+        </div>
+
+        <div class="stat">
+          <h3>Seed Distributed</h3>
+          <p id="mbSeedQty">0.000 Kg</p>
+          <small id="mbSeedCount">0 entries</small>
+        </div>
+      </div>
+
+      <hr>
+
+      <h3>Export Files</h3>
+      <div class="quick-actions">
+        <div class="quick-card">
+          <b>Sales</b>
+          <span>GST sales bill history</span>
+          <button class="small-btn" onclick="exportMonthlySales()">Download CSV</button>
+        </div>
+
+        <div class="quick-card">
+          <b>Purchase</b>
+          <span>Supplier purchase + item lines</span>
+          <button class="small-btn" onclick="exportMonthlyPurchases()">Download CSV</button>
+        </div>
+
+        <div class="quick-card">
+          <b>Cash Book</b>
+          <span>Opening + monthly cash transactions</span>
+          <button class="small-btn" onclick="exportMonthlyCashBook()">Download CSV</button>
+        </div>
+
+        <div class="quick-card">
+          <b>Bank Book</b>
+          <span>Bank / UPI / Cheque transactions</span>
+          <button class="small-btn" onclick="exportMonthlyBankBook()">Download CSV</button>
+        </div>
+
+        <div class="quick-card">
+          <b>Supplier Ledger</b>
+          <span>All suppliers monthly ledger</span>
+          <button class="small-btn" onclick="exportMonthlySupplierLedger()">Download CSV</button>
+        </div>
+
+        <div class="quick-card">
+          <b>Seed Distribution</b>
+          <span>Monthly farmer distribution data</span>
+          <button class="small-btn" onclick="exportMonthlySeedDistribution()">Download CSV</button>
+        </div>
+      </div>
+
+      <hr>
+
+      <h3>Monthly Backup Status</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Entries</th>
+              <th>Amount / Qty</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="mbStatusBody">
+            <tr><td colspan="4" class="muted">Load Monthly Data par click karein.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </div>
 </section>
@@ -6536,6 +6691,667 @@ window.renderItemMaster=function(){
     `).join("")
     : `<tr><td colspan="9" class="muted">No items in live Item Master.</td></tr>`;
 };
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS MONTHLY BACKUP / EXPORT
+   ============================================================ */
+
+let cbmsMonthlyBackup = null;
+
+function cbmsMonthRange(){
+  const month=Number(document.getElementById("mbMonth")?.value || (new Date().getMonth()+1));
+  const year=Number(document.getElementById("mbYear")?.value || new Date().getFullYear());
+
+  if(!Number.isInteger(year) || year<2020 || year>2100){
+    throw new Error("Valid Year select kijiye.");
+  }
+
+  const start=`${year}-${String(month).padStart(2,"0")}-01`;
+  const lastDay=new Date(year,month,0).getDate();
+  const end=`${year}-${String(month).padStart(2,"0")}-${String(lastDay).padStart(2,"0")}`;
+  const label=new Date(year,month-1,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+
+  return {month,year,start,end,label};
+}
+
+window.initMonthlyBackup=function(){
+  const d=new Date();
+  const m=document.getElementById("mbMonth");
+  const y=document.getElementById("mbYear");
+
+  if(m && !m.dataset.initialized){
+    m.value=String(d.getMonth()+1);
+    m.dataset.initialized="1";
+  }
+
+  if(y && !y.value){
+    y.value=String(d.getFullYear());
+  }
+
+  try{
+    const r=cbmsMonthRange();
+    const p=document.getElementById("mbPeriod");
+    if(p) p.value=`${r.start} to ${r.end}`;
+  }catch(e){}
+};
+
+
+function cbmsSortDateCreated(a,b,dateField){
+  const aa=(a[dateField]||"")+" "+(a.created_at||"");
+  const bb=(b[dateField]||"")+" "+(b.created_at||"");
+  return aa.localeCompare(bb);
+}
+
+
+function cbmsModeIsBank(mode){
+  return ["Bank","UPI","Cheque"].includes(String(mode||""));
+}
+
+
+window.loadMonthlyBackup=async function(){
+  try{
+    const r=cbmsMonthRange();
+
+    const period=document.getElementById("mbPeriod");
+    if(period) period.value=`${r.start} to ${r.end}`;
+
+    if(typeof liveLoadInventory==="function"){
+      await liveLoadInventory();
+    }
+
+    const [
+      salesRes,
+      purchasesRes,
+      vouchersRes,
+      returnsRes,
+      seedRes
+    ]=await Promise.all([
+      authDb.from("sales_invoices")
+        .select("*")
+        .gte("invoice_date",r.start)
+        .lte("invoice_date",r.end)
+        .order("invoice_date",{ascending:true})
+        .order("created_at",{ascending:true})
+        .limit(5000),
+
+      authDb.from("inventory_purchases")
+        .select("*")
+        .lte("purchase_date",r.end)
+        .order("purchase_date",{ascending:true})
+        .order("created_at",{ascending:true})
+        .limit(5000),
+
+      authDb.from("account_vouchers")
+        .select("*")
+        .eq("status","Final")
+        .lte("voucher_date",r.end)
+        .order("voucher_date",{ascending:true})
+        .order("created_at",{ascending:true})
+        .limit(5000),
+
+      authDb.from("inventory_stock_adjustments")
+        .select("*")
+        .eq("entry_type","PURCHASE_RETURN")
+        .lte("entry_date",r.end)
+        .order("entry_date",{ascending:true})
+        .order("created_at",{ascending:true})
+        .limit(5000),
+
+      authDb.from("seed_distributions")
+        .select("*")
+        .gte("distribution_date",r.start)
+        .lte("distribution_date",r.end)
+        .order("distribution_date",{ascending:true})
+        .order("created_at",{ascending:true})
+        .limit(5000)
+    ]);
+
+    [salesRes,purchasesRes,vouchersRes,returnsRes,seedRes].forEach(res=>{
+      if(res.error) throw res.error;
+    });
+
+    const sales=salesRes.data||[];
+    const allPurchases=purchasesRes.data||[];
+    const vouchers=vouchersRes.data||[];
+    const returns=returnsRes.data||[];
+    const seeds=seedRes.data||[];
+
+    const purchaseIds=allPurchases.map(x=>x.id);
+    let purchaseItems=[];
+
+    if(purchaseIds.length){
+      for(let i=0;i<purchaseIds.length;i+=150){
+        const batch=purchaseIds.slice(i,i+150);
+        const {data,error}=await authDb
+          .from("inventory_purchase_items")
+          .select("*")
+          .in("purchase_id",batch)
+          .limit(5000);
+
+        if(error) throw error;
+        purchaseItems.push(...(data||[]));
+      }
+    }
+
+    const itemMap=Object.fromEntries(
+      (liveInventoryItems||[]).map(i=>[i.id,i])
+    );
+
+    const purchaseMap=Object.fromEntries(
+      allPurchases.map(p=>[p.id,p])
+    );
+
+    const purchaseAmountById={};
+    purchaseItems.forEach(x=>{
+      purchaseAmountById[x.purchase_id]=
+        (purchaseAmountById[x.purchase_id]||0)+num(x.line_amount);
+    });
+
+    const monthlyPurchases=allPurchases.filter(
+      p=>p.purchase_date>=r.start && p.purchase_date<=r.end
+    );
+
+    const monthlyPurchaseIds=new Set(monthlyPurchases.map(p=>p.id));
+    const monthlyPurchaseItems=purchaseItems.filter(
+      x=>monthlyPurchaseIds.has(x.purchase_id)
+    );
+
+    /* ---------- Sales ---------- */
+    const finalSales=sales.filter(x=>String(x.status||"Final")!=="Cancelled");
+    const salesTotal=finalSales.reduce((s,x)=>s+num(x.grand_total),0);
+
+    /* ---------- Purchase ---------- */
+    const purchaseTotal=monthlyPurchases.reduce(
+      (s,p)=>s+num(purchaseAmountById[p.id]),0
+    );
+
+    /* ---------- Cash Book ---------- */
+    const cashAll=vouchers
+      .filter(v=>String(v.mode)==="Cash")
+      .sort((a,b)=>cbmsSortDateCreated(a,b,"voucher_date"));
+
+    const cashOpening=cashAll
+      .filter(v=>v.voucher_date<r.start)
+      .reduce((s,v)=>s+(v.voucher_type==="RECEIPT"?num(v.amount):-num(v.amount)),0);
+
+    let cashRunning=cashOpening;
+    const cashRows=[];
+
+    if(cashOpening!==0){
+      cashRows.push({
+        date:r.start,
+        voucher:"OPENING",
+        particular:"Opening Balance B/F",
+        reference:"",
+        receipt:cashOpening>0?cashOpening:0,
+        payment:cashOpening<0?Math.abs(cashOpening):0,
+        balance:cashOpening
+      });
+    }
+
+    cashAll
+      .filter(v=>v.voucher_date>=r.start && v.voucher_date<=r.end)
+      .forEach(v=>{
+        const receipt=v.voucher_type==="RECEIPT"?num(v.amount):0;
+        const payment=v.voucher_type==="PAYMENT"?num(v.amount):0;
+        cashRunning+=receipt-payment;
+
+        cashRows.push({
+          date:v.voucher_date,
+          voucher:v.voucher_no||"",
+          particular:(v.entry_type||"")+" - "+(v.party_name||""),
+          reference:v.reference_no||v.bill_invoice_no||"",
+          receipt,
+          payment,
+          balance:cashRunning
+        });
+      });
+
+    /* ---------- Bank Book ---------- */
+    const bankAll=vouchers
+      .filter(v=>cbmsModeIsBank(v.mode))
+      .sort((a,b)=>cbmsSortDateCreated(a,b,"voucher_date"));
+
+    const bankOpening=bankAll
+      .filter(v=>v.voucher_date<r.start)
+      .reduce((s,v)=>s+(v.voucher_type==="RECEIPT"?num(v.amount):-num(v.amount)),0);
+
+    let bankRunning=bankOpening;
+    const bankRows=[];
+
+    if(bankOpening!==0){
+      bankRows.push({
+        date:r.start,
+        voucher:"OPENING",
+        particular:"Opening Balance B/F",
+        mode:"Bank",
+        reference:"",
+        deposit:bankOpening>0?bankOpening:0,
+        withdrawal:bankOpening<0?Math.abs(bankOpening):0,
+        balance:bankOpening
+      });
+    }
+
+    bankAll
+      .filter(v=>v.voucher_date>=r.start && v.voucher_date<=r.end)
+      .forEach(v=>{
+        const deposit=v.voucher_type==="RECEIPT"?num(v.amount):0;
+        const withdrawal=v.voucher_type==="PAYMENT"?num(v.amount):0;
+        bankRunning+=deposit-withdrawal;
+
+        bankRows.push({
+          date:v.voucher_date,
+          voucher:v.voucher_no||"",
+          particular:(v.entry_type||"")+" - "+(v.party_name||""),
+          mode:v.mode||"",
+          reference:v.reference_no||v.bill_invoice_no||"",
+          deposit,
+          withdrawal,
+          balance:bankRunning
+        });
+      });
+
+    /* ---------- Supplier Ledger, all suppliers ---------- */
+    const supplierEvents=[];
+
+    allPurchases.forEach(p=>{
+      supplierEvents.push({
+        supplier:p.supplier_name||"Unknown Supplier",
+        date:p.purchase_date,
+        created_at:p.created_at||"",
+        reference:p.purchase_no||"",
+        particular:"Purchase",
+        purchase:num(purchaseAmountById[p.id]),
+        paid:0
+      });
+    });
+
+    vouchers
+      .filter(v=>
+        v.voucher_type==="PAYMENT" &&
+        String(v.entry_type||"").trim().toLowerCase()==="purchase payment"
+      )
+      .forEach(v=>{
+        supplierEvents.push({
+          supplier:v.party_name||"Unknown Supplier",
+          date:v.voucher_date,
+          created_at:v.created_at||"",
+          reference:v.voucher_no||"",
+          particular:"Purchase Payment"+(v.bill_invoice_no?` (Against ${v.bill_invoice_no})`:""),
+          purchase:0,
+          paid:num(v.amount)
+        });
+      });
+
+    returns.forEach(a=>{
+      const p=purchaseMap[a.purchase_id]||{};
+      supplierEvents.push({
+        supplier:a.supplier_name||p.supplier_name||"Unknown Supplier",
+        date:a.entry_date,
+        created_at:a.created_at||"",
+        reference:a.entry_no||"",
+        particular:"Purchase Return"+(p.purchase_no?` (Against ${p.purchase_no})`:"")+(a.reason?` - ${a.reason}`:""),
+        purchase:0,
+        paid:num(a.amount)
+      });
+    });
+
+    supplierEvents.sort((a,b)=>{
+      const s=String(a.supplier).localeCompare(String(b.supplier),undefined,{sensitivity:"base"});
+      if(s!==0) return s;
+      return ((a.date||"")+" "+(a.created_at||"")).localeCompare((b.date||"")+" "+(b.created_at||""));
+    });
+
+    const suppliers=[...new Set(supplierEvents.map(x=>x.supplier))];
+    const supplierRows=[];
+    let supplierPayable=0;
+
+    suppliers.forEach(supplier=>{
+      const events=supplierEvents.filter(x=>x.supplier===supplier);
+      const opening=events
+        .filter(x=>x.date<r.start)
+        .reduce((s,x)=>s+num(x.purchase)-num(x.paid),0);
+
+      let running=opening;
+      const monthly=events.filter(x=>x.date>=r.start && x.date<=r.end);
+
+      if(monthly.length || opening!==0){
+        supplierRows.push({
+          supplier,
+          date:r.start,
+          reference:"OPENING",
+          particular:"Opening Balance B/F",
+          purchase:opening>0?opening:0,
+          paid:opening<0?Math.abs(opening):0,
+          balance:opening
+        });
+      }
+
+      monthly.forEach(x=>{
+        running+=num(x.purchase)-num(x.paid);
+        supplierRows.push({...x,balance:running});
+      });
+
+      const closing=events
+        .filter(x=>x.date<=r.end)
+        .reduce((s,x)=>s+num(x.purchase)-num(x.paid),0);
+
+      supplierPayable+=closing;
+    });
+
+    /* ---------- Purchase lines ---------- */
+    const purchaseRows=monthlyPurchaseItems.map(x=>{
+      const p=purchaseMap[x.purchase_id]||{};
+      const item=itemMap[x.item_id]||{};
+
+      return {
+        date:p.purchase_date||"",
+        purchase_no:p.purchase_no||"",
+        supplier:p.supplier_name||"",
+        supplier_bill_no:p.supplier_bill_no||"",
+        item:item.name||"Item",
+        brand:item.brand||"",
+        unit:item.unit||"",
+        quantity:num(x.quantity),
+        rate:num(x.purchase_rate),
+        batch:x.batch_no||"",
+        expiry:x.expiry_date||"",
+        line_amount:num(x.line_amount),
+        payment_status:p.payment_status||""
+      };
+    });
+
+    /* ---------- Seed Distribution ---------- */
+    const seedRows=seeds.map(x=>{
+      const item=itemMap[x.item_id]||{};
+      return {
+        date:x.distribution_date||"",
+        distribution_no:x.distribution_no||"",
+        mission:x.scheme_program_name||item.missionName||"",
+        year:item.seedYear||"",
+        crop:x.seed_name_snapshot||item.name||"Seed",
+        variety:item.brand||"",
+        farmer_reg:x.farmer_registration_no||"",
+        farmer:x.farmer_name||"",
+        father_husband:x.father_husband_name||"",
+        mobile:x.mobile||"",
+        aadhaar:x.aadhar_number
+          ? "XXXX-XXXX-"+String(x.aadhar_number).replace(/\D/g,"").slice(-4)
+          : "",
+        block:x.block||"",
+        panchayat:x.panchayat||"",
+        village:x.village||"",
+        quantity:num(x.quantity),
+        unit:x.unit||item.unit||"Kg"
+      };
+    });
+
+    const seedQty=seedRows.reduce((s,x)=>s+num(x.quantity),0);
+
+    cbmsMonthlyBackup={
+      range:r,
+      sales,
+      finalSales,
+      salesTotal,
+      monthlyPurchases,
+      purchaseRows,
+      purchaseTotal,
+      cashRows,
+      cashClosing:cashRunning,
+      bankRows,
+      bankClosing:bankRunning,
+      supplierRows,
+      supplierPayable,
+      seedRows,
+      seedQty
+    };
+
+    renderMonthlyBackupStatus();
+    showMessage(r.label+" ka monthly backup data load ho gaya.");
+
+  }catch(error){
+    cbmsMonthlyBackup=null;
+    showMessage("Monthly Backup load error: "+liveErrorMessage(error),"error");
+  }
+};
+
+
+window.renderMonthlyBackupStatus=function(){
+  const b=cbmsMonthlyBackup;
+  if(!b) return;
+
+  document.getElementById("mbSalesTotal").textContent=money(b.salesTotal);
+  document.getElementById("mbSalesCount").textContent=b.sales.length+" bills";
+
+  document.getElementById("mbPurchaseTotal").textContent=money(b.purchaseTotal);
+  document.getElementById("mbPurchaseCount").textContent=b.monthlyPurchases.length+" purchases";
+
+  document.getElementById("mbCashClosing").textContent=money(b.cashClosing);
+  document.getElementById("mbBankClosing").textContent=money(b.bankClosing);
+  document.getElementById("mbSupplierPayable").textContent=money(b.supplierPayable);
+  document.getElementById("mbSeedQty").textContent=num(b.seedQty).toFixed(3)+" Kg";
+  document.getElementById("mbSeedCount").textContent=b.seedRows.length+" entries";
+
+  const status=[
+    ["Sales",b.sales.length,money(b.salesTotal)],
+    ["Purchase",b.monthlyPurchases.length,money(b.purchaseTotal)],
+    ["Cash Book",b.cashRows.length,money(b.cashClosing)],
+    ["Bank Book",b.bankRows.length,money(b.bankClosing)],
+    ["Supplier Ledger",b.supplierRows.length,money(b.supplierPayable)],
+    ["Seed Distribution",b.seedRows.length,num(b.seedQty).toFixed(3)+" Kg"]
+  ];
+
+  document.getElementById("mbStatusBody").innerHTML=status.map(x=>`
+    <tr>
+      <td><b>${escapeHtml(x[0])}</b></td>
+      <td>${x[1]}</td>
+      <td>${escapeHtml(x[2])}</td>
+      <td><span class="badge green">Ready</span></td>
+    </tr>
+  `).join("");
+};
+
+
+function cbmsBackupRequired(){
+  if(!cbmsMonthlyBackup){
+    throw new Error("Pehle Load Monthly Data par click kijiye.");
+  }
+  return cbmsMonthlyBackup;
+}
+
+
+function cbmsBackupFileName(name){
+  const b=cbmsBackupRequired();
+  return `CBMS-${name}-${b.range.year}-${String(b.range.month).padStart(2,"0")}.csv`;
+}
+
+
+window.exportMonthlySales=function(){
+  try{
+    const b=cbmsBackupRequired();
+    downloadCSV(
+      cbmsBackupFileName("Sales"),
+      ["Date","Invoice No","Customer","Mobile","Farmer Reg No","Buyer GSTIN","Payment Mode","Taxable","CGST","SGST","IGST","GST Total","Grand Total","Status","Cancellation Reason"],
+      b.sales.map(x=>[
+        x.invoice_date||"",
+        x.invoice_no||"",
+        x.customer_name||"",
+        x.customer_mobile||"",
+        x.farmer_registration_no||"",
+        x.buyer_gstin||"",
+        x.payment_mode||"",
+        num(x.taxable_amount).toFixed(2),
+        num(x.cgst_amount).toFixed(2),
+        num(x.sgst_amount).toFixed(2),
+        num(x.igst_amount).toFixed(2),
+        num(x.gst_amount).toFixed(2),
+        num(x.grand_total).toFixed(2),
+        x.status||"",
+        x.cancellation_reason||""
+      ])
+    );
+  }catch(error){ showMessage(liveErrorMessage(error),"error"); }
+};
+
+
+window.exportMonthlyPurchases=function(){
+  try{
+    const b=cbmsBackupRequired();
+    downloadCSV(
+      cbmsBackupFileName("Purchases"),
+      ["Date","Purchase No","Supplier","Supplier Bill No","Item","Brand/Variety","Unit","Qty","Rate","Batch","Expiry","Line Amount","Payment Status"],
+      b.purchaseRows.map(x=>[
+        x.date,x.purchase_no,x.supplier,x.supplier_bill_no,
+        x.item,x.brand,x.unit,x.quantity.toFixed(3),x.rate.toFixed(2),
+        x.batch,x.expiry,x.line_amount.toFixed(2),x.payment_status
+      ])
+    );
+  }catch(error){ showMessage(liveErrorMessage(error),"error"); }
+};
+
+
+window.exportMonthlyCashBook=function(){
+  try{
+    const b=cbmsBackupRequired();
+    downloadCSV(
+      cbmsBackupFileName("Cash-Book"),
+      ["Date","Voucher","Particular","Reference","Receipt","Payment","Running Balance"],
+      b.cashRows.map(x=>[
+        x.date,x.voucher,x.particular,x.reference,
+        num(x.receipt).toFixed(2),num(x.payment).toFixed(2),num(x.balance).toFixed(2)
+      ])
+    );
+  }catch(error){ showMessage(liveErrorMessage(error),"error"); }
+};
+
+
+window.exportMonthlyBankBook=function(){
+  try{
+    const b=cbmsBackupRequired();
+    downloadCSV(
+      cbmsBackupFileName("Bank-Book"),
+      ["Date","Voucher","Particular","Mode","Reference","Deposit","Withdrawal","Running Balance"],
+      b.bankRows.map(x=>[
+        x.date,x.voucher,x.particular,x.mode,x.reference,
+        num(x.deposit).toFixed(2),num(x.withdrawal).toFixed(2),num(x.balance).toFixed(2)
+      ])
+    );
+  }catch(error){ showMessage(liveErrorMessage(error),"error"); }
+};
+
+
+window.exportMonthlySupplierLedger=function(){
+  try{
+    const b=cbmsBackupRequired();
+    downloadCSV(
+      cbmsBackupFileName("Supplier-Ledger"),
+      ["Supplier","Date","Reference","Particular","Purchase","Paid / Return","Running Balance"],
+      b.supplierRows.map(x=>[
+        x.supplier,x.date,x.reference,x.particular,
+        num(x.purchase).toFixed(2),num(x.paid).toFixed(2),num(x.balance).toFixed(2)
+      ])
+    );
+  }catch(error){ showMessage(liveErrorMessage(error),"error"); }
+};
+
+
+window.exportMonthlySeedDistribution=function(){
+  try{
+    const b=cbmsBackupRequired();
+    downloadCSV(
+      cbmsBackupFileName("Seed-Distribution"),
+      ["Date","Distribution No","Mission","Year","Crop","Variety","Farmer Reg No","Farmer","Father/Husband","Mobile","Aadhaar Masked","Block","Panchayat","Village","Quantity","Unit"],
+      b.seedRows.map(x=>[
+        x.date,x.distribution_no,x.mission,x.year,x.crop,x.variety,
+        x.farmer_reg,x.farmer,x.father_husband,x.mobile,x.aadhaar,
+        x.block,x.panchayat,x.village,x.quantity.toFixed(3),x.unit
+      ])
+    );
+  }catch(error){ showMessage(liveErrorMessage(error),"error"); }
+};
+
+
+window.downloadMonthlyFullBackup=function(){
+  try{
+    const b=cbmsBackupRequired();
+    const rows=[];
+
+    b.sales.forEach(x=>{
+      rows.push([
+        "SALES",x.invoice_date||"",x.invoice_no||"",x.customer_name||"",
+        "GST Sale",x.payment_mode||"","",
+        "", "", num(x.taxable_amount).toFixed(2),num(x.gst_amount).toFixed(2),
+        num(x.grand_total).toFixed(2),"",x.status||"",x.cancellation_reason||""
+      ]);
+    });
+
+    b.purchaseRows.forEach(x=>{
+      rows.push([
+        "PURCHASE",x.date,x.purchase_no,x.supplier,
+        `${x.item}${x.brand?" - "+x.brand:""}`,"",x.quantity.toFixed(3)+" "+x.unit,
+        x.line_amount.toFixed(2),"","","",x.line_amount.toFixed(2),"",
+        x.payment_status,x.supplier_bill_no||""
+      ]);
+    });
+
+    b.cashRows.forEach(x=>{
+      rows.push([
+        "CASH BOOK",x.date,x.voucher,"",x.particular,"", "",
+        num(x.receipt).toFixed(2),num(x.payment).toFixed(2),"","","",
+        num(x.balance).toFixed(2),"",x.reference||""
+      ]);
+    });
+
+    b.bankRows.forEach(x=>{
+      rows.push([
+        "BANK BOOK",x.date,x.voucher,"",x.particular,x.mode||"","",
+        num(x.deposit).toFixed(2),num(x.withdrawal).toFixed(2),"","","",
+        num(x.balance).toFixed(2),"",x.reference||""
+      ]);
+    });
+
+    b.supplierRows.forEach(x=>{
+      rows.push([
+        "SUPPLIER LEDGER",x.date,x.reference,x.supplier,x.particular,"","",
+        num(x.purchase).toFixed(2),num(x.paid).toFixed(2),"","","",
+        num(x.balance).toFixed(2),"",""
+      ]);
+    });
+
+    b.seedRows.forEach(x=>{
+      rows.push([
+        "SEED DISTRIBUTION",x.date,x.distribution_no,x.farmer,
+        `${x.crop}${x.variety?" - "+x.variety:""}`,"",x.quantity.toFixed(3)+" "+x.unit,
+        "","","","","","",x.mission||"",
+        `${x.village||""}, ${x.panchayat||""}, ${x.block||""}`
+      ]);
+    });
+
+    downloadCSV(
+      cbmsBackupFileName("FULL-MONTHLY-BACKUP"),
+      [
+        "Section","Date","Reference","Party / Farmer / Supplier",
+        "Particular / Item","Mode","Quantity",
+        "Receipt / Purchase","Payment / Return",
+        "Taxable","GST","Total","Balance","Status / Mission","Notes"
+      ],
+      rows
+    );
+
+  }catch(error){
+    showMessage(liveErrorMessage(error),"error");
+  }
+};
+
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(()=>{
+    try{ initMonthlyBackup(); }catch(e){}
+  },600);
+});
 </script>
 
 </body>
