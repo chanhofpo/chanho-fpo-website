@@ -51,6 +51,35 @@ button,input,select,textarea{font:inherit}
   display:flex;align-items:center;gap:10px;font-size:13px
 }
 .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.16)}
+
+.sidebar-group{margin:3px 0}
+.sidebar-group-btn{
+  width:100%;border:0;background:transparent;color:#fff;text-align:left;
+  padding:11px 10px;border-radius:7px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:13px;font-weight:700;
+}
+.sidebar-group-btn:hover,.sidebar-group.open>.sidebar-group-btn{
+  background:rgba(255,255,255,.12);
+}
+.group-left{display:flex;align-items:center;gap:10px}
+.group-arrow{font-size:12px;transition:transform .18s ease}
+.sidebar-group.open .group-arrow{transform:rotate(180deg)}
+.sidebar-group-menu{
+  display:none;
+  padding:3px 0 5px 16px;
+}
+.sidebar-group.open .sidebar-group-menu{display:block}
+.sidebar-group-menu .sidebar-link{
+  padding:9px 10px;
+  font-size:12px;
+  margin:1px 0;
+}
+.sidebar-group-menu .sidebar-link .ico{
+  width:19px;
+  font-size:12px;
+}
+
 .ico{width:22px;text-align:center}
 .main-shell{margin-left:250px;min-height:100vh}
 .topbar{
@@ -212,37 +241,135 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   </div>
 
   <nav class="sidebar-nav">
-    <button class="sidebar-link active" data-title="Accountant Dashboard" onclick="showPanel('dashboardPanel',this);loadDashboardSummary();loadLowStockAlert()"><span class="ico">⌂</span>Dashboard</button>
-    <button class="sidebar-link" data-title="Accountant Profile" onclick="showPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
-    <button class="sidebar-link" data-title="GST Settings" onclick="showPanel('gstSettingsPanel',this)"><span class="ico">🧾</span>FPO GST Settings</button>
 
-    <button class="sidebar-link" data-title="Receipt Entry" onclick="showPanel('receiptPanel',this)"><span class="ico">💰</span>Receipt Entry</button>
-    <button class="sidebar-link" data-title="Payment Entry" onclick="showPanel('paymentPanel',this);loadPaymentAvailableBalance()"><span class="ico">💸</span>Payment Entry</button>
-    <button class="sidebar-link" data-title="Journal / Contra" onclick="showPanel('journalPanel',this)"><span class="ico">📘</span>Journal / Contra</button>
+    <button class="sidebar-link active" data-title="Accountant Dashboard"
+      onclick="showPanel('dashboardPanel',this);loadDashboardSummary();loadLowStockAlert()">
+      <span class="ico">⌂</span>Dashboard
+    </button>
 
-    <button class="sidebar-link" data-title="Sales & Income" onclick="showPanel('salesPanel',this)"><span class="ico">🧾</span>Sales / Income</button>
-    <button class="sidebar-link" data-title="Purchase & Expense" onclick="showPanel('purchasePanel',this)"><span class="ico">🛒</span>Purchase / Expense</button>
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">📝</span>Daily Entries</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Receipt Entry"
+          onclick="showPanel('receiptPanel',this)"><span class="ico">💰</span>Receipt Entry</button>
 
-    <button class="sidebar-link" data-title="Item Master" onclick="showPanel('itemMasterPanel',this)"><span class="ico">📦</span>Seed/Fertilizer/Plant Item Master</button>
-    <button class="sidebar-link" data-title="Stock Inward" onclick="showPanel('stockInPanel',this)"><span class="ico">⬇️</span>Stock Inward / Purchase</button>
-    <button class="sidebar-link" data-title="Return / Damage / Expired" onclick="showPanel('stockOutPanel',this);loadStockOutPanel()"><span class="ico">↩️</span>Return / Damage / Expired</button>
-    <button class="sidebar-link" data-title="Seed Stock / Transfer" onclick="showPanel('seedTransferPanel',this)"><span class="ico">🌱</span>Seed Stock / Transfer</button>
-    <button class="sidebar-link" data-title="Seed Distribution" onclick="showPanel('seedDistributionPanel',this)"><span class="ico">🌾</span>Seed Distribution</button>
-    <button class="sidebar-link" data-title="Seed Distribution Report" onclick="showPanel('seedReportPanel',this);loadSeedDistributionReport()"><span class="ico">📋</span>Seed Distribution Report</button>
-    <button class="sidebar-link" data-title="Sales Billing" onclick="showPanel('billingPanel',this)"><span class="ico">🧾</span>Fertilizer/Plant Billing</button>
-    <button class="sidebar-link" data-title="GST Bill History" onclick="showPanel('billHistoryPanel',this);loadBillHistory()"><span class="ico">🧾</span>GST Bill History</button>
-    <button class="sidebar-link" data-title="Stock Register" onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
+        <button class="sidebar-link" data-title="Payment Entry"
+          onclick="showPanel('paymentPanel',this);loadPaymentAvailableBalance()"><span class="ico">💸</span>Payment Entry</button>
 
-    <button class="sidebar-link" data-title="Opening Balance" onclick="showPanel('openingBalancePanel',this);loadOpeningBalance()"><span class="ico">🏁</span>Opening Balance</button>
-    <button class="sidebar-link" data-title="Cash Book" onclick="showPanel('cashbookPanel',this);loadCashBook()"><span class="ico">📗</span>Cash Book</button>
-    <button class="sidebar-link" data-title="Bank Book" onclick="showPanel('bankbookPanel',this);loadBankBook()"><span class="ico">🏦</span>Bank Book</button>
-    <button class="sidebar-link" data-title="Supplier Ledger" onclick="showPanel('supplierLedgerPanel',this);loadSupplierNames()"><span class="ico">📒</span>Supplier Ledger</button>
-    <button class="sidebar-link" data-title="Ledger" onclick="showPanel('ledgerPanel',this)"><span class="ico">📚</span>Ledger</button>
+        <button class="sidebar-link" data-title="Journal / Contra"
+          onclick="showPanel('journalPanel',this)"><span class="ico">📘</span>Journal / Contra</button>
+      </div>
+    </div>
 
-    <button class="sidebar-link" data-title="Receivable / Payable" onclick="showPanel('duesPanel',this)"><span class="ico">⏳</span>Receivable / Payable</button>
-    <button class="sidebar-link" data-title="Monthly Backup / Export" onclick="showPanel('monthlyBackupPanel',this);initMonthlyBackup()"><span class="ico">💾</span>Monthly Backup / Export</button>
-    <button class="sidebar-link" data-title="Reports" onclick="showPanel('reportsPanel',this)"><span class="ico">📊</span>Reports</button>
-    <button class="sidebar-link" data-title="Audit Trail" onclick="showPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Trail</button>
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">🧾</span>Sales & Purchase</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Sales & Income"
+          onclick="showPanel('salesPanel',this)"><span class="ico">🧾</span>Sales / Income</button>
+
+        <button class="sidebar-link" data-title="Purchase & Expense"
+          onclick="showPanel('purchasePanel',this)"><span class="ico">🛒</span>Purchase / Expense</button>
+
+        <button class="sidebar-link" data-title="Sales Billing"
+          onclick="showPanel('billingPanel',this)"><span class="ico">🧾</span>Fertilizer/Plant Billing</button>
+
+        <button class="sidebar-link" data-title="GST Bill History"
+          onclick="showPanel('billHistoryPanel',this);loadBillHistory()"><span class="ico">📄</span>GST Bill History</button>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">📦</span>Stock & Seed</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Item Master"
+          onclick="showPanel('itemMasterPanel',this)"><span class="ico">📦</span>Item Master</button>
+
+        <button class="sidebar-link" data-title="Stock Inward"
+          onclick="showPanel('stockInPanel',this)"><span class="ico">⬇️</span>Stock Inward / Purchase</button>
+
+        <button class="sidebar-link" data-title="Return / Damage / Expired"
+          onclick="showPanel('stockOutPanel',this);loadStockOutPanel()"><span class="ico">↩️</span>Return / Damage / Expired</button>
+
+        <button class="sidebar-link" data-title="Seed Stock / Transfer"
+          onclick="showPanel('seedTransferPanel',this)"><span class="ico">🌱</span>Seed Stock / Transfer</button>
+
+        <button class="sidebar-link" data-title="Seed Distribution"
+          onclick="showPanel('seedDistributionPanel',this)"><span class="ico">🌾</span>Seed Distribution</button>
+
+        <button class="sidebar-link" data-title="Stock Register"
+          onclick="showPanel('stockPanel',this)"><span class="ico">📊</span>Stock Register</button>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">📚</span>Accounts</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Opening Balance"
+          onclick="showPanel('openingBalancePanel',this);loadOpeningBalance()"><span class="ico">🏁</span>Opening Balance</button>
+
+        <button class="sidebar-link" data-title="Cash Book"
+          onclick="showPanel('cashbookPanel',this);loadCashBook()"><span class="ico">📗</span>Cash Book</button>
+
+        <button class="sidebar-link" data-title="Bank Book"
+          onclick="showPanel('bankbookPanel',this);loadBankBook()"><span class="ico">🏦</span>Bank Book</button>
+
+        <button class="sidebar-link" data-title="Supplier Ledger"
+          onclick="showPanel('supplierLedgerPanel',this);loadSupplierNames()"><span class="ico">📒</span>Supplier Ledger</button>
+
+        <button class="sidebar-link" data-title="Ledger"
+          onclick="showPanel('ledgerPanel',this)"><span class="ico">📚</span>Ledger</button>
+
+        <button class="sidebar-link" data-title="Receivable / Payable"
+          onclick="showPanel('duesPanel',this)"><span class="ico">⏳</span>Receivable / Payable</button>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">📊</span>Reports & Backup</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Seed Distribution Report"
+          onclick="showPanel('seedReportPanel',this);loadSeedDistributionReport()"><span class="ico">📋</span>Seed Distribution Report</button>
+
+        <button class="sidebar-link" data-title="Monthly Backup / Export"
+          onclick="showPanel('monthlyBackupPanel',this);initMonthlyBackup()"><span class="ico">💾</span>Monthly Backup / Export</button>
+
+        <button class="sidebar-link" data-title="Reports"
+          onclick="showPanel('reportsPanel',this)"><span class="ico">📊</span>Reports</button>
+
+        <button class="sidebar-link" data-title="Audit Trail"
+          onclick="showPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Trail</button>
+      </div>
+    </div>
+
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">⚙️</span>Settings</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Accountant Profile"
+          onclick="showPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
+
+        <button class="sidebar-link" data-title="GST Settings"
+          onclick="showPanel('gstSettingsPanel',this)"><span class="ico">🧾</span>FPO GST Settings</button>
+      </div>
+    </div>
+
   </nav>
 </aside>
 
@@ -7351,6 +7478,49 @@ document.addEventListener("DOMContentLoaded",()=>{
   setTimeout(()=>{
     try{ initMonthlyBackup(); }catch(e){}
   },600);
+});
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS SIDEBAR DROPDOWN / ACCORDION MENU
+   ============================================================ */
+
+window.toggleSidebarGroup=function(button){
+  const group=button.closest(".sidebar-group");
+  if(!group) return;
+
+  const willOpen=!group.classList.contains("open");
+
+  // Accordion: ek samay me sirf ek dropdown open.
+  document.querySelectorAll(".sidebar-group.open").forEach(g=>{
+    if(g!==group) g.classList.remove("open");
+  });
+
+  group.classList.toggle("open",willOpen);
+};
+
+/* Child menu click hone par parent dropdown open hi rahe. */
+document.addEventListener("click",function(e){
+  const link=e.target.closest(".sidebar-group-menu .sidebar-link");
+  if(!link) return;
+
+  const group=link.closest(".sidebar-group");
+  if(group) group.classList.add("open");
+});
+
+/* Agar kisi submenu item ko active kiya gaya ho to uska group open rakhein. */
+window.cbmsOpenActiveSidebarGroup=function(){
+  const active=document.querySelector(".sidebar-group-menu .sidebar-link.active");
+  if(active){
+    const group=active.closest(".sidebar-group");
+    if(group) group.classList.add("open");
+  }
+};
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(cbmsOpenActiveSidebarGroup,300);
 });
 </script>
 
