@@ -276,6 +276,23 @@ tr:nth-child(even) td{background:#fafcfd}
           <div><label>Experience</label><input id="bcExperience" placeholder="e.g. 2 years"></div>
         </div>
 
+        <h3 style="color:var(--blue3);margin:20px 0 10px">Bank Details</h3>
+        <div class="form-grid">
+          <div><label>Bank Name</label><input id="bcBankName"></div>
+          <div><label>Branch Name</label><input id="bcBankBranch"></div>
+          <div><label>Account Number</label><input id="bcAccountNumber" inputmode="numeric"></div>
+          <div><label>IFSC Code</label><input id="bcIfsc" maxlength="11" style="text-transform:uppercase"></div>
+          <div>
+            <label>Payment Mode</label>
+            <select id="bcPaymentMode">
+              <option value="">Select</option>
+              <option>Bank Transfer</option>
+              <option>UPI</option>
+              <option>Cash</option>
+            </select>
+          </div>
+        </div>
+
         <h3 style="color:var(--blue3);margin:20px 0 6px">Required Documents</h3>
         <p class="section-note">Aadhaar, Address Proof, Bank Passbook, Photo aur Signature required hain. Qualification / Experience document applicable ho to upload karein.</p>
         <div class="form-grid">
@@ -2500,6 +2517,11 @@ async function registerBlockCoordinator(){
                 p_full_address:document.getElementById("bcAddress").value.trim(),
                 p_qualification:document.getElementById("bcQualification").value.trim(),
                 p_experience:document.getElementById("bcExperience").value.trim(),
+                p_bank_name:document.getElementById("bcBankName").value.trim(),
+                p_bank_branch:document.getElementById("bcBankBranch").value.trim(),
+                p_account_number:document.getElementById("bcAccountNumber").value.trim(),
+                p_ifsc_code:document.getElementById("bcIfsc").value.trim().toUpperCase(),
+                p_payment_mode:document.getElementById("bcPaymentMode").value || null,
                 p_joining_date:document.getElementById("bcJoiningDate").value || null,
                 p_status:document.getElementById("bcStatus").value || "Active",
                 p_aadhaar_url:aadhaarUrl,
