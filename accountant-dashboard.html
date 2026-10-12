@@ -626,6 +626,16 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
             <option>Other Income</option>
           </select>
         </div>
+        <div class="field"><label>Block</label>
+          <select id="rcBlock">
+            <option value="">Common / Not Specific</option>
+            <option value="Chanho">Chanho</option>
+            <option value="Mandar">Mandar</option>
+          </select>
+        </div>
+        <div class="field"><label>Business / Activity</label>
+          <input id="rcBusiness" placeholder="Fertilizer / Plant / Training / Machine etc.">
+        </div>
         <div class="field"><label>Received From *</label><input id="rcParty" placeholder="Farmer / Customer / Agency"></div>
         <div class="field"><label>Amount (₹) *</label><input id="rcAmount" type="number" min="0.01" step="0.01"></div>
         <div class="field"><label>Mode *</label>
@@ -659,9 +669,20 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
             <option>Machine / Repair</option>
             <option>Purchase Payment</option>
             <option>Salary / Honorarium</option>
+            <option>Commission</option>
             <option>Electricity / Rent</option>
             <option>Other Expense</option>
           </select>
+        </div>
+        <div class="field"><label>Block</label>
+          <select id="pyBlock">
+            <option value="">Common / Not Specific</option>
+            <option value="Chanho">Chanho</option>
+            <option value="Mandar">Mandar</option>
+          </select>
+        </div>
+        <div class="field"><label>Business / Activity</label>
+          <input id="pyBusiness" placeholder="Fertilizer / Plant / Training / Machine etc.">
         </div>
         <div class="field" id="pyPartyWrap"><label>Paid To *</label><input id="pyParty" list="supplierNameList" placeholder="Vendor / Person / Agency"></div>
         <datalist id="supplierNameList"></datalist>
@@ -688,7 +709,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           <input id="pyAvailableBalance" readonly value="₹0.00">
         </div>
         <div class="field"><label>Reference No.</label><input id="pyRef" placeholder="UTR / Cheque / Bill No."></div>
-        <div class="field"><label>Ledger</label><input id="pyLedger" placeholder="Ledger / Account Head"></div>
+        <div class="field"><label>Ledger / Account Head</label><input id="pyLedger" placeholder="Ledger / Account Head"></div>
         <div class="field"><label>Bill / Invoice No.</label><input id="pyBill" placeholder="Optional"></div>
       </div>
 
@@ -1174,6 +1195,16 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Bill No.</label><input id="billNo" readonly></div>
         <div class="field"><label>Bill Date *</label><input id="billDate" type="date"></div>
+        <div class="field"><label>Block</label>
+          <select id="billBlock">
+            <option value="">Common / Not Specific</option>
+            <option value="Chanho">Chanho</option>
+            <option value="Mandar">Mandar</option>
+          </select>
+        </div>
+        <div class="field"><label>Business / Activity</label>
+          <input id="billBusiness" placeholder="Fertilizer / Plant / Other">
+        </div>
         <div class="field"><label>Customer Type</label>
           <select id="customerType"><option>Farmer</option><option>Customer</option><option>Member</option><option>Other</option></select>
         </div>
@@ -2464,6 +2495,8 @@ function saveSalesBill(){
     document.getElementById("placeOfSupply").value=getGstSettings().state||"Jharkhand";
     document.getElementById("billRef").value="";
     document.getElementById("billDiscount").value="0";
+    if(document.getElementById("billBlock")) document.getElementById("billBlock").value="";
+    if(document.getElementById("billBusiness")) document.getElementById("billBusiness").value="";
     document.getElementById("billItemsBody").innerHTML="";
     addBillRow();
     recalculateBill();
@@ -3143,7 +3176,7 @@ window.saveSalesBill=async function(){
 
     const lineItems=collectBillItems();
 
-    const {data,error}=await authDb.rpc("cbms_create_sales_invoice",{
+    const {data,error}=await authDb.rpc("cbms_create_sales_invoice_v2",{
       p_invoice_date:document.getElementById("billDate").value || today(),
       p_customer_type:document.getElementById("customerType").value,
       p_customer_name:customer,
@@ -3154,7 +3187,9 @@ window.saveSalesBill=async function(){
       p_payment_mode:document.getElementById("billPaymentMode").value,
       p_reference_no:document.getElementById("billRef").value.trim(),
       p_discount_amount:num(document.getElementById("billDiscount").value),
-      p_items:lineItems
+      p_items:lineItems,
+      p_block:document.getElementById("billBlock")?.value || "",
+      p_business_name:document.getElementById("billBusiness")?.value.trim() || ""
     });
 
     if(error) throw error;
@@ -7522,6 +7557,256 @@ window.cbmsOpenActiveSidebarGroup=function(){
 document.addEventListener("DOMContentLoaded",()=>{
   setTimeout(cbmsOpenActiveSidebarGroup,300);
 });
+</script>
+
+
+<script>
+/* ============================================================
+   CBMS BLOCK + BUSINESS TRACKING
+   Receipt / Payment / Purchase Payment
+   ============================================================ */
+(function(){
+
+  const previousClearReceipt = window.clearReceiptVoucher;
+  window.clearReceiptVoucher = function(){
+    if(typeof previousClearReceipt === "function"){
+      previousClearReceipt();
+    }
+    const block = document.getElementById("rcBlock");
+    const business = document.getElementById("rcBusiness");
+    if(block) block.value = "";
+    if(business) business.value = "";
+  };
+
+  window.saveReceiptVoucher = async function(){
+    const clickedButton =
+      (typeof event !== "undefined" && event && event.currentTarget)
+      ? event.currentTarget
+      : null;
+    const oldText = clickedButton ? clickedButton.textContent : "";
+
+    try{
+      if(clickedButton){
+        clickedButton.disabled = true;
+        clickedButton.textContent = "Saving...";
+      }
+
+      const party = document.getElementById("rcParty")?.value.trim() || "";
+      const amount = num(document.getElementById("rcAmount")?.value);
+
+      if(!party){
+        throw new Error("Received From bharna zaroori hai.");
+      }
+      if(amount <= 0){
+        throw new Error("Amount zero se zyada hona chahiye.");
+      }
+
+      if(typeof updateReceiptLedger === "function"){
+        updateReceiptLedger();
+      }
+
+      const {data,error} = await authDb.rpc(
+        "cbms_create_account_voucher_v2",
+        {
+          p_voucher_date:document.getElementById("rcDate")?.value || today(),
+          p_voucher_type:"RECEIPT",
+          p_entry_type:document.getElementById("rcType")?.value || "Other Income",
+          p_party_name:party,
+          p_amount:amount,
+          p_mode:document.getElementById("rcMode")?.value || "Cash",
+          p_reference_no:document.getElementById("rcRef")?.value.trim() || "",
+          p_ledger_name:document.getElementById("rcLedger")?.value || "",
+          p_farmer_registration_no:document.getElementById("rcFarmerReg")?.value.trim() || "",
+          p_bill_invoice_no:"",
+          p_narration:document.getElementById("rcNarration")?.value.trim() || "",
+          p_block:document.getElementById("rcBlock")?.value || "",
+          p_business_name:document.getElementById("rcBusiness")?.value.trim() || ""
+        }
+      );
+
+      if(error) throw error;
+
+      const voucherNo = data?.[0]?.voucher_no || "";
+      clearReceiptVoucher();
+
+      try{
+        await Promise.all([
+          typeof loadCashBook === "function" ? loadCashBook() : Promise.resolve(),
+          typeof loadBankBook === "function" ? loadBankBook() : Promise.resolve(),
+          typeof loadDashboardSummary === "function" ? loadDashboardSummary() : Promise.resolve()
+        ]);
+      }catch(refreshError){
+        console.warn(refreshError);
+      }
+
+      showMessage(
+        "Receipt save ho gaya" +
+        (voucherNo ? " — " + voucherNo : "") +
+        "."
+      );
+
+    }catch(error){
+      showMessage(liveErrorMessage(error),"error");
+    }finally{
+      if(clickedButton){
+        clickedButton.disabled = false;
+        clickedButton.textContent = oldText || "Save Receipt Voucher";
+      }
+    }
+  };
+
+
+  const previousClearPayment = window.clearPaymentVoucher;
+  window.clearPaymentVoucher = function(){
+    if(typeof previousClearPayment === "function"){
+      previousClearPayment();
+    }
+    const block = document.getElementById("pyBlock");
+    const business = document.getElementById("pyBusiness");
+    if(block) block.value = "";
+    if(business) business.value = "";
+  };
+
+
+  window.savePaymentVoucher = async function(){
+    try{
+      const type = document.getElementById("pyType").value;
+      const amount = num(document.getElementById("pyAmount").value);
+      const block = document.getElementById("pyBlock")?.value || "";
+      const business = document.getElementById("pyBusiness")?.value.trim() || "";
+
+      if(amount <= 0){
+        throw new Error("Amount zero se zyada hona chahiye.");
+      }
+
+      if(type === "Purchase Payment"){
+        const supplier = document.getElementById("pyPurchaseSupplier")?.value || "";
+        const purchaseId = document.getElementById("pyPurchaseBill")?.value || "";
+
+        if(!supplier){
+          throw new Error("Supplier select kijiye.");
+        }
+        if(!purchaseId){
+          throw new Error("Pending Purchase Bill select kijiye.");
+        }
+
+        const bill = cbmsPurchasePaymentBills.find(
+          x => x.purchase_id === purchaseId
+        );
+
+        if(!bill){
+          throw new Error("Selected Purchase Bill load nahi hua.");
+        }
+
+        const outstanding = num(bill.outstanding);
+
+        if(amount > outstanding){
+          throw new Error(
+            "Maximum payment " +
+            money(outstanding) +
+            " hai."
+          );
+        }
+
+        const ok = window.confirm(
+          "Purchase Payment confirm karein:\n\n" +
+          "Supplier: " + supplier + "\n" +
+          "Purchase Bill: " + (bill.purchase_no || "") + "\n" +
+          "Outstanding: " + money(outstanding) + "\n" +
+          "Payment: " + money(amount)
+        );
+
+        if(!ok) return;
+
+        const {data,error} = await authDb.rpc(
+          "cbms_create_purchase_payment_v2",
+          {
+            p_voucher_date:document.getElementById("pyDate").value || today(),
+            p_purchase_id:purchaseId,
+            p_amount:amount,
+            p_mode:document.getElementById("pyMode").value,
+            p_reference_no:document.getElementById("pyRef").value.trim(),
+            p_ledger_name:document.getElementById("pyLedger").value.trim(),
+            p_narration:document.getElementById("pyNarration").value.trim(),
+            p_block:block,
+            p_business_name:business
+          }
+        );
+
+        if(error) throw error;
+
+        const result = data?.[0] || {};
+        const voucherNo = result.voucher_no || "";
+
+        clearPaymentVoucher();
+
+        await Promise.all([
+          typeof loadCashBook === "function" ? loadCashBook() : Promise.resolve(),
+          typeof loadBankBook === "function" ? loadBankBook() : Promise.resolve(),
+          typeof loadSupplierNames === "function" ? loadSupplierNames() : Promise.resolve(),
+          typeof loadDashboardSummary === "function" ? loadDashboardSummary() : Promise.resolve()
+        ]);
+
+        showMessage(
+          "Purchase Payment save ho gaya" +
+          (voucherNo ? " — " + voucherNo : "") +
+          ". Remaining Outstanding: " +
+          money(result.outstanding_after)
+        );
+
+        return;
+      }
+
+      const party = document.getElementById("pyParty").value.trim();
+
+      if(!party){
+        throw new Error("Paid To bharna zaroori hai.");
+      }
+
+      const {data,error} = await authDb.rpc(
+        "cbms_create_account_voucher_v2",
+        {
+          p_voucher_date:document.getElementById("pyDate").value || today(),
+          p_voucher_type:"PAYMENT",
+          p_entry_type:type,
+          p_party_name:party,
+          p_amount:amount,
+          p_mode:document.getElementById("pyMode").value,
+          p_reference_no:document.getElementById("pyRef").value.trim(),
+          p_ledger_name:document.getElementById("pyLedger").value.trim(),
+          p_farmer_registration_no:"",
+          p_bill_invoice_no:document.getElementById("pyBill").value.trim(),
+          p_narration:document.getElementById("pyNarration").value.trim(),
+          p_block:block,
+          p_business_name:business
+        }
+      );
+
+      if(error) throw error;
+
+      const voucherNo = data?.[0]?.voucher_no || "";
+
+      clearPaymentVoucher();
+
+      await Promise.all([
+        typeof loadCashBook === "function" ? loadCashBook() : Promise.resolve(),
+        typeof loadBankBook === "function" ? loadBankBook() : Promise.resolve(),
+        typeof loadSupplierNames === "function" ? loadSupplierNames() : Promise.resolve(),
+        typeof loadDashboardSummary === "function" ? loadDashboardSummary() : Promise.resolve()
+      ]);
+
+      showMessage(
+        "Payment Voucher save ho gaya" +
+        (voucherNo ? " — " + voucherNo : "") +
+        "."
+      );
+
+    }catch(error){
+      showMessage(liveErrorMessage(error),"error");
+    }
+  };
+
+})();
 </script>
 
 </body>

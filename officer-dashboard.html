@@ -105,6 +105,22 @@ tr:nth-child(even) td{background:#fafcfd}
 @media(max-width:720px){.sidebar{transform:translateX(-100%);transition:.25s}.sidebar.open{transform:translateX(0)}.main-shell{margin-left:0;width:100%}.menu-toggle{display:block}.top-logo{display:none}.filters,.download-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.form-span-2,.form-span-3{grid-column:auto}.user-text{max-width:135px}}
 @media(max-width:600px){.content{padding:8px}.topbar{padding:6px 8px}.topbar-title{font-size:13px}.user-chip{padding:3px 6px;border-right:0}.logout-btn{padding:7px 9px}.user-photo,.user-fallback{width:32px;height:32px}.cards,.stats,.area-grid,.profile-summary-grid,.profile-grid,.document-list,.detail-grid{grid-template-columns:1fr}.officer-profile-layout{grid-template-columns:1fr}.welcome-title{font-size:24px}.portal-card-body,.section{padding:12px}.sidebar{width:235px}}
 
+
+.account-filter{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end}
+.account-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:12px 0}
+.account-stat{background:#fff;border:1px solid #d7e1e8;border-radius:7px;padding:14px}
+.account-stat small{display:block;color:#667085;font-weight:700;font-size:11px}
+.account-stat strong{display:block;color:#075e88;font-size:22px;margin-top:6px}
+.block-record-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.block-record-card{background:#fff;border:1px solid #d7e1e8;border-radius:8px;padding:14px}
+.block-record-card h3{margin:0 0 12px;color:#075e88}
+.block-mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.block-mini{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:9px}
+.block-mini small{display:block;color:#667085;font-size:10px}
+.block-mini b{font-size:18px;color:#0b6f9f}
+@media(max-width:1000px){.account-grid{grid-template-columns:repeat(2,1fr)}.account-filter{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.account-grid,.account-filter,.block-record-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -119,6 +135,8 @@ tr:nth-child(even) td{background:#fafcfd}
   </div>
   <nav class="sidebar-nav">
     <button class="sidebar-link active" data-title="Officer Dashboard" onclick="showOfficerPanel('dashboardPanel',this)"><span class="ico">⌂</span>Dashboard</button>
+    <button class="sidebar-link" data-title="Account Update" onclick="showOfficerPanel('accountUpdatePanel',this);loadOfficerAccountUpdate()"><span class="ico">₹</span>Account Update</button>
+    <button class="sidebar-link" data-title="Chanho / Mandar Records" onclick="showOfficerPanel('blockRecordsPanel',this);loadOfficerBlockRecords()"><span class="ico">▦</span>Block Records</button>
     <button class="sidebar-link" data-title="Officer Profile" onclick="showOfficerPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
     <button class="sidebar-link" data-title="Register Accountant" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">💼</span>Register Accountant</button>
     <button class="sidebar-link" data-title="Register Block Coordinator" onclick="showOfficerPanel('blockCoordinatorPanel',this)"><span class="ico">➕</span>Register Block Coordinator</button>
@@ -157,11 +175,145 @@ tr:nth-child(even) td{background:#fafcfd}
         <p class="welcome-text">Officer Dashboard se Accountant registration, Block Coordinator registration/performance aur Farmer applications ka final approval manage kiya ja sakta hai. Admin registration, Admin assignment aur Admin performance ab Block Coordinator handle karega.</p>
         <div class="cards">
           <div class="card"><h3>Total Farmers</h3><div class="number" id="totalFarmers">0</div></div>
-          <div class="card"><h3>Pending Verification</h3><div class="number" id="pendingAdmin">0</div></div>
+          <div class="card"><h3>Pending Admin Verification</h3><div class="number" id="pendingAdmin">0</div></div>
+          <div class="card"><h3>Pending Coordinator Verification</h3><div class="number" id="pendingCoordinator">0</div></div>
           <div class="card"><h3>Pending Officer Approval</h3><div class="number" id="pendingOfficer">0</div></div>
           <div class="card"><h3>Approved Farmers</h3><div class="number" id="approvedFarmers">0</div></div>
         </div>
       </div>
+    </div>
+  </section>
+
+
+  <section id="accountUpdatePanel" class="portal-panel">
+    <div class="section">
+      <h2>Account Update</h2>
+      <p class="section-note">
+        Current Cash/Bank balance, kis din paisa add hua, kis din kharch hua,
+        Business-wise expense/sale, Salary aur Commission yahan dikhega.
+      </p>
+
+      <div class="account-filter">
+        <div><label>From Date</label><input type="date" id="offAccFrom"></div>
+        <div><label>To Date</label><input type="date" id="offAccTo"></div>
+        <div><label>Block</label>
+          <select id="offAccBlock">
+            <option value="">All Blocks</option>
+            <option value="Chanho">Chanho</option>
+            <option value="Mandar">Mandar</option>
+          </select>
+        </div>
+        <div><button class="primary-btn" onclick="loadOfficerAccountUpdate()">Load Account Update</button></div>
+      </div>
+
+      <div class="account-grid">
+        <div class="account-stat"><small>Cash Balance</small><strong id="offAccCash">₹0.00</strong></div>
+        <div class="account-stat"><small>Bank / UPI Balance</small><strong id="offAccBank">₹0.00</strong></div>
+        <div class="account-stat"><small>Total Balance</small><strong id="offAccTotal">₹0.00</strong></div>
+        <div class="account-stat"><small>Period Money Added</small><strong id="offAccReceived">₹0.00</strong></div>
+        <div class="account-stat"><small>Period Expense</small><strong id="offAccExpense">₹0.00</strong></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Business-wise Summary</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Business / Activity</th><th>Expense</th><th>Sales</th></tr></thead>
+        <tbody id="offBusinessSummaryBody"><tr><td colspan="3">No data.</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <div class="section">
+      <h2>Money Added / Receipt History</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Voucher</th><th>From</th><th>Type</th><th>Business</th><th>Block</th><th>Mode</th><th>Amount</th></tr></thead>
+        <tbody id="offMoneyAddedBody"><tr><td colspan="8">No data.</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <div class="section">
+      <h2>Expense History</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Voucher</th><th>Paid To</th><th>Expense Head</th><th>Business</th><th>Block</th><th>Mode</th><th>Amount</th></tr></thead>
+        <tbody id="offExpenseBody"><tr><td colspan="8">No data.</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <div class="section">
+      <h2>Salary Paid</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Voucher</th><th>Person</th><th>Block</th><th>Mode</th><th>Amount</th></tr></thead>
+        <tbody id="offSalaryBody"><tr><td colspan="6">No salary record.</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <div class="section">
+      <h2>Commission Paid</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Voucher</th><th>Person</th><th>Block</th><th>Business</th><th>Amount</th></tr></thead>
+        <tbody id="offCommissionBody"><tr><td colspan="6">No commission record.</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section id="blockRecordsPanel" class="portal-panel">
+    <div class="section">
+      <h2>Chanho / Mandar Separate Records</h2>
+      <p class="section-note">
+        Chanho aur Mandar ka Farmer, Admin aur Block Coordinator record alag-alag dikhega.
+      </p>
+      <div class="block-record-grid">
+        <div class="block-record-card">
+          <h3>Chanho Block</h3>
+          <div class="block-mini-grid">
+            <div class="block-mini"><small>Total Farmers</small><b id="chnTotal">0</b></div>
+            <div class="block-mini"><small>Admins</small><b id="chnAdmins">0</b></div>
+            <div class="block-mini"><small>Coordinators</small><b id="chnCoordinators">0</b></div>
+            <div class="block-mini"><small>Pending Admin</small><b id="chnPendingAdmin">0</b></div>
+            <div class="block-mini"><small>Pending Coordinator</small><b id="chnPendingCoordinator">0</b></div>
+            <div class="block-mini"><small>Pending Officer</small><b id="chnPendingOfficer">0</b></div>
+            <div class="block-mini"><small>Approved</small><b id="chnApproved">0</b></div>
+            <div class="block-mini"><small>Rejected</small><b id="chnRejected">0</b></div>
+          </div>
+        </div>
+
+        <div class="block-record-card">
+          <h3>Mandar Block</h3>
+          <div class="block-mini-grid">
+            <div class="block-mini"><small>Total Farmers</small><b id="mndTotal">0</b></div>
+            <div class="block-mini"><small>Admins</small><b id="mndAdmins">0</b></div>
+            <div class="block-mini"><small>Coordinators</small><b id="mndCoordinators">0</b></div>
+            <div class="block-mini"><small>Pending Admin</small><b id="mndPendingAdmin">0</b></div>
+            <div class="block-mini"><small>Pending Coordinator</small><b id="mndPendingCoordinator">0</b></div>
+            <div class="block-mini"><small>Pending Officer</small><b id="mndPendingOfficer">0</b></div>
+            <div class="block-mini"><small>Approved</small><b id="mndApproved">0</b></div>
+            <div class="block-mini"><small>Rejected</small><b id="mndRejected">0</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Block-wise Farmer List</h2>
+      <div class="filters">
+        <select id="offBlockRecordFilter" onchange="renderOfficerBlockFarmerTable()">
+          <option value="Chanho">Chanho</option>
+          <option value="Mandar">Mandar</option>
+        </select>
+        <select id="offBlockStatusFilter" onchange="renderOfficerBlockFarmerTable()">
+          <option value="">All Status</option>
+          <option value="Pending Admin Verification">Pending Admin Verification</option>
+          <option value="Pending Block Coordinator Verification">Pending Block Coordinator Verification</option>
+          <option value="Pending Officer Approval">Pending Officer Approval</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        <input id="offBlockSearch" placeholder="Name / Reg No / Village..." oninput="renderOfficerBlockFarmerTable()">
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Reg No</th><th>Name</th><th>Mobile</th><th>Panchayat</th><th>Village</th><th>Admin</th><th>Status</th></tr></thead>
+        <tbody id="offBlockFarmerBody"><tr><td colspan="7">No data.</td></tr></tbody>
+      </table></div>
     </div>
   </section>
 
@@ -359,7 +511,8 @@ tr:nth-child(even) td{background:#fafcfd}
     <div class="section"><h2>Search Farmers</h2>
       <div class="filters">
         <input type="text" id="searchInput" placeholder="Search name, registration no, mobile, Aadhaar..." oninput="applyFilters()">
-        <select id="statusFilter" onchange="applyFilters()"><option value="">All Status</option><option value="Pending Admin Verification">Pending Admin Verification</option><option value="Pending Officer Approval">Pending Officer Approval</option><option value="Verified">Verified</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
+        <select id="statusFilter" onchange="applyFilters()"><option value="">All Status</option><option value="Pending Admin Verification">Pending Admin Verification</option><option value="Pending Block Coordinator Verification">Pending Block Coordinator Verification</option><option value="Pending Officer Approval">Pending Officer Approval</option><option value="Verified">Verified</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
+        <select id="officerBlockFilter" onchange="applyFilters()"><option value="">All Blocks</option><option value="Chanho">Chanho</option><option value="Mandar">Mandar</option></select>
         <select id="villageFilter" onchange="applyFilters()"><option value="">All Villages</option></select>
       </div>
     </div>
@@ -698,6 +851,23 @@ async function loadFarmers(){
                     "pending admin"
                 )
         ).length;
+
+
+    const pendingCoordinatorEl =
+        document.getElementById(
+            "pendingCoordinator"
+        );
+
+    if(pendingCoordinatorEl){
+        pendingCoordinatorEl.textContent =
+            officerFarmers.filter(
+                f =>
+                    String(f.status || "")
+                    .trim()
+                    .toLowerCase() ===
+                    "pending block coordinator verification"
+            ).length;
+    }
 
 
     document.getElementById(
@@ -2860,6 +3030,290 @@ async function downloadSystemBackup(){
 
 
 /* =========================
+   OFFICER ACCOUNT UPDATE
+========================= */
+
+function officerMoney(value){
+    const n = Number(value || 0);
+    return "₹" + n.toLocaleString("en-IN",{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2
+    });
+}
+
+function officerTableRows(rows, columns, emptyText){
+    if(!rows || !rows.length){
+        return `<tr><td colspan="${columns.length}">${escapeHtml(emptyText)}</td></tr>`;
+    }
+
+    return rows.map(row => `
+        <tr>
+            ${columns.map(c => `<td>${c.money ? officerMoney(row[c.key]) : escapeHtml(row[c.key] ?? "-")}</td>`).join("")}
+        </tr>
+    `).join("");
+}
+
+async function loadOfficerAccountUpdate(){
+    try{
+        const from = document.getElementById("offAccFrom")?.value || null;
+        const to = document.getElementById("offAccTo")?.value || null;
+        const block = document.getElementById("offAccBlock")?.value || null;
+
+        const {data,error} = await db.rpc(
+            "cbms_officer_account_update",
+            {
+                p_from:from,
+                p_to:to,
+                p_block:block
+            }
+        );
+
+        if(error) throw error;
+
+        const d = data || {};
+
+        document.getElementById("offAccCash").textContent = officerMoney(d.cash_balance);
+        document.getElementById("offAccBank").textContent = officerMoney(d.bank_balance);
+        document.getElementById("offAccTotal").textContent = officerMoney(d.total_balance);
+        document.getElementById("offAccReceived").textContent = officerMoney(d.period_received);
+        document.getElementById("offAccExpense").textContent = officerMoney(d.period_expense);
+
+        const expenseMap = {};
+        (d.business_expense || []).forEach(x=>{
+            const key = x.business || "Other";
+            expenseMap[key] = Number(x.amount || 0);
+        });
+
+        const salesMap = {};
+        (d.business_sales || []).forEach(x=>{
+            const key = x.business || "Other";
+            salesMap[key] = Number(x.amount || 0);
+        });
+
+        const names = Array.from(new Set([
+            ...Object.keys(expenseMap),
+            ...Object.keys(salesMap)
+        ])).sort();
+
+        const businessBody = document.getElementById("offBusinessSummaryBody");
+        businessBody.innerHTML = names.length
+            ? names.map(name=>`
+                <tr>
+                    <td>${escapeHtml(name)}</td>
+                    <td>${officerMoney(expenseMap[name] || 0)}</td>
+                    <td>${officerMoney(salesMap[name] || 0)}</td>
+                </tr>
+            `).join("")
+            : '<tr><td colspan="3">No business data in selected period.</td></tr>';
+
+        document.getElementById("offMoneyAddedBody").innerHTML =
+            officerTableRows(
+                d.money_added || [],
+                [
+                    {key:"voucher_date"},
+                    {key:"voucher_no"},
+                    {key:"party_name"},
+                    {key:"entry_type"},
+                    {key:"business_name"},
+                    {key:"block"},
+                    {key:"mode"},
+                    {key:"amount",money:true}
+                ],
+                "No receipt record."
+            );
+
+        document.getElementById("offExpenseBody").innerHTML =
+            officerTableRows(
+                d.expenses || [],
+                [
+                    {key:"voucher_date"},
+                    {key:"voucher_no"},
+                    {key:"party_name"},
+                    {key:"entry_type"},
+                    {key:"business_name"},
+                    {key:"block"},
+                    {key:"mode"},
+                    {key:"amount",money:true}
+                ],
+                "No expense record."
+            );
+
+        document.getElementById("offSalaryBody").innerHTML =
+            officerTableRows(
+                d.salary_paid || [],
+                [
+                    {key:"voucher_date"},
+                    {key:"voucher_no"},
+                    {key:"party_name"},
+                    {key:"block"},
+                    {key:"mode"},
+                    {key:"amount",money:true}
+                ],
+                "No salary record."
+            );
+
+        document.getElementById("offCommissionBody").innerHTML =
+            officerTableRows(
+                d.commission_paid || [],
+                [
+                    {key:"voucher_date"},
+                    {key:"voucher_no"},
+                    {key:"party_name"},
+                    {key:"block"},
+                    {key:"business_name"},
+                    {key:"amount",money:true}
+                ],
+                "No commission record."
+            );
+
+    }catch(error){
+        console.error(error);
+        showError("Account Update load failed: " + (error.message || error));
+    }
+}
+
+
+/* =========================
+   CHANHO / MANDAR RECORDS
+========================= */
+
+let officerBlockAdmins = [];
+let officerCoordinatorPerformance = [];
+
+function blockEq(value, block){
+    return String(value || "").trim().toLowerCase() === String(block || "").trim().toLowerCase();
+}
+
+function countStatusForBlock(block, status){
+    return officerFarmers.filter(f =>
+        blockEq(f.block,block) &&
+        String(f.status || "").trim().toLowerCase() === status.toLowerCase()
+    ).length;
+}
+
+function coordinatorCountForBlock(block){
+    return officerCoordinatorPerformance.filter(row =>
+        String(row.blocks || "")
+        .split(",")
+        .map(x=>x.trim().toLowerCase())
+        .includes(block.toLowerCase())
+    ).length;
+}
+
+function fillBlockRecordCard(prefix, block){
+    const farmers = officerFarmers.filter(f=>blockEq(f.block,block));
+    const admins = officerBlockAdmins.filter(a=>blockEq(a.block,block));
+
+    const set = (id,val)=>{
+        const el = document.getElementById(id);
+        if(el) el.textContent = val;
+    };
+
+    set(prefix+"Total",farmers.length);
+    set(prefix+"Admins",admins.length);
+    set(prefix+"Coordinators",coordinatorCountForBlock(block));
+    set(prefix+"PendingAdmin",countStatusForBlock(block,"Pending Admin Verification"));
+    set(prefix+"PendingCoordinator",countStatusForBlock(block,"Pending Block Coordinator Verification"));
+    set(prefix+"PendingOfficer",countStatusForBlock(block,"Pending Officer Approval"));
+    set(prefix+"Approved",countStatusForBlock(block,"Approved"));
+    set(prefix+"Rejected",farmers.filter(f=>String(f.status||"").toLowerCase().includes("reject")).length);
+}
+
+async function loadOfficerBlockRecords(){
+    try{
+        if(!officerFarmers.length){
+            await loadFarmers();
+        }
+
+        const [
+            adminResult,
+            coordinatorResult
+        ] = await Promise.all([
+            db.from("admins").select("admin_id,name,block,status"),
+            db.rpc("cbms_officer_block_coordinator_performance")
+        ]);
+
+        if(adminResult.error) throw adminResult.error;
+        if(coordinatorResult.error) throw coordinatorResult.error;
+
+        officerBlockAdmins = adminResult.data || [];
+        officerCoordinatorPerformance = Array.isArray(coordinatorResult.data)
+            ? coordinatorResult.data
+            : [];
+
+        fillBlockRecordCard("chn","Chanho");
+        fillBlockRecordCard("mnd","Mandar");
+        renderOfficerBlockFarmerTable();
+
+    }catch(error){
+        console.error(error);
+        showError("Block Records load failed: " + (error.message || error));
+    }
+}
+
+function renderOfficerBlockFarmerTable(){
+    const block = document.getElementById("offBlockRecordFilter")?.value || "Chanho";
+    const status = document.getElementById("offBlockStatusFilter")?.value || "";
+    const q = (document.getElementById("offBlockSearch")?.value || "").trim().toLowerCase();
+
+    const rows = officerFarmers.filter(f=>{
+        if(!blockEq(f.block,block)) return false;
+        if(status && String(f.status||"") !== status) return false;
+
+        if(q){
+            const hay = [
+                f.registration_no,
+                f.name,
+                f.mobile,
+                f.panchayat,
+                f.village,
+                f.admin_id
+            ].join(" ").toLowerCase();
+
+            if(!hay.includes(q)) return false;
+        }
+
+        return true;
+    });
+
+    const body = document.getElementById("offBlockFarmerBody");
+    if(!body) return;
+
+    body.innerHTML = rows.length
+        ? rows.map(f=>`
+            <tr>
+                <td>${escapeHtml(f.registration_no || "-")}</td>
+                <td>${escapeHtml(f.name || "-")}</td>
+                <td>${escapeHtml(f.mobile || "-")}</td>
+                <td>${escapeHtml(f.panchayat || "-")}</td>
+                <td>${escapeHtml(f.village || "-")}</td>
+                <td>${escapeHtml(f.admin_id || "-")}</td>
+                <td>${escapeHtml(f.status || "-")}</td>
+            </tr>
+        `).join("")
+        : '<tr><td colspan="7">No farmer record.</td></tr>';
+}
+
+
+/* =========================
+   ACCOUNT DATE DEFAULTS
+========================= */
+
+function setOfficerAccountDateDefaults(){
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth()+1).padStart(2,"0");
+    const d = String(now.getDate()).padStart(2,"0");
+
+    const from = document.getElementById("offAccFrom");
+    const to = document.getElementById("offAccTo");
+
+    if(from && !from.value) from.value = `${y}-${m}-01`;
+    if(to && !to.value) to.value = `${y}-${m}-${d}`;
+}
+
+
+/* =========================
    INITIALIZE
 ========================= */
 
@@ -2892,6 +3346,7 @@ async function initialize(){
     }
 
     syncCoordinatorBlockAccess();
+    setOfficerAccountDateDefaults();
 
     await loadPerformance();
 
