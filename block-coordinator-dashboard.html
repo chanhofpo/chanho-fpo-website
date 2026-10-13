@@ -316,7 +316,7 @@ async function registerAdmin(){
     btn.textContent="Registering Admin...";
     const data=await rpc("cbms_block_register_admin_full",{p_payload:payload});
     if(!data || !data.admin_id) throw new Error("Registration ka response nahi mila.");
-    result.innerHTML=`<div class="note"><b>Admin Registration Successful</b><br>Admin ID: ${esc(data.admin_id)}<br>Name: ${esc(data.name)}<br>Block: ${esc(data.block)}<br>Bank details &amp; document paths saved.</div>`;
+    result.innerHTML=`<div class="note"><b>Admin Registration Successful</b><br>Admin ID: ${esc(data.admin_id)}<br>Name: ${esc(data.name)}<br>Block: ${esc(data.block)}<br>Bank details &amp; document paths saved.<br><strong>Login Invite sirf Officer Dashboard se bheja jayega.</strong></div>`;
     ["arName","arFather","arDob","arGender","arMobile","arEmail","arAadhaar",
      "arPanchayat","arVillage","arAddress","arBankName","arBankBranch",
      "arAccountNumber","arIfscCode","arPaymentMode","arJoiningDate","arQualification","arExperience",
@@ -347,16 +347,40 @@ function renderFarmers(){
     <td>${esc(f.registration_no)}</td><td>${esc(f.name)}</td><td>${esc(f.mobile)}</td>
     <td>${esc(f.panchayat)}</td><td>${esc(f.village)}</td><td>${esc(f.admin_id||"-")}</td>
     <td><span class="badge ${statusBadge(f.status)}">${esc(f.status||"-")}</span></td>
-    <td><button class="small edit" onclick="openEdit('${f.id}')">Edit</button>
+    <td><button type="button" class="small edit" data-edit-farmer-id="${esc(f.id)}">Edit</button>
     ${!["approved","rejected","pending officer approval","verified"].includes(String(f.status||"").trim().toLowerCase())?`<button class="small verify" onclick="verifyFarmer('${f.id}')">Verify</button>`:""}</td>
   </tr>`).join(""):'<tr><td colspan="8">No farmer found.</td></tr>';
 }
 
+// Farmer Edit button: match IDs safely even if API returns a different JS type.
+// Event delegation also keeps Edit working after the farmer table is refreshed.
+document.getElementById("farmerBody").addEventListener("click",function(event){
+  const button=event.target.closest("button[data-edit-farmer-id]");
+  if(!button) return;
+  event.preventDefault();
+  openEdit(button.dataset.editFarmerId);
+});
+
 function openEdit(id){
-  const f=farmers.find(x=>x.id===id);if(!f)return;
+  const requestedId=String(id??"").trim();
+  const f=farmers.find(x=>String(x.id??"").trim()===requestedId);
+  if(!requestedId||!f){
+    msg("Edit nahi khula: Farmer record nahi mila. Farmer list Refresh karein.","error");
+    return;
+  }
+  const modal=document.getElementById("editModal");
+  if(!modal){
+    msg("Edit form nahi mila. Dashboard file check karein.","error");
+    return;
+  }
+  modal.style.display="block";
   const map={efId:f.id,efName:f.name,efFather:f.father_name,efDob:f.date_of_birth,efGender:f.gender,efMobile:f.mobile,efAadhaar:f.aadhar_number,efPanchayat:f.panchayat,efVillage:f.village,efCrop:f.crop,efLand:f.land,efCategory:f.category,efBank:f.bank_name,efBranch:f.bank_branch,efAccount:f.account_number,efIfsc:f.ifsc_code,efPayment:f.payment_mode,efAddress:f.address};
-  Object.entries(map).forEach(([id,v])=>document.getElementById(id).value=v||"");
-  document.getElementById("editModal").style.display="block";
+  Object.entries(map).forEach(([fieldId,value])=>{
+    const el=document.getElementById(fieldId);
+    if(!el){console.warn("Missing edit field:",fieldId);return;}
+    el.value=el.type==="date"?String(value??"").slice(0,10):(value??"");
+  });
+  modal.scrollTop=0;
 }
 function closeEdit(){document.getElementById("editModal").style.display="none"}
 
