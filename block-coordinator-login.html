@@ -74,11 +74,19 @@ footer{text-align:center;padding:11px;color:#667085;font-size:11px}
 const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
 const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{
+    storageKey:"cbms-block-coordinator-session-v1",
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true
+  }
+});
 const passwordDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
-  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+  auth:{storageKey:"cbms-coordinator-password-check-v1",persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
 });
 
+let cbmsManualLoginStarted=false;
 let verifiedEmail="";
 let resendTimer=null;
 let resendSeconds=60;
@@ -112,6 +120,7 @@ async function sendOtpToVerifiedEmail(){
 }
 
 async function verifyPasswordAndSendOtp(){
+  cbmsManualLoginStarted=true;
   clearMessage();
   const email=normalizeEmail(), password=document.getElementById("password").value, btn=document.getElementById("continueBtn");
   if(!email||!password){showMessage("Email और Password दोनों भरें।");return}
@@ -162,14 +171,27 @@ async function verifyEmailOtp(){
 
 async function startAgain(){
   verifiedEmail="";clearInterval(resendTimer);
-  await db.auth.signOut();
-  await passwordDb.auth.signOut();
+  await db.auth.signOut({scope:"local"});
+  await passwordDb.auth.signOut({scope:"local"});
   document.getElementById("passwordSection").style.display="block";
   document.getElementById("otpSection").style.display="none";
   document.getElementById("step1").className="step-item active";
   document.getElementById("step2").className="step-item";
   document.getElementById("otp").value="";clearMessage();
 }
+
+
+// Already authenticated Coordinators should not need password or OTP again
+// merely because the browser/tab was reopened.
+async function cbmsResumeCoordinatorSession(){
+  try {
+    const {data,error}=await db.auth.getSession();
+    if(error || !data?.session?.user?.id || cbmsManualLoginStarted) return;
+    await verifyRole(data.session.user.id,db);
+    if(!cbmsManualLoginStarted) window.location.replace("block-coordinator-dashboard.html");
+  } catch(e){ console.warn("Coordinator saved login check:",e); }
+}
+cbmsResumeCoordinatorSession();
 </script>
 </body>
 </html>

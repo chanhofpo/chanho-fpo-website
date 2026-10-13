@@ -595,7 +595,8 @@ const SUPABASE_KEY =
 const db =
     window.supabase.createClient(
         SUPABASE_URL,
-        SUPABASE_KEY
+        SUPABASE_KEY,
+        { auth:{storageKey:"cbms-officer-session-v1",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true} }
     );
 
 
@@ -644,7 +645,7 @@ function showError(message){
 
 async function logout(){
 
-    await db.auth.signOut();
+    await db.auth.signOut({scope:"local"});
 
     window.location.href =
         "officer-login.html";
@@ -3628,6 +3629,28 @@ async function initialize(){
 initialize();
 
 
+
+
+// When reopening a browser tab or returning after PC sleep, let Supabase
+// rehydrate its persisted refresh token. Do not log out on network errors.
+let cbmsFocusChecking = false;
+async function cbmsRenewSessionOnReturn() {
+  if (document.visibilityState === "hidden" || cbmsFocusChecking) return;
+  cbmsFocusChecking = true;
+  try {
+    const {data,error} = await db.auth.getSession();
+    if (error) { console.warn("Session reconnect will retry:",error.message); return; }
+    const session=data?.session;
+    if (session && session.expires_at && session.expires_at * 1000 - Date.now() < 120000) {
+      const refreshed=await db.auth.refreshSession();
+      if (refreshed.error) console.warn("Session refresh will retry:",refreshed.error.message);
+    }
+  } catch (error) { console.warn("Session reconnect will retry:", error); }
+  finally { cbmsFocusChecking=false; }
+}
+document.addEventListener("visibilitychange",cbmsRenewSessionOnReturn);
+window.addEventListener("focus",cbmsRenewSessionOnReturn);
+window.addEventListener("online",cbmsRenewSessionOnReturn);
 </script>
 </body>
 </html>

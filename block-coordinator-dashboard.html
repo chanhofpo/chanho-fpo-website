@@ -173,7 +173,14 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <script>
 const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
 const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{
+    storageKey:"cbms-block-coordinator-session-v1",
+    persistSession:true,
+    autoRefreshToken:true,
+    detectSessionInUrl:true
+  }
+});
 
 let coordinator=null, activeBlock="", farmers=[], admins=[], assignments=[], performance=[];
 
@@ -183,11 +190,12 @@ function showPanel(id,btn,title){document.querySelectorAll(".panel").forEach(x=>
 function statusBadge(s){const x=String(s||"").toLowerCase();return x==="approved"?"green":x.includes("reject")?"red":x.includes("officer")?"blue":"yellow"}
 function arr(data){return Array.isArray(data)?data:(data&&Array.isArray(data.data)?data.data:[])}
 
-async function logout(){await db.auth.signOut();location.href="block-coordinator-login.html"}
+async function logout(){await db.auth.signOut({scope:"local"});location.href="block-coordinator-login.html"}
 
 async function loadCoordinator(){
   const {data:{session},error}=await db.auth.getSession();
-  if(error||!session){location.href="block-coordinator-login.html";return false}
+  if(error){msg("Session connect nahi ho raha. Internet check karke Refresh karein.","error");return false}
+  if(!session){location.href="block-coordinator-login.html";return false}
 
   const {data,error:pErr}=await db.rpc("cbms_block_coordinator_profile");
   if(pErr||!data){msg("Block Coordinator profile नहीं मिला।","error");return false}
@@ -470,6 +478,28 @@ async function loadPerformance(){
   if(!await loadCoordinator())return;
   await Promise.all([loadSummary(),loadAdmins(),loadFarmers(),loadAssignments(),loadPerformance()]);
 })();
+
+
+// When reopening a browser tab or returning after PC sleep, let Supabase
+// rehydrate its persisted refresh token. Do not log out on network errors.
+let cbmsFocusChecking = false;
+async function cbmsRenewSessionOnReturn() {
+  if (document.visibilityState === "hidden" || cbmsFocusChecking) return;
+  cbmsFocusChecking = true;
+  try {
+    const {data,error} = await db.auth.getSession();
+    if (error) { console.warn("Session reconnect will retry:",error.message); return; }
+    const session=data?.session;
+    if (session && session.expires_at && session.expires_at * 1000 - Date.now() < 120000) {
+      const refreshed=await db.auth.refreshSession();
+      if (refreshed.error) console.warn("Session refresh will retry:",refreshed.error.message);
+    }
+  } catch (error) { console.warn("Session reconnect will retry:", error); }
+  finally { cbmsFocusChecking=false; }
+}
+document.addEventListener("visibilitychange",cbmsRenewSessionOnReturn);
+window.addEventListener("focus",cbmsRenewSessionOnReturn);
+window.addEventListener("online",cbmsRenewSessionOnReturn);
 </script>
 </body>
 </html>

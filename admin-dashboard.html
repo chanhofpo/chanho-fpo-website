@@ -142,7 +142,7 @@ tr:nth-child(even) td{background:#fafcfd}
     <div class="stats">
       <div class="stat"><h3>Total Farmers</h3><p id="totalCount">0</p></div>
       <div class="stat"><h3>Pending Verification</h3><p id="pendingCount">0</p></div>
-      <div class="stat"><h3>Pending Block Coordinator Verification</h3><p id="verifiedCount">0</p></div>
+      <div class="stat"><h3>Pending Officer Approval</h3><p id="verifiedCount">0</p></div>
       <div class="stat"><h3>Rejected</h3><p id="rejectedCount">0</p></div>
     </div>
   </div></div>
@@ -162,7 +162,7 @@ tr:nth-child(even) td{background:#fafcfd}
 <section id="farmersPanel" class="portal-panel">
   <div class="section"><h2>Search Farmers</h2><div class="filters">
     <input type="text" id="searchInput" placeholder="Search name, registration no, mobile..." oninput="applyFilters()">
-    <select id="statusFilter" onchange="applyFilters()"><option value="">All Status</option><option value="Pending Admin Verification">Pending Admin Verification</option><option value="Pending Block Coordinator Verification">Pending Block Coordinator Verification</option><option value="Pending Officer Approval">Pending Officer Approval</option><option value="Verified">Verified</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
+    <select id="statusFilter" onchange="applyFilters()"><option value="">All Status</option><option value="Pending Admin Verification">Pending Admin Verification</option><option value="Pending Officer Approval">Pending Officer Approval</option><option value="Verified">Verified</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select>
     <select id="villageFilter" onchange="applyFilters()"><option value="">All Villages</option></select>
   </div></div>
   <div class="section"><h2>Farmer Applications</h2><div id="tableArea"><div class="loading">Loading farmers...</div></div></div>
@@ -195,7 +195,8 @@ const { createClient } = supabase;
 
 const db = createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    { auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true} }
 );
 
 
@@ -234,12 +235,12 @@ async function checkLogin() {
         error: sessionError
     } = await db.auth.getSession();
 
-    if (
-        sessionError ||
-        !sessionData ||
-        !sessionData.session ||
-        !sessionData.session.user
-    ) {
+    if (sessionError) {
+        console.warn("Session temporarily unavailable:",sessionError);
+        showMessage("Session connect nahi ho raha. Internet check karke Refresh karein.","error");
+        return false;
+    }
+    if (!sessionData?.session?.user) {
 
         window.location.href = "admin-login.html";
 
@@ -275,7 +276,7 @@ async function checkLogin() {
 
     if (!admin) {
 
-        await db.auth.signOut();
+        await db.auth.signOut({scope:"local"});
 
         alert(
             "Is Supabase account ka Admin record nahi mila."
@@ -292,7 +293,7 @@ async function checkLogin() {
         !== "active"
     ) {
 
-        await db.auth.signOut();
+        await db.auth.signOut({scope:"local"});
 
         alert(
             "Aapka Admin account Active nahi hai."
@@ -495,7 +496,7 @@ function updateStatistics() {
     const verified = allFarmers.filter(
         f =>
             f.status ===
-            "Pending Block Coordinator Verification"
+            "Pending Officer Approval"
     ).length;
 
 
@@ -844,14 +845,6 @@ function getStatusBadge(status) {
         "Pending Admin Verification"
     ) {
         cls = "badge-pending";
-    }
-
-
-    if (
-        value ===
-        "Pending Block Coordinator Verification"
-    ) {
-        cls = "badge-approved";
     }
 
 
@@ -1974,7 +1967,7 @@ async function verifyFarmer(id) {
         .update({
 
             status:
-                "Pending Block Coordinator Verification",
+                "Pending Officer Approval",
 
             admin_verified_at:
                 new Date().toISOString(),
@@ -2007,7 +2000,7 @@ async function verifyFarmer(id) {
 
 
     showMessage(
-        "Farmer successfully verified. Ab application Block Coordinator Verification ke liye pending hai."
+        "Farmer successfully verified. Ab application Officer Approval ke liye pending hai."
     );
 
 
@@ -2129,7 +2122,7 @@ function closeModal(event) {
 
 async function logout() {
 
-    await db.auth.signOut();
+    await db.auth.signOut({scope:"local"});
 
 
     localStorage.removeItem(
@@ -2329,6 +2322,28 @@ async function startDashboard() {
 startDashboard();
 
 
+
+
+// When reopening a browser tab or returning after PC sleep, let Supabase
+// rehydrate its persisted refresh token. Do not log out on network errors.
+let cbmsFocusChecking = false;
+async function cbmsRenewSessionOnReturn() {
+  if (document.visibilityState === "hidden" || cbmsFocusChecking) return;
+  cbmsFocusChecking = true;
+  try {
+    const {data,error} = await db.auth.getSession();
+    if (error) { console.warn("Session reconnect will retry:",error.message); return; }
+    const session=data?.session;
+    if (session && session.expires_at && session.expires_at * 1000 - Date.now() < 120000) {
+      const refreshed=await db.auth.refreshSession();
+      if (refreshed.error) console.warn("Session refresh will retry:",refreshed.error.message);
+    }
+  } catch (error) { console.warn("Session reconnect will retry:", error); }
+  finally { cbmsFocusChecking=false; }
+}
+document.addEventListener("visibilitychange",cbmsRenewSessionOnReturn);
+window.addEventListener("focus",cbmsRenewSessionOnReturn);
+window.addEventListener("online",cbmsRenewSessionOnReturn);
 </script>
 </body>
 </html>
