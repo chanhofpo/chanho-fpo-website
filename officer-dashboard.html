@@ -3693,7 +3693,27 @@ const cbmsStaffPrintForms = new Map();
 function cbmsPrintEscape(v){return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function cbmsDataURL(file){return new Promise((resolve,reject)=>{if(!file){resolve("");return;}const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(new Error("Photo preview failed"));reader.readAsDataURL(file);});}
 function cbmsMask(v){const t=String(v||"").replace(/\s/g,"");return t?"XXXX"+t.slice(-4):"Not provided";}
-function cbmsStaffDocHTML(r, photo){
+
+/* Use the exact official FPO logo already displayed by this dashboard.
+   Embed it as a data URL so the separate A4 print window can print reliably. */
+async function cbmsStaffPrintLogo(){
+ const existing=document.querySelector('img.fpo-round[src], .brand img[src]');
+ const src=existing?.currentSrc || new URL('logo.png', document.baseURI).href;
+ const img=new Image();
+ img.src=src;
+ try { await img.decode(); }
+ catch (_) { throw new Error('FPO logo could not be loaded. Confirm logo.png exists alongside the dashboard HTML. No registration data was changed.'); }
+ const maxSize=360;
+ const ratio=Math.min(1,maxSize/Math.max(img.naturalWidth||1,img.naturalHeight||1));
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));
+ canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
+ canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+ try { return canvas.toDataURL('image/png'); }
+ catch (_) { throw new Error('FPO logo could not be embedded for printing. Make sure logo.png is served from the same website as the dashboard.'); }
+}
+
+function cbmsStaffDocHTML(r, photo, logo){
  const e=cbmsPrintEscape;
  const date=new Date().toLocaleDateString("en-IN");
  const row=(label,value)=>`<div class="item"><span>${e(label)}</span><strong>${e(value||"—")}</strong></div>`;
@@ -3703,7 +3723,7 @@ function cbmsStaffDocHTML(r, photo){
  @page{size:A4 portrait;margin:11mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#20352c;background:#eef4ee}
  .actions{padding:12px;text-align:center}.actions button{background:#17693e;color:white;border:0;border-radius:6px;padding:12px 22px;font-weight:700;cursor:pointer}
  .sheet{max-width:188mm;min-height:273mm;margin:0 auto 15px;background:white;padding:14mm 12mm;border-top:8px solid #17693e;position:relative;box-shadow:0 4px 20px #0002}
- .head{border-bottom:2px solid #d0a83f;padding-bottom:9px;margin-bottom:13px;display:flex;gap:12px;align-items:center}.mark{border-radius:50%;width:51px;height:51px;background:#17693e;color:#fff;display:grid;place-items:center;font-size:27px;flex:none}.company{font-size:15px;font-weight:900;color:#125432;letter-spacing:.3px;line-height:1.35}.addr{font-size:10px;color:#64736a;margin-top:4px}
+ .head{border-bottom:2px solid #d0a83f;padding-bottom:9px;margin-bottom:13px;display:flex;gap:12px;align-items:center}.mark{width:59px;height:59px;object-fit:contain;background:#fff;border:1px solid #d8e7dc;border-radius:5px;padding:3px;flex:none;display:block}.company{font-size:15px;font-weight:900;color:#125432;letter-spacing:.3px;line-height:1.35}.addr{font-size:10px;color:#64736a;margin-top:4px}
  .bar{border:1px solid #d5e4d7;background:#edf6ef;border-radius:6px;padding:9px 12px;color:#165c35;font-size:15px;font-weight:800;text-align:center;margin:0 0 13px}
  .details{display:grid;grid-template-columns:1fr 35mm;gap:12px;align-items:start}.fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}.item{border-bottom:1px solid #dde6de;padding:5px 4px;display:flex;flex-direction:column;gap:3px;min-height:37px}.item span{font-size:9px;color:#708075;text-transform:uppercase;letter-spacing:.4px}.item strong{font-size:11px;overflow-wrap:anywhere}.portrait{width:35mm;height:44mm;object-fit:cover;border:1.5px solid #286b47;border-radius:3px}.empty-photo{display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#666}.photo-caption{text-align:center;font-size:9px;color:#555;margin-top:4px}
  h3{font-size:12px;background:#17693e;color:white;margin:13px 0 0;padding:7px 10px;text-transform:uppercase;letter-spacing:.4px}.terms{border:1px solid #cfe0d0;padding:8px 12px 6px;margin:0}.terms ol{padding-left:17px;margin:0}.terms li{font-size:10.2px;line-height:1.45;margin:4px 0}
@@ -3711,7 +3731,7 @@ function cbmsStaffDocHTML(r, photo){
  .signatures{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:36px}.sig{border-top:1px solid #34473c;padding-top:6px;text-align:center;font-size:10px}.footer{margin-top:18px;border-top:1px solid #dbe5dc;padding-top:7px;color:#67776d;display:flex;justify-content:space-between;font-size:9px}
  @media print{body{background:white}.actions{display:none}.sheet{margin:0;padding:0;box-shadow:none;min-height:auto;border-top:6px solid #17693e} .terms li{font-size:9.8px}h3{margin-top:10px}}
  </style></head><body><div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div><main class="sheet">
- <div class="head"><div class="mark">✦</div><div><div class="company">CHANHO BIRSA MUNDA SANGHATHAN<br>PRODUCER COMPANY LIMITED</div><div class="addr">Village Hutar, P.O. Tangar, P.S. Chanho, Ranchi, Jharkhand</div></div></div>
+ <div class="head"><img class="mark" src="${e(logo)}" alt="Chanho FPO Official Logo"><div><div class="company">CHANHO BIRSA MUNDA SANGHATHAN<br>PRODUCER COMPANY LIMITED</div><div class="addr">Village Hutar, P.O. Tangar, P.S. Chanho, Ranchi, Jharkhand</div></div></div>
  <div class="bar">STAFF REGISTRATION & DECLARATION FORM — ${e(r.role).toUpperCase()}</div>
  <div class="details"><div class="fields">
  ${row("Staff ID",r.staffId)} ${row("Registration Form Date",date)}
@@ -3743,11 +3763,12 @@ async function cbmsShowStaffPrintable(resultElement, data, photoFile){
  if(!resultElement||!data.staffId) return;
  try {
   const photo=await cbmsDataURL(photoFile);
+  const logo=await cbmsStaffPrintLogo();
   const key=String(data.staffId);
-  cbmsStaffPrintForms.set(key,{data:{...data},photo});
+  cbmsStaffPrintForms.set(key,{data:{...data},photo,logo});
   const e=cbmsPrintEscape;
   const b=document.createElement("div");b.style.cssText="margin-top:12px;padding:12px;border:1px solid #bad9c5;border-radius:7px;background:#eef8f0";
-  b.innerHTML=`<strong style="color:#165b37">Staff Declaration Form is ready</strong><p style="margin:6px 0;font-size:12px">${e(data.role)} — ${e(data.staffId)}. Includes staff photo, PAN, details, English terms and signature spaces.</p>`;
+  b.innerHTML=`<strong style="color:#165b37">Staff Declaration Form is ready</strong><p style="margin:6px 0;font-size:12px">${e(data.role)} — ${e(data.staffId)}. Includes official FPO logo, staff photo, PAN, details, English terms and signature spaces.</p>`;
   if(photo){const im=document.createElement('img');im.src=photo;im.alt='Registered staff photo';im.style.cssText='width:60px;height:75px;object-fit:cover;border:1px solid #bad9c5;border-radius:4px;display:block;margin:6px 0';b.append(im);}
   const btn=document.createElement("button");btn.type="button";btn.textContent="Print / Save Staff Declaration (A4)";btn.style.cssText="background:#17693e;color:#fff;border:0;border-radius:5px;padding:11px 14px;cursor:pointer;font-weight:700";
   btn.onclick=()=>cbmsOpenStaffPrintable(key);b.append(btn);resultElement.append(b);
@@ -3756,7 +3777,7 @@ async function cbmsShowStaffPrintable(resultElement, data, photoFile){
 function cbmsOpenStaffPrintable(key){
  const entry=cbmsStaffPrintForms.get(String(key));if(!entry){alert('Re-open the registration result to print the form.');return;}
  const win=window.open('','_blank');if(!win){alert('Please allow pop-ups to print the staff declaration.');return;}
- win.document.open();win.document.write(cbmsStaffDocHTML(entry.data,entry.photo));win.document.close();win.focus();
+ win.document.open();win.document.write(cbmsStaffDocHTML(entry.data,entry.photo,entry.logo));win.document.close();win.focus();
 }
 
 </script>
