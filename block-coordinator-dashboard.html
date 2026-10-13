@@ -92,6 +92,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <div><label>Mobile *</label><input id="arMobile" maxlength="10"></div>
 <div><label>Email</label><input id="arEmail" type="email"></div>
 <div><label>Aadhaar *</label><input id="arAadhaar" maxlength="12"></div>
+<div><label>PAN Number *</label><input id="arPan" maxlength="10" placeholder="ABCDE1234F" style="text-transform:uppercase" required></div>
 <div><label>Block</label><input id="arBlock" readonly></div>
 <div><label>Panchayat</label><input id="arPanchayat"></div>
 <div><label>Village</label><input id="arVillage"></div>
@@ -111,6 +112,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <h3 style="color:#075e88;margin:22px 0 10px">Admin Documents Upload</h3>
 <div class="note">Aadhaar, Address Proof, Bank Passbook, Photo aur Signature zaroori hain. Har file max 5 MB (JPG, PNG, WEBP ya PDF). Qualification aur Experience documents optional hain. Documents private storage me save honge.</div><br>
 <div class="grid">
+  <div><label>PAN Card *</label><input id="arPanFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
   <div><label>Aadhaar Card *</label><input id="arAadhaarFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
   <div><label>Address Proof *</label><input id="arAddressFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
   <div><label>Bank Passbook *</label><input id="arBankFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
@@ -194,7 +196,7 @@ async function logout(){await db.auth.signOut({scope:"local"});location.href="bl
 
 async function loadCoordinator(){
   const {data:{session},error}=await db.auth.getSession();
-  if(error){msg("Session connect nahi ho raha. Internet check karke Refresh karein.","error");return false}
+  if(error){msg("Session connection unavailable. Check your internet and refresh.","error");return false}
   if(!session){location.href="block-coordinator-login.html";return false}
 
   const {data,error:pErr}=await db.rpc("cbms_block_coordinator_profile");
@@ -284,6 +286,10 @@ async function registerAdmin(){
   if (!val("arName")) { msg("Admin Name required hai.", "error"); return; }
   if (!/^\d{10}$/.test(val("arMobile"))) { msg("Mobile 10 digits ka hona chahiye.", "error"); return; }
   if (!/^\d{12}$/.test(val("arAadhaar"))) { msg("Aadhaar 12 digits ka hona chahiye.", "error"); return; }
+  const pan = val("arPan").toUpperCase();
+  if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+    msg("Enter a valid 10-character PAN number (e.g. ABCDE1234F).", "error"); return;
+  }
   const account = val("arAccountNumber").replace(/\s/g, "");
   const ifsc = val("arIfscCode").toUpperCase();
   if (!val("arBankName") || !val("arBankBranch") || !account || !ifsc) {
@@ -292,11 +298,11 @@ async function registerAdmin(){
   if (!/^\d{6,25}$/.test(account)) { msg("Valid Bank Account Number bhariye.", "error"); return; }
   if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) { msg("Valid 11-character IFSC Code bhariye.", "error"); return; }
   const inputs = {
-    aadhaar_url:"arAadhaarFile", address_proof_url:"arAddressFile", bank_passbook_url:"arBankFile",
+    pan_url:"arPanFile", aadhaar_url:"arAadhaarFile", address_proof_url:"arAddressFile", bank_passbook_url:"arBankFile",
     photo_url:"arPhotoFile", signature_url:"arSignatureFile", qualification_url:"arQualificationFile",
     experience_url:"arExperienceFile"
   };
-  const required = ["aadhaar_url","address_proof_url","bank_passbook_url","photo_url","signature_url"];
+  const required = ["pan_url","aadhaar_url","address_proof_url","bank_passbook_url","photo_url","signature_url"];
   for(const key of required){
     if(!document.getElementById(inputs[key]).files[0]){
       msg("Aadhaar, Address Proof, Bank Passbook, Photo aur Signature upload karein.", "error");return;
@@ -311,7 +317,7 @@ async function registerAdmin(){
       block:activeBlock,
       name:val("arName"), father_name:val("arFather"), dob:val("arDob") || null,
       gender:val("arGender"), mobile:val("arMobile"), email:val("arEmail").toLowerCase(),
-      aadhar_number:val("arAadhaar"), village:val("arVillage"), panchayat:val("arPanchayat"),
+      pan_number:pan, aadhar_number:val("arAadhaar"), village:val("arVillage"), panchayat:val("arPanchayat"),
       full_address:val("arAddress"), bank_name:val("arBankName"), bank_branch:val("arBankBranch"),
       account_number:account, ifsc_code:ifsc, payment_mode:val("arPaymentMode"),
       joining_date:val("arJoiningDate") || null, qualification:val("arQualification"),
@@ -322,10 +328,19 @@ async function registerAdmin(){
       payload[key]=file ? await uploadCoordinatorAdminDocument(file,key.replace(/_url$/,""),user.id) : null;
     }
     btn.textContent="Registering Admin...";
-    const data=await rpc("cbms_block_register_admin_full",{p_payload:payload});
+    const data=await rpc("cbms_register_admin_with_pan",{p_payload:payload});
     if(!data || !data.admin_id) throw new Error("Registration ka response nahi mila.");
     result.innerHTML=`<div class="note"><b>Admin Registration Successful</b><br>Admin ID: ${esc(data.admin_id)}<br>Name: ${esc(data.name)}<br>Block: ${esc(data.block)}<br>Bank details &amp; document paths saved.<br><strong>Login Invite sirf Officer Dashboard se bheja jayega.</strong></div>`;
-    ["arName","arFather","arDob","arGender","arMobile","arEmail","arAadhaar",
+    await cbmsShowStaffPrintable(result, {
+      role:"Admin",staffId:data.admin_id,name:val("arName"),pan,
+      mobile:val("arMobile"),email:val("arEmail"),father:val("arFather"),
+      dob:val("arDob"),gender:val("arGender"),joinDate:val("arJoiningDate"),
+      address:val("arAddress"),block:activeBlock,
+      panchayat:val("arPanchayat"),village:val("arVillage"),
+      bank:val("arBankName"),account:val("arAccountNumber"),
+      ifsc:val("arIfscCode"),aadhaar:val("arAadhaar")
+    }, document.getElementById("arPhotoFile").files[0]);
+    ["arName","arFather","arDob","arGender","arMobile","arEmail","arAadhaar","arPan",
      "arPanchayat","arVillage","arAddress","arBankName","arBankBranch",
      "arAccountNumber","arIfscCode","arPaymentMode","arJoiningDate","arQualification","arExperience",
      ...Object.values(inputs)].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
@@ -478,10 +493,83 @@ async function loadPerformance(){
   if(!await loadCoordinator())return;
   await Promise.all([loadSummary(),loadAdmins(),loadFarmers(),loadAssignments(),loadPerformance()]);
 })();
+</script>
+<script>
 
+/* CBMS Staff registration: automatic printable declaration, never stores photo locally. */
+const cbmsStaffPrintForms = new Map();
+function cbmsPrintEscape(v){return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function cbmsDataURL(file){return new Promise((resolve,reject)=>{if(!file){resolve("");return;}const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(new Error("Photo preview failed"));reader.readAsDataURL(file);});}
+function cbmsMask(v){const t=String(v||"").replace(/\s/g,"");return t?"XXXX"+t.slice(-4):"Not provided";}
+function cbmsStaffDocHTML(r, photo){
+ const e=cbmsPrintEscape;
+ const date=new Date().toLocaleDateString("en-IN");
+ const row=(label,value)=>`<div class="item"><span>${e(label)}</span><strong>${e(value||"—")}</strong></div>`;
+ const photoHTML=photo?`<img class="portrait" alt="Staff photograph" src="${photo}">`:`<div class="portrait empty-photo">Affix Photo<br>Here</div>`;
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${e(r.role)} Staff Declaration – ${e(r.staffId)}</title>
+ <style>
+ @page{size:A4 portrait;margin:11mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#20352c;background:#eef4ee}
+ .actions{padding:12px;text-align:center}.actions button{background:#17693e;color:white;border:0;border-radius:6px;padding:12px 22px;font-weight:700;cursor:pointer}
+ .sheet{max-width:188mm;min-height:273mm;margin:0 auto 15px;background:white;padding:14mm 12mm;border-top:8px solid #17693e;position:relative;box-shadow:0 4px 20px #0002}
+ .head{border-bottom:2px solid #d0a83f;padding-bottom:9px;margin-bottom:13px;display:flex;gap:12px;align-items:center}.mark{border-radius:50%;width:51px;height:51px;background:#17693e;color:#fff;display:grid;place-items:center;font-size:27px;flex:none}.company{font-size:15px;font-weight:900;color:#125432;letter-spacing:.3px;line-height:1.35}.addr{font-size:10px;color:#64736a;margin-top:4px}
+ .bar{border:1px solid #d5e4d7;background:#edf6ef;border-radius:6px;padding:9px 12px;color:#165c35;font-size:15px;font-weight:800;text-align:center;margin:0 0 13px}
+ .details{display:grid;grid-template-columns:1fr 35mm;gap:12px;align-items:start}.fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}.item{border-bottom:1px solid #dde6de;padding:5px 4px;display:flex;flex-direction:column;gap:3px;min-height:37px}.item span{font-size:9px;color:#708075;text-transform:uppercase;letter-spacing:.4px}.item strong{font-size:11px;overflow-wrap:anywhere}.portrait{width:35mm;height:44mm;object-fit:cover;border:1.5px solid #286b47;border-radius:3px}.empty-photo{display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#666}.photo-caption{text-align:center;font-size:9px;color:#555;margin-top:4px}
+ h3{font-size:12px;background:#17693e;color:white;margin:13px 0 0;padding:7px 10px;text-transform:uppercase;letter-spacing:.4px}.terms{border:1px solid #cfe0d0;padding:8px 12px 6px;margin:0}.terms ol{padding-left:17px;margin:0}.terms li{font-size:10.2px;line-height:1.45;margin:4px 0}
+ .declaration{margin-top:9px;padding:9px;background:#f4f7f4;border:1px solid #d7e4d8;font-size:10.5px;line-height:1.55}
+ .signatures{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:36px}.sig{border-top:1px solid #34473c;padding-top:6px;text-align:center;font-size:10px}.footer{margin-top:18px;border-top:1px solid #dbe5dc;padding-top:7px;color:#67776d;display:flex;justify-content:space-between;font-size:9px}
+ @media print{body{background:white}.actions{display:none}.sheet{margin:0;padding:0;box-shadow:none;min-height:auto;border-top:6px solid #17693e} .terms li{font-size:9.8px}h3{margin-top:10px}}
+ </style></head><body><div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div><main class="sheet">
+ <div class="head"><div class="mark">✦</div><div><div class="company">CHANHO BIRSA MUNDA SANGHATHAN<br>PRODUCER COMPANY LIMITED</div><div class="addr">Village Hutar, P.O. Tangar, P.S. Chanho, Ranchi, Jharkhand</div></div></div>
+ <div class="bar">STAFF REGISTRATION & DECLARATION FORM — ${e(r.role).toUpperCase()}</div>
+ <div class="details"><div class="fields">
+ ${row("Staff ID",r.staffId)} ${row("Registration Form Date",date)}
+ ${row("Full Name",r.name)} ${row("Father / Husband Name",r.father)}
+ ${row("Date of Birth",r.dob)} ${row("Gender",r.gender)}
+ ${row("Mobile Number",r.mobile)} ${row("Email",r.email)}
+ ${row("PAN Number",r.pan)} ${row("Aadhaar (last 4 digits)",cbmsMask(r.aadhaar))}
+ ${row("Joining Date",r.joinDate)} ${row("Assigned Block(s)",r.block)}
+ ${row("Panchayat",r.panchayat)} ${row("Village",r.village)}
+ ${row("Bank",r.bank)} ${row("Bank Account (last 4 digits)",cbmsMask(r.account))}
+ ${row("IFSC",r.ifsc)} ${row("Address",r.address)}
+ </div><div>${photoHTML}<div class="photo-caption">Staff Photograph</div></div></div>
+ <h3>Terms & Conditions / Code of Conduct</h3><div class="terms"><ol>
+ <li>I accept this staff registration and assigned responsibilities voluntarily, without force or undue influence.</li>
+ <li>I have read, understood and agree to comply with the Company's lawful rules, written policies, assigned duties and reporting requirements.</li>
+ <li>I will not demand or accept bribes, unauthorized commissions, gifts, payments or benefits in connection with Company work.</li>
+ <li>I will not misuse Company funds, documents, farmer information, passwords, equipment or position; I will maintain accurate records and receipts.</li>
+ <li>I will protect confidential information and will not share it except as authorized for legitimate Company purposes.</li>
+ <li>If suspected of fraud, corruption, misconduct or serious breach of duty, I may be suspended pending a fair inquiry in accordance with applicable law and Company policy. Proven misconduct may lead to further disciplinary action, including termination where lawful.</li>
+ <li>I will cooperate with legitimate audits and inquiries and return Company property and records when requested or upon separation.</li>
+ <li>I confirm the information and documents provided are true and complete; inaccurate or forged submissions may lead to action under applicable rules and law.</li>
+ </ol></div>
+ <div class="declaration"><b>Employee Declaration:</b> I hereby declare that I am joining this role of my own free will. I have read and understood all the above Terms & Conditions and agree to abide by them.</div>
+ <div class="signatures"><div class="sig">Employee Signature / Date</div><div class="sig">Authorized Signatory / Company Seal</div></div>
+ <div class="footer"><span>Internal staff record — retain signed hard copy securely</span><span>Staff ID: ${e(r.staffId)}</span></div>
+ </main></body></html>`;
+}
+async function cbmsShowStaffPrintable(resultElement, data, photoFile){
+ if(!resultElement||!data.staffId) return;
+ try {
+  const photo=await cbmsDataURL(photoFile);
+  const key=String(data.staffId);
+  cbmsStaffPrintForms.set(key,{data:{...data},photo});
+  const e=cbmsPrintEscape;
+  const b=document.createElement("div");b.style.cssText="margin-top:12px;padding:12px;border:1px solid #bad9c5;border-radius:7px;background:#eef8f0";
+  b.innerHTML=`<strong style="color:#165b37">Staff Declaration Form is ready</strong><p style="margin:6px 0;font-size:12px">${e(data.role)} — ${e(data.staffId)}. Includes staff photo, PAN, details, English terms and signature spaces.</p>`;
+  if(photo){const im=document.createElement('img');im.src=photo;im.alt='Registered staff photo';im.style.cssText='width:60px;height:75px;object-fit:cover;border:1px solid #bad9c5;border-radius:4px;display:block;margin:6px 0';b.append(im);}
+  const btn=document.createElement("button");btn.type="button";btn.textContent="Print / Save Staff Declaration (A4)";btn.style.cssText="background:#17693e;color:#fff;border:0;border-radius:5px;padding:11px 14px;cursor:pointer;font-weight:700";
+  btn.onclick=()=>cbmsOpenStaffPrintable(key);b.append(btn);resultElement.append(b);
+ } catch(err){console.error('Staff print preview:',err);const p=document.createElement('p');p.textContent='Registration saved. Staff print preview could not be prepared: '+err.message;resultElement.append(p);}
+}
+function cbmsOpenStaffPrintable(key){
+ const entry=cbmsStaffPrintForms.get(String(key));if(!entry){alert('Re-open the registration result to print the form.');return;}
+ const win=window.open('','_blank');if(!win){alert('Please allow pop-ups to print the staff declaration.');return;}
+ win.document.open();win.document.write(cbmsStaffDocHTML(entry.data,entry.photo));win.document.close();win.focus();
+}
 
-// When reopening a browser tab or returning after PC sleep, let Supabase
-// rehydrate its persisted refresh token. Do not log out on network errors.
+</script>
+<script>
+// Refresh valid sessions on return from a sleeping or offline tab.
 let cbmsFocusChecking = false;
 async function cbmsRenewSessionOnReturn() {
   if (document.visibilityState === "hidden" || cbmsFocusChecking) return;

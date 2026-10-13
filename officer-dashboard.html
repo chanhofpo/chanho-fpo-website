@@ -340,6 +340,7 @@ tr:nth-child(even) td{background:#fafcfd}
           <div><label>Mobile *</label><input id="adminMobile" inputmode="numeric" maxlength="10" required></div>
           <div><label>Email *</label><input type="email" id="adminEmail" required></div>
           <div><label>Aadhaar Number *</label><input id="adminAadhar" inputmode="numeric" maxlength="12" required></div>
+          <div><label>PAN Number *</label><input id="adminPan" maxlength="10" placeholder="ABCDE1234F" style="text-transform:uppercase" required></div>
           <div><label>Designation</label><select id="adminDesignation" required><option value="Accountant" selected>Accountant</option></select></div>
           <div><label>Joining Date</label><input type="date" id="adminJoiningDate"></div>
           <div><label>Village</label><input id="adminVillage"></div>
@@ -370,6 +371,7 @@ tr:nth-child(even) td{background:#fafcfd}
         <h3 style="color:var(--blue3);margin:20px 0 6px">Required Documents</h3>
         <p class="section-note">Aadhaar, Address Proof, Bank Passbook, Photo aur Signature required hain. Qualification / Experience document applicable ho to upload karein.</p>
         <div class="form-grid">
+          <div><label>PAN Card *</label><input type="file" id="adminPanFile" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
           <div><label>Aadhaar Document *</label><input type="file" id="adminAadhaarFile" accept="image/*,.pdf" required></div>
           <div><label>Qualification Document</label><input type="file" id="adminQualificationFile" accept="image/*,.pdf"></div>
           <div><label>Experience Document</label><input type="file" id="adminExperienceFile" accept="image/*,.pdf"></div>
@@ -405,6 +407,7 @@ tr:nth-child(even) td{background:#fafcfd}
           <div><label>Email *</label><input type="email" id="bcEmail" required></div>
           <div><label>Aadhaar Number *</label><input id="bcAadhaar" inputmode="numeric" maxlength="12" required></div>
 
+          <div><label>PAN Number *</label><input id="bcPan" maxlength="10" placeholder="ABCDE1234F" style="text-transform:uppercase" required></div>
           <div><label>Primary / Login Block *</label>
             <select id="bcPrimaryBlock" onchange="syncCoordinatorBlockAccess()" required>
               <option value="Chanho">Chanho</option>
@@ -449,6 +452,7 @@ tr:nth-child(even) td{background:#fafcfd}
         <h3 style="color:var(--blue3);margin:20px 0 6px">Required Documents</h3>
         <p class="section-note">Aadhaar, Address Proof, Bank Passbook, Photo aur Signature required hain. Qualification / Experience document applicable ho to upload karein.</p>
         <div class="form-grid">
+          <div><label>PAN Card *</label><input type="file" id="bcPanFile" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
           <div><label>Aadhaar Document *</label><input type="file" id="bcAadhaarFile" accept="image/*,.pdf" required></div>
           <div><label>Qualification Document</label><input type="file" id="bcQualificationFile" accept="image/*,.pdf"></div>
           <div><label>Experience Document</label><input type="file" id="bcExperienceFile" accept="image/*,.pdf"></div>
@@ -596,7 +600,7 @@ const db =
     window.supabase.createClient(
         SUPABASE_URL,
         SUPABASE_KEY,
-        { auth:{storageKey:"cbms-officer-session-v1",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true} }
+        {auth:{storageKey:"cbms-officer-session-v1",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
     );
 
 
@@ -2754,6 +2758,14 @@ async function registerStaff(){
         return;
     }
 
+    const pan = document.getElementById("adminPan").value.trim().toUpperCase();
+    if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)){
+        showError("Enter a valid 10-character PAN number (e.g. ABCDE1234F).");
+        return;
+    }
+    const panCardFile = document.getElementById("adminPanFile").files[0];
+    if(!panCardFile){showError("PAN Card upload is required.");return;}
+
     const aadhaarFile = document.getElementById("adminAadhaarFile").files[0];
     const addressFile = document.getElementById("adminAddressFile").files[0];
     const bankFile = document.getElementById("adminBankFile").files[0];
@@ -2770,6 +2782,7 @@ async function registerStaff(){
     if(resultBox) resultBox.innerHTML = "";
 
     try{
+        const panUrl = await uploadStaffFile(panCardFile, "pan-card", "accountant");
         const aadhaarUrl = await uploadStaffFile(aadhaarFile, "aadhaar", "accountant");
         const qualificationUrl = await uploadStaffFile(document.getElementById("adminQualificationFile").files[0], "qualification", "accountant");
         const experienceUrl = await uploadStaffFile(document.getElementById("adminExperienceFile").files[0], "experience", "accountant");
@@ -2786,6 +2799,8 @@ async function registerStaff(){
             mobile:mobile,
             email:email,
             aadhar_number:aadhar,
+            pan_number:pan,
+            pan_url:panUrl,
             designation:"Accountant",
             full_address:document.getElementById("adminFullAddress").value.trim() || null,
             village:document.getElementById("adminVillage").value.trim() || null,
@@ -2854,6 +2869,22 @@ async function registerStaff(){
             `;
         }
 
+        await cbmsShowStaffPrintable(resultBox, {
+            role:"Accountant",staffId:accountantId,name,pan, mobile,email,
+            father:document.getElementById("adminFatherName").value,
+            dob:document.getElementById("adminDob").value,
+            gender:document.getElementById("adminGender").value,
+            joinDate:document.getElementById("adminJoiningDate").value,
+            address:document.getElementById("adminFullAddress").value,
+            block:document.getElementById("adminBlock").value,
+            panchayat:document.getElementById("adminPanchayat").value,
+            village:document.getElementById("adminVillage").value,
+            bank:document.getElementById("adminBankName").value,
+            account:document.getElementById("adminAccountNumber").value,
+            ifsc:document.getElementById("adminIfsc").value,
+            aadhaar:aadhar
+        }, photoFile);
+
         form.reset();
         document.getElementById("adminDistrict").value = "Ranchi";
         document.getElementById("adminState").value = "Jharkhand";
@@ -2913,6 +2944,14 @@ async function registerBlockCoordinator(){
         return;
     }
 
+    const pan = document.getElementById("bcPan").value.trim().toUpperCase();
+    if(!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)){
+        showError("Enter a valid 10-character PAN number (e.g. ABCDE1234F).");
+        return;
+    }
+    const panCardFile = document.getElementById("bcPanFile").files[0];
+    if(!panCardFile){showError("PAN Card upload is required.");return;}
+
     const aadhaarFile = document.getElementById("bcAadhaarFile").files[0];
     const addressFile = document.getElementById("bcAddressFile").files[0];
     const bankFile = document.getElementById("bcBankFile").files[0];
@@ -2929,6 +2968,7 @@ async function registerBlockCoordinator(){
     if(resultBox) resultBox.innerHTML = "";
 
     try{
+        const panUrl = await uploadStaffFile(panCardFile, "pan-card", "block-coordinator");
         const aadhaarUrl = await uploadStaffFile(aadhaarFile, "aadhaar", "block-coordinator");
         const qualificationUrl = await uploadStaffFile(document.getElementById("bcQualificationFile").files[0], "qualification", "block-coordinator");
         const experienceUrl = await uploadStaffFile(document.getElementById("bcExperienceFile").files[0], "experience", "block-coordinator");
@@ -2938,7 +2978,9 @@ async function registerBlockCoordinator(){
         const signatureUrl = await uploadStaffFile(signatureFile, "signature", "block-coordinator");
 
         const { data, error } =
-            await db.rpc("cbms_officer_register_block_coordinator", {
+            await db.rpc("cbms_register_block_coordinator_with_pan", {p_payload:{
+                p_pan_number:pan,
+                p_pan_url:panUrl,
                 p_name:name,
                 p_father_name:document.getElementById("bcFather").value.trim(),
                 p_date_of_birth:document.getElementById("bcDob").value || null,
@@ -2966,7 +3008,7 @@ async function registerBlockCoordinator(){
                 p_bank_passbook_url:bankUrl,
                 p_photo_url:photoUrl,
                 p_signature_url:signatureUrl
-            });
+            }});
 
         if(error) throw error;
 
@@ -3017,6 +3059,20 @@ async function registerBlockCoordinator(){
                 </div>
             `;
         }
+
+        await cbmsShowStaffPrintable(resultBox, {
+            role:"Block Coordinator",staffId:coordinatorId,name,pan,mobile,email,
+            father:document.getElementById("bcFather").value,
+            dob:document.getElementById("bcDob").value,
+            gender:document.getElementById("bcGender").value,
+            joinDate:document.getElementById("bcJoiningDate").value,
+            address:document.getElementById("bcAddress").value,
+            block:accessText,
+            bank:document.getElementById("bcBankName").value,
+            account:document.getElementById("bcAccountNumber").value,
+            ifsc:document.getElementById("bcIfsc").value,
+            aadhaar:aadhaar
+        }, photoFile);
 
         form.reset();
         document.getElementById("bcPrimaryBlock").value = "Chanho";
@@ -3629,10 +3685,83 @@ async function initialize(){
 initialize();
 
 
+</script>
+<script>
 
+/* CBMS Staff registration: automatic printable declaration, never stores photo locally. */
+const cbmsStaffPrintForms = new Map();
+function cbmsPrintEscape(v){return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function cbmsDataURL(file){return new Promise((resolve,reject)=>{if(!file){resolve("");return;}const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||""));reader.onerror=()=>reject(new Error("Photo preview failed"));reader.readAsDataURL(file);});}
+function cbmsMask(v){const t=String(v||"").replace(/\s/g,"");return t?"XXXX"+t.slice(-4):"Not provided";}
+function cbmsStaffDocHTML(r, photo){
+ const e=cbmsPrintEscape;
+ const date=new Date().toLocaleDateString("en-IN");
+ const row=(label,value)=>`<div class="item"><span>${e(label)}</span><strong>${e(value||"—")}</strong></div>`;
+ const photoHTML=photo?`<img class="portrait" alt="Staff photograph" src="${photo}">`:`<div class="portrait empty-photo">Affix Photo<br>Here</div>`;
+ return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${e(r.role)} Staff Declaration – ${e(r.staffId)}</title>
+ <style>
+ @page{size:A4 portrait;margin:11mm}*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#20352c;background:#eef4ee}
+ .actions{padding:12px;text-align:center}.actions button{background:#17693e;color:white;border:0;border-radius:6px;padding:12px 22px;font-weight:700;cursor:pointer}
+ .sheet{max-width:188mm;min-height:273mm;margin:0 auto 15px;background:white;padding:14mm 12mm;border-top:8px solid #17693e;position:relative;box-shadow:0 4px 20px #0002}
+ .head{border-bottom:2px solid #d0a83f;padding-bottom:9px;margin-bottom:13px;display:flex;gap:12px;align-items:center}.mark{border-radius:50%;width:51px;height:51px;background:#17693e;color:#fff;display:grid;place-items:center;font-size:27px;flex:none}.company{font-size:15px;font-weight:900;color:#125432;letter-spacing:.3px;line-height:1.35}.addr{font-size:10px;color:#64736a;margin-top:4px}
+ .bar{border:1px solid #d5e4d7;background:#edf6ef;border-radius:6px;padding:9px 12px;color:#165c35;font-size:15px;font-weight:800;text-align:center;margin:0 0 13px}
+ .details{display:grid;grid-template-columns:1fr 35mm;gap:12px;align-items:start}.fields{display:grid;grid-template-columns:1fr 1fr;gap:6px}.item{border-bottom:1px solid #dde6de;padding:5px 4px;display:flex;flex-direction:column;gap:3px;min-height:37px}.item span{font-size:9px;color:#708075;text-transform:uppercase;letter-spacing:.4px}.item strong{font-size:11px;overflow-wrap:anywhere}.portrait{width:35mm;height:44mm;object-fit:cover;border:1.5px solid #286b47;border-radius:3px}.empty-photo{display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:#666}.photo-caption{text-align:center;font-size:9px;color:#555;margin-top:4px}
+ h3{font-size:12px;background:#17693e;color:white;margin:13px 0 0;padding:7px 10px;text-transform:uppercase;letter-spacing:.4px}.terms{border:1px solid #cfe0d0;padding:8px 12px 6px;margin:0}.terms ol{padding-left:17px;margin:0}.terms li{font-size:10.2px;line-height:1.45;margin:4px 0}
+ .declaration{margin-top:9px;padding:9px;background:#f4f7f4;border:1px solid #d7e4d8;font-size:10.5px;line-height:1.55}
+ .signatures{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:36px}.sig{border-top:1px solid #34473c;padding-top:6px;text-align:center;font-size:10px}.footer{margin-top:18px;border-top:1px solid #dbe5dc;padding-top:7px;color:#67776d;display:flex;justify-content:space-between;font-size:9px}
+ @media print{body{background:white}.actions{display:none}.sheet{margin:0;padding:0;box-shadow:none;min-height:auto;border-top:6px solid #17693e} .terms li{font-size:9.8px}h3{margin-top:10px}}
+ </style></head><body><div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div><main class="sheet">
+ <div class="head"><div class="mark">✦</div><div><div class="company">CHANHO BIRSA MUNDA SANGHATHAN<br>PRODUCER COMPANY LIMITED</div><div class="addr">Village Hutar, P.O. Tangar, P.S. Chanho, Ranchi, Jharkhand</div></div></div>
+ <div class="bar">STAFF REGISTRATION & DECLARATION FORM — ${e(r.role).toUpperCase()}</div>
+ <div class="details"><div class="fields">
+ ${row("Staff ID",r.staffId)} ${row("Registration Form Date",date)}
+ ${row("Full Name",r.name)} ${row("Father / Husband Name",r.father)}
+ ${row("Date of Birth",r.dob)} ${row("Gender",r.gender)}
+ ${row("Mobile Number",r.mobile)} ${row("Email",r.email)}
+ ${row("PAN Number",r.pan)} ${row("Aadhaar (last 4 digits)",cbmsMask(r.aadhaar))}
+ ${row("Joining Date",r.joinDate)} ${row("Assigned Block(s)",r.block)}
+ ${row("Panchayat",r.panchayat)} ${row("Village",r.village)}
+ ${row("Bank",r.bank)} ${row("Bank Account (last 4 digits)",cbmsMask(r.account))}
+ ${row("IFSC",r.ifsc)} ${row("Address",r.address)}
+ </div><div>${photoHTML}<div class="photo-caption">Staff Photograph</div></div></div>
+ <h3>Terms & Conditions / Code of Conduct</h3><div class="terms"><ol>
+ <li>I accept this staff registration and assigned responsibilities voluntarily, without force or undue influence.</li>
+ <li>I have read, understood and agree to comply with the Company's lawful rules, written policies, assigned duties and reporting requirements.</li>
+ <li>I will not demand or accept bribes, unauthorized commissions, gifts, payments or benefits in connection with Company work.</li>
+ <li>I will not misuse Company funds, documents, farmer information, passwords, equipment or position; I will maintain accurate records and receipts.</li>
+ <li>I will protect confidential information and will not share it except as authorized for legitimate Company purposes.</li>
+ <li>If suspected of fraud, corruption, misconduct or serious breach of duty, I may be suspended pending a fair inquiry in accordance with applicable law and Company policy. Proven misconduct may lead to further disciplinary action, including termination where lawful.</li>
+ <li>I will cooperate with legitimate audits and inquiries and return Company property and records when requested or upon separation.</li>
+ <li>I confirm the information and documents provided are true and complete; inaccurate or forged submissions may lead to action under applicable rules and law.</li>
+ </ol></div>
+ <div class="declaration"><b>Employee Declaration:</b> I hereby declare that I am joining this role of my own free will. I have read and understood all the above Terms & Conditions and agree to abide by them.</div>
+ <div class="signatures"><div class="sig">Employee Signature / Date</div><div class="sig">Authorized Signatory / Company Seal</div></div>
+ <div class="footer"><span>Internal staff record — retain signed hard copy securely</span><span>Staff ID: ${e(r.staffId)}</span></div>
+ </main></body></html>`;
+}
+async function cbmsShowStaffPrintable(resultElement, data, photoFile){
+ if(!resultElement||!data.staffId) return;
+ try {
+  const photo=await cbmsDataURL(photoFile);
+  const key=String(data.staffId);
+  cbmsStaffPrintForms.set(key,{data:{...data},photo});
+  const e=cbmsPrintEscape;
+  const b=document.createElement("div");b.style.cssText="margin-top:12px;padding:12px;border:1px solid #bad9c5;border-radius:7px;background:#eef8f0";
+  b.innerHTML=`<strong style="color:#165b37">Staff Declaration Form is ready</strong><p style="margin:6px 0;font-size:12px">${e(data.role)} — ${e(data.staffId)}. Includes staff photo, PAN, details, English terms and signature spaces.</p>`;
+  if(photo){const im=document.createElement('img');im.src=photo;im.alt='Registered staff photo';im.style.cssText='width:60px;height:75px;object-fit:cover;border:1px solid #bad9c5;border-radius:4px;display:block;margin:6px 0';b.append(im);}
+  const btn=document.createElement("button");btn.type="button";btn.textContent="Print / Save Staff Declaration (A4)";btn.style.cssText="background:#17693e;color:#fff;border:0;border-radius:5px;padding:11px 14px;cursor:pointer;font-weight:700";
+  btn.onclick=()=>cbmsOpenStaffPrintable(key);b.append(btn);resultElement.append(b);
+ } catch(err){console.error('Staff print preview:',err);const p=document.createElement('p');p.textContent='Registration saved. Staff print preview could not be prepared: '+err.message;resultElement.append(p);}
+}
+function cbmsOpenStaffPrintable(key){
+ const entry=cbmsStaffPrintForms.get(String(key));if(!entry){alert('Re-open the registration result to print the form.');return;}
+ const win=window.open('','_blank');if(!win){alert('Please allow pop-ups to print the staff declaration.');return;}
+ win.document.open();win.document.write(cbmsStaffDocHTML(entry.data,entry.photo));win.document.close();win.focus();
+}
 
-// When reopening a browser tab or returning after PC sleep, let Supabase
-// rehydrate its persisted refresh token. Do not log out on network errors.
+</script>
+<script>
+// Refresh valid sessions on return from a sleeping or offline tab.
 let cbmsFocusChecking = false;
 async function cbmsRenewSessionOnReturn() {
   if (document.visibilityState === "hidden" || cbmsFocusChecking) return;
