@@ -140,7 +140,7 @@ tr:nth-child(even) td{background:#fafcfd}
     <button class="sidebar-link" data-title="Officer Profile" onclick="showOfficerPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
     <button class="sidebar-link" data-title="Register Accountant" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">💼</span>Register Accountant</button>
     <button class="sidebar-link" data-title="Register Block Coordinator" onclick="showOfficerPanel('blockCoordinatorPanel',this)"><span class="ico">➕</span>Register Block Coordinator</button>
-    <button class="sidebar-link" id="coordinatorInviteNav" data-title="Coordinator Login Invite" onclick="showOfficerPanel('coordinatorInvitePanel',this)"><span class="ico">✉</span>Coordinator Login Invite</button>
+    <button class="sidebar-link" id="coordinatorInviteNav" data-title="Staff Login Invites" onclick="showOfficerPanel('coordinatorInvitePanel',this)"><span class="ico">✉</span>Staff Login Invites</button>
     <button class="sidebar-link" data-title="Block Coordinator Performance" onclick="showOfficerPanel('performancePanel',this);loadPerformance()"><span class="ico">📊</span>Coordinator Performance</button>
     <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
     <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
@@ -466,17 +466,46 @@ tr:nth-child(even) td{background:#fafcfd}
 
   <section id="coordinatorInvitePanel" class="portal-panel">
     <div class="section">
-      <h2>Block Coordinator - Send Login Invite</h2>
-      <p class="section-note">Jo Block Coordinator pehle se registered hai, uska record dobara banaye bina yahan se login invite bhejein. Coordinator ID aur uska registered email bilkul match hona chahiye.</p>
+      <h2>Staff Login Invites — Officer Only</h2>
+      <p class="section-note">Only a logged-in Active Officer can invite an existing Admin, Block Coordinator or Accountant. Use their previously generated Staff ID and registered email. Do not register duplicate records.</p>
+    </div>
+
+    <div class="section">
+      <h2>Admin — Send Login Invite</h2>
+      <p class="section-note">Admin registration Coordinator Dashboard se ho sakta hai, lekin login invitation sirf Officer bhejega.</p>
+      <form id="adminInviteOfficerForm" onsubmit="event.preventDefault();sendOfficerStaffInvite('admin');">
+        <div class="form-grid">
+          <div><label for="adminOfficerInviteId">Admin ID *</label><input id="adminOfficerInviteId" placeholder="ADM/2026/07" required autocomplete="off"></div>
+          <div><label for="adminOfficerInviteEmail">Registered Email *</label><input id="adminOfficerInviteEmail" type="email" placeholder="Registered admin email" required autocomplete="off"></div>
+          <div style="display:flex;align-items:end"><button type="submit" class="primary-btn" id="adminOfficerInviteBtn" style="width:100%">Send Admin Login Invite</button></div>
+        </div>
+      </form>
+      <div id="adminOfficerInviteResult" role="status" aria-live="polite" style="margin-top:14px"></div>
+    </div>
+
+    <div class="section">
+      <h2>Block Coordinator — Send Login Invite</h2>
       <form id="coordinatorInviteForm" onsubmit="event.preventDefault();sendCoordinatorLoginInvite();">
         <div class="form-grid">
           <div><label for="bcInviteCoordinatorId">Coordinator ID *</label><input id="bcInviteCoordinatorId" placeholder="CBMS/BC/CHN/2026/01" required autocomplete="off"></div>
-          <div><label for="bcInviteEmail">Registered Email *</label><input id="bcInviteEmail" type="email" placeholder="coordinator@example.com" required autocomplete="email"></div>
-          <div style="display:flex;align-items:end"><button type="submit" class="primary-btn" id="sendCoordinatorInviteBtn" style="width:100%">Send Login Invite</button></div>
+          <div><label for="bcInviteEmail">Registered Email *</label><input id="bcInviteEmail" type="email" placeholder="Registered coordinator email" required autocomplete="off"></div>
+          <div style="display:flex;align-items:end"><button type="submit" class="primary-btn" id="sendCoordinatorInviteBtn" style="width:100%">Send Coordinator Login Invite</button></div>
         </div>
       </form>
       <div id="coordinatorInviteResult" role="status" aria-live="polite" style="margin-top:14px"></div>
-      <p class="profile-help">Error aane par yahan poora message dekhein. Invite fail ho to coordinator dobara register na karein. Sirf active Officer login se invite bheja ja sakta hai. Email par aane wala link password set karne ke liye website ke reset-password.html page par redirect hoga. Agar Auth pehle se linked hai to Edge Function naya invite nahi bhejega.</p>
+    </div>
+
+    <div class="section">
+      <h2>Accountant — Send Login Invite</h2>
+      <form id="accountantInviteOfficerForm" onsubmit="event.preventDefault();sendOfficerStaffInvite('accountant');">
+        <div class="form-grid">
+          <div><label for="accountantOfficerInviteId">Accountant ID *</label><input id="accountantOfficerInviteId" placeholder="Existing Accountant ID" required autocomplete="off"></div>
+          <div><label for="accountantOfficerInviteEmail">Registered Email *</label><input id="accountantOfficerInviteEmail" type="email" placeholder="Registered accountant email" required autocomplete="off"></div>
+          <div style="display:flex;align-items:end"><button type="submit" class="primary-btn" id="accountantOfficerInviteBtn" style="width:100%">Send Accountant Login Invite</button></div>
+        </div>
+      </form>
+      <div id="accountantOfficerInviteResult" role="status" aria-live="polite" style="margin-top:14px"></div>
+      <p class="profile-help">Agar email pehle se Supabase Auth se linked hai, Function naya invitation nahi bhej sakta. Aise mein Staff Login ke Forgot Password se access set kiya ja sakta hai. Invite message Inbox/Spam me dekhein.</p>
     </div>
   </section>
 
@@ -765,6 +794,123 @@ async function loadOfficer(){
     return true;
 }
 
+
+/* =========================
+   OFFICER-ONLY STAFF LOGIN INVITES
+   Server-side Edge Functions also verify Active Officer role.
+========================= */
+
+async function sendOfficerStaffInvite(kind){
+    const config = {
+        admin: {
+            buttonId:"adminOfficerInviteBtn",
+            idField:"adminOfficerInviteId",
+            emailField:"adminOfficerInviteEmail",
+            resultId:"adminOfficerInviteResult",
+            functionName:"create-admin-auth",
+            requestId:"admin_id",
+            label:"Admin"
+        },
+        accountant: {
+            buttonId:"accountantOfficerInviteBtn",
+            idField:"accountantOfficerInviteId",
+            emailField:"accountantOfficerInviteEmail",
+            resultId:"accountantOfficerInviteResult",
+            functionName:"create-accountant-auth",
+            requestId:"accountant_id",
+            label:"Accountant"
+        }
+    }[kind];
+    if(!config) return;
+
+    const btn = document.getElementById(config.buttonId);
+    const resultBox = document.getElementById(config.resultId);
+    const staffId = document.getElementById(config.idField).value.trim();
+    const email = document.getElementById(config.emailField).value.trim().toLowerCase();
+    resultBox.replaceChildren();
+
+    if(!staffId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        showError("Sahi Staff ID aur registered email dalein.");
+        return;
+    }
+    btn.disabled = true;
+    btn.textContent = "Sending Invite...";
+
+    try{
+        const { data:sessionData, error:sessionError } = await db.auth.getSession();
+        if(sessionError) throw sessionError;
+        const token = sessionData?.session?.access_token;
+        if(!token) throw new Error("Officer Login session nahi mila. Dobara Login karein.");
+        if(!currentOfficer || String(currentOfficer.status || "").trim().toLowerCase() !== "active"){
+            throw new Error("Sirf Active Officer staff invite bhej sakta hai.");
+        }
+        const { data, error } = await db.functions.invoke(config.functionName, {
+            body: { [config.requestId]: staffId, email },
+            headers: { Authorization: "Bearer " + token }
+        });
+        if(error){
+            let message = error.message || "Invite request failed";
+            let prefix = "";
+            const response = error.context;
+            if(response && typeof response.text === "function"){
+                if(response.status) prefix = "HTTP " + response.status + ": ";
+                try{
+                    const raw = await response.clone().text();
+                    if(raw){
+                        try{
+                            const payload = JSON.parse(raw);
+                            const detail = payload?.error ?? payload?.message ?? payload;
+                            message = typeof detail === "string" ? detail : JSON.stringify(detail);
+                        }catch(_){ message = raw; }
+                    }
+                }catch(_){ /* Keep original error message. */ }
+            }
+            throw new Error(prefix + String(message).slice(0,1500));
+        }
+        if(data?.error || data?.success !== true){
+            const detail = data?.error ?? "Invite confirmation nahi mila";
+            throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+        }
+        const msgText = String(data.message || "Login Invite Request Successful");
+        const alreadyLinked = data.already_linked === true || /already linked|existing auth user linked/i.test(msgText);
+        const panel = document.createElement("div");
+        panel.className = "registration-success";
+        const title = document.createElement("strong");
+        title.textContent = alreadyLinked ? "Auth Already Linked" : "Invite Request Successful";
+        const details = document.createElement("span");
+        details.textContent = config.label + " ID: " + staffId + " — " + msgText;
+        panel.append(title, details);
+        resultBox.appendChild(panel);
+        showSuccess(alreadyLinked ? config.label + " account pehle se linked hai." : config.label + " invite request successful.");
+    }catch(error){
+        console.error(config.label + " invite error:",error);
+        const panel = document.createElement("div");
+        panel.className = "message error";
+        panel.style.display = "block";
+        panel.textContent = "Invite failed: " + (error.message || String(error)) + ". Duplicate registration na karein.";
+        resultBox.appendChild(panel);
+        showError(config.label + " invite failed. Error neeche dekhein.");
+    }finally{
+        btn.disabled = false;
+        btn.textContent = "Send " + config.label + " Login Invite";
+    }
+}
+
+function openAdminInvite(adminId, email){
+    const idField = document.getElementById("adminOfficerInviteId");
+    const emailField = document.getElementById("adminOfficerInviteEmail");
+    if(idField && adminId) idField.value = String(adminId).trim();
+    if(emailField && email) emailField.value = String(email).trim().toLowerCase();
+    showOfficerPanel("coordinatorInvitePanel", document.getElementById("coordinatorInviteNav"));
+}
+
+function openAccountantInvite(accountantId, email){
+    const idField = document.getElementById("accountantOfficerInviteId");
+    const emailField = document.getElementById("accountantOfficerInviteEmail");
+    if(idField && accountantId) idField.value = String(accountantId).trim();
+    if(emailField && email) emailField.value = String(email).trim().toLowerCase();
+    showOfficerPanel("coordinatorInvitePanel", document.getElementById("coordinatorInviteNav"));
+}
 
 /* =========================
    RETRY LOGIN INVITE FOR EXISTING COORDINATOR
