@@ -22,21 +22,46 @@ input{width:100%;height:46px;padding:10px 12px;border:1px solid #cbd5e1;border-r
 .msg{display:none;margin-top:13px;padding:10px;border-radius:8px;text-align:center;font-size:13px}.msg.error{display:block;background:#fef3f2;color:#b42318;border:1px solid #fecdca}.msg.success{display:block;background:#ecfdf3;color:#067647;border:1px solid #abefc6}
 .note{margin-top:14px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-align:center;color:#667085;font-size:11px}.back{display:block;margin-top:16px;text-align:center;color:#075e88;text-decoration:none;font-weight:700;font-size:13px}
 footer{text-align:center;padding:11px;color:#667085;font-size:11px}
+
+/* Email-OTP second step; original FPO branding retained. */
+.stepbar{display:flex;gap:8px;margin:0 0 17px}
+.stepitem{flex:1;text-align:center;background:#f1f5f9;color:#64748b;padding:9px 4px;border-radius:9px;font-size:12px;font-weight:700}
+.stepitem.active{background:#e0f2fe;color:#075e88;border:1px solid #7dd3fc}
+.stepitem.done{background:#ecfdf3;color:#067647;border:1px solid #abefc6}
+#otpSection{display:none}
+.otp-info{background:#f8fafc;border:1px solid #e2e8f0;color:#475569;padding:10px;border-radius:8px;font-size:13px;margin-bottom:14px;overflow-wrap:anywhere}
+.otp-input{text-align:center;letter-spacing:6px;font-size:21px;font-weight:700}
+.secondary{width:100%;min-height:43px;margin-top:9px;border:1px solid #168cc3;border-radius:8px;background:white;color:#075e88;font-size:14px;font-weight:700;cursor:pointer}
+.secondary:disabled{opacity:.55;cursor:not-allowed}
+.backstep{display:block;margin:12px auto 0;background:none;border:none;color:#075e88;text-decoration:underline;font-size:13px;font-weight:700;cursor:pointer}
+
 </style>
 </head>
 <body>
 <header><div class="brand"><img src="logo.png" alt="CBMS Logo"><div><h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1><p>Secure Admin Portal</p></div></div></header>
 <main><div class="card">
-<div class="head"><div class="ico">🔐</div><h2>Admin Login</h2><p>केवल अधिकृत Admin के लिए</p></div>
+<div class="head"><div class="ico">🔐</div><h2>Admin Login</h2><p>पहले Password, फिर Email OTP</p></div>
 <div class="body">
+<div class="stepbar" aria-label="Login steps">
+<div id="step1" class="stepitem active">1. Email + Password</div><div id="step2" class="stepitem">2. Email OTP</div>
+</div>
 <form id="loginForm">
+<div id="passwordSection">
 <div class="field"><label>Registered Email ID</label><input type="email" id="email" autocomplete="username" required placeholder="Registered email डालें"></div>
 <div class="field"><label>Password</label><div class="wrap"><input type="password" id="password" autocomplete="current-password" required placeholder="Password डालें"><button type="button" class="eye" onclick="togglePassword()">👁</button></div></div>
-<button class="login" id="loginBtn" type="submit">🔐 Admin Login</button>
+<button class="login" id="loginBtn" type="submit">Continue &amp; Send OTP</button>
 <button class="forgot" id="forgotBtn" type="button" onclick="forgotPassword()">Forgot Password?</button>
-<div id="message" class="msg"></div>
+</div>
+<div id="otpSection">
+<div id="otpInfo" class="otp-info" role="status"></div>
+<div class="field"><label for="otp">Email OTP</label><input id="otp" class="otp-input" type="text" autocomplete="one-time-code" inputmode="numeric" maxlength="8" placeholder="6-digit OTP" aria-label="Email OTP"></div>
+<button type="button" class="login" id="verifyOtpBtn" onclick="verifyEmailOtp()">Verify OTP &amp; Login</button>
+<button type="button" class="secondary" id="resendBtn" onclick="resendOtp()">Resend OTP</button>
+<button type="button" class="backstep" onclick="startAgain()">← फिर से Email / Password भरें</button>
+</div>
+<div id="message" class="msg" role="status" aria-live="polite"></div>
 </form>
-<div class="note">Email/Password Supabase Authentication account से verify होगा.</div>
+<div class="note">Email और Password verify होने के बाद Registered Email पर OTP आएगा। केवल Active Admin Login कर सकता है।</div>
 <a class="back" href="index.html">← मुख्य वेबसाइट पर वापस जाएँ</a>
 </div>
 <footer>© 2026 Chanho Birsa Munda Sangathan Producer Company Limited</footer>
@@ -44,72 +69,152 @@ footer{text-align:center;padding:11px;color:#667085;font-size:11px}
 <script>
 const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
 const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
-});
+// This role uses exactly the same persistent storage as its Dashboard.
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+// Password check must not save a dashboard session before OTP succeeds.
+const passwordDb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{storageKey:"cbms-admin-password-check-v1",persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+let cbmsManualLoginStarted=false;
+let verifiedEmail="";
+let verifiedPasswordUserId="";
+let resendTimer=null;
+let resendSeconds=0;
 
-function showMessage(text,type){const m=document.getElementById("message");m.textContent=text;m.className="msg "+type;}
+function showMessage(message,type="error"){
+  const m=document.getElementById("message");m.textContent=message;m.className="msg "+type;
+}
+function clearMessage(){const m=document.getElementById("message");m.textContent="";m.className="msg";}
 function togglePassword(){const p=document.getElementById("password");p.type=p.type==="password"?"text":"password";}
+function maskEmail(email){const parts=String(email||"").split("@");if(parts.length!==2)return email;const a=parts[0];return (a.length>2?a.slice(0,2):a.slice(0,1))+"***@"+parts[1];}
+
+async function verifyRole(userId,client){
+  const {data,error}=await client.from("admins")
+    .select("admin_id,name,status")
+    .eq("auth_user_id",userId).maybeSingle();
+  if(error) throw error;
+  if(!data) throw new Error("यह अधिकृत Admin Account नहीं है।");
+  if(String(data.status||"").trim().toLowerCase()!=="active")
+    throw new Error("Admin Account Active नहीं है।");
+  return data;
+}
+
+function startResendTimer(){
+  const b=document.getElementById("resendBtn");
+  clearInterval(resendTimer);resendSeconds=60;b.disabled=true;
+  b.textContent="Resend OTP in "+resendSeconds+"s";
+  resendTimer=setInterval(()=>{
+    resendSeconds-=1;
+    if(resendSeconds<=0){clearInterval(resendTimer);b.disabled=false;b.textContent="Resend OTP";return;}
+    b.textContent="Resend OTP in "+resendSeconds+"s";
+  },1000);
+}
+async function sendOtp(){
+  const {error}=await db.auth.signInWithOtp({
+    email:verifiedEmail,
+    options:{shouldCreateUser:false}
+  });
+  if(error)throw error;
+}
 
 async function forgotPassword(){
- const email=document.getElementById("email").value.trim();
- const btn=document.getElementById("forgotBtn");
- if(!email){showMessage("पहले Registered Email ID भरें।","error");return;}
- btn.disabled=true;
- try{
-   const redirectTo=new URL("reset-password.html",window.location.href).href;
-   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
-   if(error) throw error;
-   showMessage("Password reset email भेज दिया गया है। Email खोलकर reset link पर click करें।","success");
- }catch(error){
-   console.error(error);
-   showMessage("Reset email भेजने में समस्या: "+(error.message||error),"error");
- }finally{btn.disabled=false;}
+  const email=document.getElementById("email").value.trim();
+  const btn=document.getElementById("forgotBtn");
+  if(!email){showMessage("पहले Registered Email ID भरें।");return;}
+  btn.disabled=true;
+  try{
+    const redirectTo=new URL("reset-password.html",window.location.href).href;
+    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
+    if(error)throw error;
+    showMessage("Password reset email भेज दिया गया है। Inbox / Spam देखें।","success");
+  }catch(error){showMessage("Reset failed: "+(error.message||error));}
+  finally{btn.disabled=false;}
 }
 
-document.getElementById("loginForm").addEventListener("submit",async(e)=>{
- e.preventDefault();
-  cbmsManualLoginStarted=true;
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
- const btn=document.getElementById("loginBtn");
- if(!email||!password){showMessage("Email और Password दोनों भरें।","error");return;}
- btn.disabled=true;btn.textContent="Login हो रहा है...";
- try{
-   const {data:authData,error:authError}=await db.auth.signInWithPassword({email,password});
-   if(authError){showMessage("Login failed: "+authError.message,"error");return;}
-   const user=authData&&authData.user?authData.user:null;
-   if(!user){await db.auth.signOut({scope:"local"});showMessage("Login session नहीं बना।","error");return;}
-   const {data:profile,error:profileError}=await db.from("admins")
-     .select("admin_id,name,status")
-     .eq("auth_user_id",user.id)
-     .maybeSingle();
-   if(profileError){await db.auth.signOut({scope:"local"});showMessage("Admin profile verify नहीं हुआ: "+profileError.message,"error");return;}
-   if(!profile){await db.auth.signOut({scope:"local"});showMessage("यह account अधिकृत Admin account नहीं है।","error");return;}
-   if(String(profile.status||"").trim().toLowerCase()!=="active"){await db.auth.signOut({scope:"local"});showMessage("Admin account Active नहीं है।","error");return;}
-   showMessage("Login successful. Dashboard खुल रहा है...","success");
-   window.location.href="admin-dashboard.html";
- }catch(error){console.error(error);showMessage("तकनीकी समस्या हुई। दोबारा कोशिश करें।","error");}
- finally{btn.disabled=false;btn.textContent="🔐 Admin Login";}
-});
+async function startOtpFlow(event){
+  event.preventDefault();cbmsManualLoginStarted=true;clearMessage();
+  const email=document.getElementById("email").value.trim().toLowerCase();
+  const password=document.getElementById("password").value;
+  const btn=document.getElementById("loginBtn");
+  if(!email||!password){showMessage("Email और Password दोनों भरें।");return;}
+  btn.disabled=true;btn.textContent="Password verify हो रहा है...";
+  try{
+    const {data,error}=await passwordDb.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    if(!data?.user||!data?.session)throw new Error("Password Session verify नहीं हुआ।");
+    await verifyRole(data.user.id,passwordDb);
+    verifiedEmail=String(data.user.email||email).trim().toLowerCase();
+    verifiedPasswordUserId=data.user.id;
+    btn.textContent="Email OTP भेजा जा रहा है...";
+    await sendOtp();
+    // Dispose of the temporary password-authenticated client session.
+    try{await passwordDb.auth.signOut({scope:"local"});}catch(e){console.warn("Temporary signout:",e);}
+    document.getElementById("passwordSection").style.display="none";
+    document.getElementById("otpSection").style.display="block";
+    document.getElementById("step1").className="stepitem done";
+    document.getElementById("step2").className="stepitem active";
+    document.getElementById("otpInfo").textContent="OTP "+maskEmail(verifiedEmail)+" पर भेजा गया है। Inbox / Spam देखें।";
+    document.getElementById("otp").value="";
+    document.getElementById("otp").focus();
+    document.getElementById("password").value="";
+    showMessage("Password सही है। अब Email OTP verify करें।","success");
+    startResendTimer();
+  }catch(e){showMessage(e.message||String(e));}
+  finally{btn.disabled=false;btn.textContent="Continue & Send OTP";}
+}
 
+async function resendOtp(){
+  if(!verifiedEmail||!verifiedPasswordUserId){await startAgain();return;}
+  if(resendSeconds>0)return;
+  clearMessage();
+  const b=document.getElementById("resendBtn");b.disabled=true;
+  try{await sendOtp();showMessage("नया OTP भेज दिया गया है।","success");startResendTimer();}
+  catch(e){showMessage("OTP resend failed: "+(e.message||e));b.disabled=false;}
+}
 
-// With a valid saved browser session, return straight to this role's dashboard.
-// The database role check prevents sending an unrelated account to this dashboard.
-let cbmsManualLoginStarted=false;
-async function cbmsResumeSavedLogin(){
-  try {
-    const {data,error}=await db.auth.getSession();
-    if(error || !data?.session?.user?.id || cbmsManualLoginStarted) return;
-    const {data:profile,error:profileError}=await db.from("admins")
-      .select("status").eq("auth_user_id",data.session.user.id).maybeSingle();
-    if(!cbmsManualLoginStarted && !profileError && profile &&
-       String(profile.status||"").trim().toLowerCase()==="active") {
-      window.location.replace("admin-dashboard.html");
+async function verifyEmailOtp(){
+  clearMessage();
+  const token=document.getElementById("otp").value.trim();
+  const b=document.getElementById("verifyOtpBtn");
+  if(!verifiedEmail||!verifiedPasswordUserId){await startAgain();return;}
+  if(!/^\d{6,8}$/.test(token)){showMessage("Email में आया 6 या 8 अंक का OTP डालें।");return;}
+  b.disabled=true;b.textContent="OTP verify हो रहा है...";
+  try{
+    const {data,error}=await db.auth.verifyOtp({email:verifiedEmail,token,type:"email"});
+    if(error)throw error;
+    if(!data?.user||!data?.session)throw new Error("OTP सफल है, लेकिन Login Session नहीं बना।");
+    if(data.user.id!==verifiedPasswordUserId){
+      await db.auth.signOut({scope:"local"});
+      throw new Error("Password और OTP Account अलग हैं। दोबारा Login करें।");
     }
-  } catch(e) { console.warn("Existing login check:",e); }
+    try{await verifyRole(data.user.id,db);}
+    catch(e){await db.auth.signOut({scope:"local"});throw e;}
+    document.getElementById("step2").className="stepitem done";
+    showMessage("OTP verified. Dashboard खुल रहा है...","success");
+    window.location.replace("admin-dashboard.html");
+  }catch(e){showMessage("OTP verification failed: "+(e.message||e));}
+  finally{b.disabled=false;b.textContent="Verify OTP & Login";}
 }
-cbmsResumeSavedLogin();
+
+async function startAgain(){
+  verifiedEmail="";verifiedPasswordUserId="";clearInterval(resendTimer);resendSeconds=0;
+  try{await passwordDb.auth.signOut({scope:"local"});}catch(e){}
+  document.getElementById("passwordSection").style.display="block";
+  document.getElementById("otpSection").style.display="none";
+  document.getElementById("step1").className="stepitem active";
+  document.getElementById("step2").className="stepitem";
+  document.getElementById("otp").value="";clearMessage();
+}
+
+// Keep valid role sessions after browser restart; never re-send OTP on every refresh.
+async function resumeSavedSession(){
+  try{
+    const {data,error}=await db.auth.getSession();
+    if(error||!data?.session?.user?.id||cbmsManualLoginStarted)return;
+    await verifyRole(data.session.user.id,db);
+    if(!cbmsManualLoginStarted)window.location.replace("admin-dashboard.html");
+  }catch(e){console.warn("Saved session check:",e);}
+}
+document.getElementById("loginForm").addEventListener("submit",startOtpFlow);
+resumeSavedSession();
 </script>
 </body>
 </html>
