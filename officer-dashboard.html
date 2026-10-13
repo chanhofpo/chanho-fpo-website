@@ -476,7 +476,7 @@ tr:nth-child(even) td{background:#fafcfd}
         </div>
       </form>
       <div id="coordinatorInviteResult" role="status" aria-live="polite" style="margin-top:14px"></div>
-      <p class="profile-help">Sirf active Officer login se invite bheja ja sakta hai. Email par aane wala link password set karne ke liye website ke reset-password.html page par redirect hoga. Agar Auth pehle se linked hai to Edge Function naya invite nahi bhejega.</p>
+      <p class="profile-help">Error aane par yahan poora message dekhein. Invite fail ho to coordinator dobara register na karein. Sirf active Officer login se invite bheja ja sakta hai. Email par aane wala link password set karne ke liye website ke reset-password.html page par redirect hoga. Agar Auth pehle se linked hai to Edge Function naya invite nahi bhejega.</p>
     </div>
   </section>
 
@@ -809,16 +809,32 @@ async function sendCoordinatorLoginInvite(){
         });
 
         if(error){
-            let message = error.message || "Edge Function request failed";
             const response = error.context;
-            if(response && typeof response.json === "function"){
+            let message = error.message || "Edge Function request failed";
+            let status = "";
+
+            // Supabase FunctionsHttpError keeps the real server response in context.
+            // Read it as text first, then safely stringify nested JSON error objects.
+            if(response && typeof response.text === "function"){
+                if(response.status) status = "HTTP " + response.status + ": ";
                 try{
-                    const details = await response.clone().json();
-                    message = details?.error || details?.message || message;
-                }catch(_){ /* Keep original error message. */ }
+                    const raw = await response.clone().text();
+                    if(raw){
+                        try{
+                            const payload = JSON.parse(raw);
+                            const cause = payload && (payload.error ?? payload.message ?? payload);
+                            message = typeof cause === "string" ? cause : JSON.stringify(cause);
+                        }catch(_){
+                            message = raw;
+                        }
+                    }
+                }catch(readError){
+                    console.warn("Unable to read Edge Function error response:", readError);
+                }
+            }else if(response && response.status){
+                status = "HTTP " + response.status + ": ";
             }
-            const status = response && response.status ? "HTTP " + response.status + ": " : "";
-            throw new Error(status + message);
+            throw new Error(status + String(message).slice(0, 1500));
         }
         if(!data || data.success !== true){
             throw new Error(data?.error || "Invite ka success confirmation nahi mila.");
