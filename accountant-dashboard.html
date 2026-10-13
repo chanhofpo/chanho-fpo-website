@@ -320,7 +320,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <button class="sidebar-link" data-title="Cheque / RTGS / NEFT Register"
           onclick="showPanel('cbmsTransferPanel',this);cbmsLoadTransfers()"><span class="ico">🏦</span>Cheque / RTGS / NEFT</button>
         <button class="sidebar-link" data-title="Office Assets Register"
-          onclick="showPanel('cbmsAssetsPanel',this);cbmsLoadAssets()"><span class="ico">🪑</span>Office Saman Register</button>
+          onclick="showPanel('cbmsAssetsPanel',this);cbmsLoadAssets()"><span class="ico">🪑</span>Office Assets Register</button>
         <button class="sidebar-link" data-title="Salary / Commission Register"
           onclick="showPanel('cbmsPayrollPanel',this);cbmsLoadPayroll()"><span class="ico">👥</span>Salary / Commission</button>
       </div>
@@ -421,8 +421,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <div class="portal-card-body">
       <h1 class="welcome-title">Welcome to Chanho FPO Accounts</h1>
       <p class="welcome-text">
-        Is dashboard se FPO ke receipt, payment, income, expense, cash/bank book,
-        ledger, dues aur financial reports manage kiye ja sakte hain.
+        Use this dashboard to manage FPO receipts, payments, income, expenses,
+        cash and bank books, ledgers, outstanding dues, and financial reports.
       </p>
 
       <div class="stats">
@@ -485,18 +485,18 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
             <div class="stat">
               <h3>Low Stock Items</h3>
               <p id="dashLowStockCount">0</p>
-              <small>Minimum level tak pahunch gaye</small>
+              <small>At or below minimum stock level</small>
             </div>
 
             <div class="stat">
               <h3>Out of Stock</h3>
               <p id="dashOutStockCount" class="amount-negative">0</p>
-              <small>Stock zero hai</small>
+              <small>No stock available</small>
             </div>
           </div>
 
           <div id="dashLowStockNote" class="note" style="margin-top:12px">
-            Item Master me Minimum Stock Alert Level set karne par warning yahan dikhegi.
+            Set a Minimum Stock Alert Level in Item Master to display stock warnings here.
           </div>
 
           <div class="table-wrap" style="margin-top:12px">
@@ -520,8 +520,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       </div>
 
       <div class="note" style="margin-top:14px">
-        Polyhouse stock bhi isi Item Master me maintain hoga: Plant / Seedling category select karke variety,
-        unit (Plant/Seedling/Tray/Pot), purchase/production rate aur sale rate save karein.
+        Polyhouse stock is also managed through Item Master. Select Plant / Seedling, enter the variety,
+        unit (Plant/Seedling/Tray/Pot), purchase or production rate, and sale rate.
       </div>
 
       <hr>
@@ -530,7 +530,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <div class="quick-actions">
         <div class="quick-card" onclick="showPanel('receiptPanel')">
           <b>➕ New Receipt</b>
-          <span>Cash/Bank me paisa receive entry</span>
+          <span>Record money received in Cash / Bank</span>
         </div>
 
         <div class="quick-card" onclick="showPanel('paymentPanel')">
@@ -573,7 +573,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <div class="section-body">
         <p><span class="badge orange">Pending</span> Accountant entry → Officer verification workflow can be enabled.</p>
         <p><span class="badge green">Approved</span> Approved vouchers become final accounting records.</p>
-        <div class="note">Recommended: finalised voucher ko direct edit na karein; correction ke liye reversal/adjustment entry use karein.</div>
+        <div class="note">Do not directly edit finalized vouchers. Use a reversal or adjustment entry to correct them.</div>
       </div>
     </div>
   </div>
@@ -586,12 +586,12 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 <!-- ====================================================== -->
 <section id="cbmsTransferPanel" class="portal-panel">
   <div class="section"><h2>Cheque Issue / RTGS / NEFT Register</h2><div class="section-body">
-    <div class="note"><b>Accounting rule:</b> Cheque <b>Issued</b> = record only, bank balance not reduced. Mark <b>Cleared/Completed</b> when bank actually pays; it posts exactly one Payment Voucher. RTGS/NEFT can be saved Completed directly. <b>Same payment ko Payment Entry me dobara mat dalein.</b> Salary/Commission ke payments neeche alag form me bharein.</div>
+    <div class="note"><b>Accounting rule:</b> Cheque <b>Issued</b> = record only, bank balance not reduced. Mark <b>Cleared/Completed</b> when bank actually pays; it posts exactly one Payment Voucher. RTGS/NEFT can be saved Completed directly. <b>Do not enter the same payment again in Payment Entry.</b> Enter salary and commission payments in the separate form below.</div>
     <div class="form-grid" style="margin-top:14px">
       <div class="field"><label>Issue / Transfer Date *</label><input type="date" id="cbmsTDate"></div>
       <div class="field"><label>Mode *</label><select id="cbmsTMethod" onchange="cbmsTransferMethodChanged()"><option value="CHEQUE">Cheque</option><option value="RTGS">RTGS</option><option value="NEFT">NEFT</option></select></div>
-      <div class="field"><label>Kiske Naam / Beneficiary *</label><input id="cbmsTPayee" placeholder="Person / Vendor / Company"></div>
-      <div class="field"><label>Kis Purpose se? *</label><input id="cbmsTPurpose" placeholder="Machine / Training / Bill / Rent"></div>
+      <div class="field"><label>Beneficiary Name *</label><input id="cbmsTPayee" placeholder="Person / Vendor / Company"></div>
+      <div class="field"><label>Payment Purpose *</label><input id="cbmsTPurpose" placeholder="Machine / Training / Bill / Rent"></div>
       <div class="field"><label>Amount ₹ *</label><input id="cbmsTAmount" type="number" min="0.01" step="0.01"></div>
       <div class="field"><label id="cbmsTRefLabel">Cheque Number *</label><input id="cbmsTRef" placeholder="Cheque No."></div>
       <div class="field"><label>Issuing Bank Name *</label><input id="cbmsTBank" placeholder="SBI Mandar etc."></div>
@@ -603,7 +603,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     </div>
     <br><button type="button" class="primary-btn" id="cbmsTSave" onclick="cbmsSaveTransfer()">Save Cheque / Transfer</button>
     <button type="button" class="secondary-btn" onclick="cbmsClearTransfer()">Clear</button>
-    <div class="note" style="margin-top:12px">Already issued payment ko <b>Mark Cleared</b> karne ke liye neeche Clearing Date select karein. Cleared payment cancel nahi hoga; correction ke liye Accountant/Officer review karein.</div>
+    <div class="note" style="margin-top:12px">To <b>Mark Cleared</b> an issued cheque, select the clearing date below. Cleared payments cannot be cancelled here; contact the Accountant or Officer to make corrections.</div>
     <div class="form-grid" style="margin-top:12px">
       <div class="field"><label>Cheque Clearing / Bank Payment Date</label><input type="date" id="cbmsTClearDate"></div>
       <div class="field"><label>Search</label><input id="cbmsTSearch" oninput="cbmsRenderTransfers()" placeholder="Name / reference / purpose"></div>
@@ -611,23 +611,23 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <br><button type="button" class="secondary-btn" onclick="cbmsLoadTransfers()">Refresh Register</button>
     <button type="button" class="secondary-btn" onclick="cbmsExportRegister('transfer')">Export CSV</button>
     <div id="cbmsTSummary" class="note" style="margin-top:12px">Loading entries...</div>
-    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Issue Date</th><th>Entry No.</th><th>Mode / Ref.</th><th>Beneficiary</th><th>Purpose</th><th>Amount</th><th>Bank</th><th>Status</th><th>Voucher</th><th>Action</th></tr></thead><tbody id="cbmsTBody"><tr><td colspan="10">Register kholiye...</td></tr></tbody></table></div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Issue Date</th><th>Entry No.</th><th>Mode / Ref.</th><th>Beneficiary</th><th>Purpose</th><th>Amount</th><th>Bank</th><th>Status</th><th>Voucher</th><th>Action</th></tr></thead><tbody id="cbmsTBody"><tr><td colspan="10">Open this register to view entries...</td></tr></tbody></table></div>
   </div></div>
 </section>
 
 <section id="cbmsAssetsPanel" class="portal-panel">
-  <div class="section"><h2>Office Saman / Assets Register</h2><div class="section-body">
-    <div class="note">Office ka furniture, printer, computer, machine, table, chair, almirah etc. ka record save karein. <b>Is register se expense automatic nahi banega</b>; purchase/payment hua ho to original Voucher alag se hona chahiye. Purane record ko Edit kiya ja sakta hai.</div>
+  <div class="section"><h2>Office Items / Assets Register</h2><div class="section-body">
+    <div class="note">Keep records of office furniture, printers, computers, machinery, tables, chairs, cupboards, and other assets. <b>Adding an item here does not create an expense.</b> Record the corresponding purchase or payment separately using the original voucher. Existing asset records can be edited.</div>
     <input type="hidden" id="cbmsAId">
     <div class="form-grid" style="margin-top:14px">
-      <div class="field"><label>Item / Saman Ka Naam *</label><input id="cbmsAName" placeholder="Canon Printer / Chair / Laptop"></div>
+      <div class="field"><label>Item / Asset Name *</label><input id="cbmsAName" placeholder="Canon Printer / Chair / Laptop"></div>
       <div class="field"><label>Category</label><select id="cbmsACategory"><option>Furniture</option><option>Electronics</option><option>Office Equipment</option><option>Stationery</option><option>Machinery</option><option>Other</option></select></div>
       <div class="field"><label>Quantity *</label><input id="cbmsAQty" type="number" min="0.01" step="0.01" value="1"></div>
       <div class="field"><label>Unit</label><select id="cbmsAUnit"><option>Pcs</option><option>Set</option><option>Box</option><option>Kg</option><option>Nos</option></select></div>
       <div class="field"><label>Purchase / Received Date</label><input id="cbmsADate" type="date"></div>
       <div class="field"><label>Per Unit Cost ₹</label><input id="cbmsACost" type="number" min="0" step="0.01" value="0"></div>
       <div class="field"><label>Office Location / Room</label><input id="cbmsALocation" placeholder="Chanho Office / Store Room"></div>
-      <div class="field"><label>Kiske Paas / Assigned To</label><input id="cbmsAAssigned" placeholder="Employee name"></div>
+      <div class="field"><label>Assigned To / Custodian</label><input id="cbmsAAssigned" placeholder="Employee name"></div>
       <div class="field"><label>Condition</label><select id="cbmsACondition"><option>Good</option><option>New</option><option>Repair Needed</option><option>Damaged</option></select></div>
       <div class="field"><label>Status</label><select id="cbmsAStatus"><option>In Use</option><option>In Store</option><option>Repair</option><option>Disposed</option></select></div>
       <div class="field"><label>Serial No. / Bill No.</label><input id="cbmsASerial" placeholder="Serial / Invoice"></div>
@@ -639,22 +639,22 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <br><button type="button" class="secondary-btn" onclick="cbmsLoadAssets()">Refresh Items</button>
     <button type="button" class="secondary-btn" onclick="cbmsExportRegister('asset')">Export CSV</button>
     <div id="cbmsASummary" class="note" style="margin-top:12px">Loading assets...</div>
-    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Item Code</th><th>Item</th><th>Qty.</th><th>Cost / Total</th><th>Location</th><th>Assigned To</th><th>Condition</th><th>Status</th><th>Action</th></tr></thead><tbody id="cbmsABody"><tr><td colspan="9">Register kholiye...</td></tr></tbody></table></div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Item Code</th><th>Item</th><th>Qty.</th><th>Cost / Total</th><th>Location</th><th>Assigned To</th><th>Condition</th><th>Status</th><th>Action</th></tr></thead><tbody id="cbmsABody"><tr><td colspan="9">Open this register to view entries...</td></tr></tbody></table></div>
   </div></div>
 </section>
 
 <section id="cbmsPayrollPanel" class="portal-panel">
   <div class="section"><h2>Salary / Commission Payment Register</h2><div class="section-body">
-    <div class="note"><b>Ye paid payments ka register hai.</b> Save karte hi Salary ya Commission ka <b>ek Payment Voucher</b> bhi Cash/Bank Book me banega. Same payment ko Payment Entry ya Cheque Issue Register me dobara post mat karein. Cheque mode tabhi chunein jab payment ko book karna sahi ho. Unpaid salary yahan save na karein.</div>
+    <div class="note"><b>This register records completed salary and commission payments.</b> Saving a salary or commission payment creates <b>one Payment Voucher</b> in the Cash / Bank Book. Do not post the same payment again in Payment Entry or the Cheque Issue Register. Choose Cheque only when the payment should be recorded as paid. Do not record unpaid salaries in this register.</div>
     <div class="form-grid" style="margin-top:14px">
       <div class="field"><label>Payment Date *</label><input type="date" id="cbmsPDate"></div>
       <div class="field"><label>Payment Type *</label><select id="cbmsPType"><option value="SALARY">Salary / Honorarium</option><option value="COMMISSION">Commission</option></select></div>
-      <div class="field"><label>Kisko Diya / Name *</label><input id="cbmsPName" placeholder="Admin / Staff / Field worker"></div>
+      <div class="field"><label>Paid To / Employee Name *</label><input id="cbmsPName" placeholder="Admin / Staff / Field worker"></div>
       <div class="field"><label>Staff / Admin / Officer ID (optional)</label><input id="cbmsPStaffId" placeholder="ADM/2026/07"></div>
-      <div class="field"><label>Kis Month/Period Ka</label><input type="month" id="cbmsPPeriod"></div>
-      <div class="field"><label>Kitna Amount ₹ *</label><input type="number" min="0.01" step="0.01" id="cbmsPAmount"></div>
+      <div class="field"><label>Salary / Commission Period</label><input type="month" id="cbmsPPeriod"></div>
+      <div class="field"><label>Amount ₹ *</label><input type="number" min="0.01" step="0.01" id="cbmsPAmount"></div>
       <div class="field"><label>Payment Mode *</label><select id="cbmsPMode" onchange="cbmsPayrollModeChanged()"><option>Cash</option><option>UPI</option><option>Cheque</option><option>Bank</option></select></div>
-      <div class="field"><label>UPI UTR / Cheque No. / Bank Ref.</label><input id="cbmsPRef" placeholder="Non-Cash payments me zaroori"></div>
+      <div class="field"><label>UPI UTR / Cheque No. / Bank Ref.</label><input id="cbmsPRef" placeholder="Required for non-cash payments"></div>
       <div class="field"><label>Block</label><select id="cbmsPBlock"><option value="">Common</option><option>Chanho</option><option>Mandar</option></select></div>
       <div class="field"><label>Business / Activity</label><input id="cbmsPBusiness" placeholder="Farmer Registration / Marketing etc."></div>
       <div class="field"><label>Payment Remark</label><input id="cbmsPNotes" placeholder="Commission rate / salary details"></div>
@@ -665,7 +665,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <br><button type="button" class="secondary-btn" onclick="cbmsLoadPayroll()">Refresh Payments</button>
     <button type="button" class="secondary-btn" onclick="cbmsExportRegister('payroll')">Export CSV</button>
     <div id="cbmsPSummary" class="note" style="margin-top:12px">Loading payments...</div>
-    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Payment No.</th><th>Type</th><th>Person / ID</th><th>Period</th><th>Amount</th><th>Mode / Reference</th><th>Block</th><th>Voucher</th></tr></thead><tbody id="cbmsPBody"><tr><td colspan="9">Register kholiye...</td></tr></tbody></table></div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Payment No.</th><th>Type</th><th>Person / ID</th><th>Period</th><th>Amount</th><th>Mode / Reference</th><th>Block</th><th>Voucher</th></tr></thead><tbody id="cbmsPBody"><tr><td colspan="9">Open this register to view entries...</td></tr></tbody></table></div>
   </div></div>
 </section>
 
@@ -695,7 +695,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>FPO GST Settings</h2>
     <div class="section-body">
       <div class="note">
-        FPO GST registered hone par Tax Invoice me Seller GSTIN, Place of Supply aur CGST/SGST/IGST breakup dikhaya jayega.
+        If the FPO is GST-registered, tax invoices will show the Seller GSTIN, Place of Supply, and CGST / SGST / IGST breakdown.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -719,7 +719,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Receipt Entry</h2>
     <div class="section-body">
-      <div class="note"><b>Live Receipt Entry</b> — sirf Date, Receipt Type, Received From, Amount aur Mode required hain. Baaki fields optional hain.</div>
+      <div class="note"><b>Live Receipt Entry</b> — Date, Receipt Type, Received From, Amount, and Payment Mode are required. All other fields are optional.</div>
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Date *</label><input id="rcDate" type="date"></div>
         <div class="field"><label>Receipt Type *</label>
@@ -764,7 +764,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Payment Entry</h2>
     <div class="section-body">
-      <div class="note">Supplier payment ke liye <b>Purchase Payment</b> select karein. Supplier aur pending Purchase Bill choose karne par bill ka Purchase, Return, Paid aur Outstanding amount auto-show hoga.</div>
+      <div class="note">For supplier payments, select <b>Purchase Payment</b>. Select a supplier and a pending purchase bill to view the purchase amount, returns, amount paid, and outstanding balance.</div>
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Date *</label><input id="pyDate" type="date"></div>
         <div class="field"><label>Expense Head *</label>
@@ -914,9 +914,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Seed / Fertilizer / Plant Item Master</h2>
     <div class="section-body">
       <div class="note">
-        Seed select karne par sirf Product Name, Variety, Mission Name aur Year bharna hoga.
-        Free Seed ke liye HSN, GST, Purchase Rate aur Sale Rate nahi chahiye.
-        Fertilizer, Pesticide, Plant/Seedling aur Other categories ke normal fields available rahenge.
+        For Seed items, enter the Product Name, Variety, Mission Name, and Year.
+        HSN, GST, Purchase Rate, and Sale Rate are not required for free seeds.
+        Standard fields remain available for Fertilizer, Pesticide, Plant/Seedling, and Other categories.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1003,9 +1003,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Stock Inward / Purchase Entry</h2>
     <div class="section-body">
       <div class="note">
-        Fertilizer, pesticide, plant/seedling ya anya paid stock ki inward entry yahan karein.
-        Free Seed ke liye "Seed Stock / Transfer" section use karein. Entry save hote hi stock badhega
-        aur wahi quantity billing me available dikhegi.
+        Use this form to receive fertilizer, pesticide, plant/seedling, and other paid stock.
+        For free seeds, use the "Seed Stock / Transfer" section. Saving an entry increases the stock
+        and makes that quantity available for billing.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1052,8 +1052,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <div class="section-body">
 
       <div class="note">
-        <b>Purchase Return:</b> stock kam hoga aur Supplier Payable bhi return value se kam hoga.
-        <b>Damage / Expired:</b> sirf physical stock kam hoga; supplier payable par koi effect nahi padega.
+        <b>Purchase Return:</b> stock and Supplier Payable both decrease by the return value.
+        <b>Damage / Expired:</b> only physical stock decreases; Supplier Payable remains unchanged.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1087,7 +1087,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
         <div class="field">
           <label>Supplier</label>
-          <input id="soSupplier" readonly placeholder="Purchase Return me auto">
+          <input id="soSupplier" readonly placeholder="Filled automatically for purchase returns">
         </div>
 
         <div class="field">
@@ -1163,9 +1163,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Seed Stock / Transfer Register</h2>
     <div class="section-body">
       <div class="note">
-        Free Seed ka stock yahan maintain hoga. Formula:
+        Maintain free seed stock here. Formula:
         <b>Available = Received by Transfer − Distributed</b>.
-        Available stock kabhi negative nahi hone diya jayega.
+        Available stock cannot fall below zero.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1220,9 +1220,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Seed Distribution Register</h2>
     <div class="section-body">
       <div class="note">
-        Beej distribution ke samay farmer ki details bharein.
-        <b>Photo Upload: Not Required</b> — Jharkhand Seed system me photo already liya jata hai.
-        Seed Item Master se select hoga aur save hote hi distributed quantity stock se automatically kam hogi.
+        Enter farmer details when distributing seeds.
+        <b>Photo Upload: Not Required</b> — The photo is already captured in the Jharkhand Seed system.
+        Select the item from Seed Item Master. The distributed quantity is automatically deducted from stock when saved.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1294,8 +1294,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Fertilizer / Plant / Other Sales Billing</h2>
     <div class="section-body">
       <div class="note">
-        Tally-style bill: Fertilizer, Plant/Seedling aur Other sale items yahan bill honge.
-        Free Seed is billing me nahi dikhega. Quantity available stock se zyada nahi ho sakti.
+        Create sales invoices for Fertilizer, Plant/Seedling, and Other sale items here.
+        Free Seed is excluded from billing. Sale quantity cannot exceed available stock.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1319,7 +1319,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
         <div class="field"><label>Mobile</label><input id="customerMobile" placeholder="Mobile"></div>
         <div class="field"><label>Farmer Reg. No.</label><input id="customerFarmerReg" placeholder="Optional CBMS/2026/01"></div>
 
-        <div class="field"><label>Buyer GSTIN (optional)</label><input id="buyerGstin" placeholder="GST registered buyer ho to"></div>
+        <div class="field"><label>Buyer GSTIN (optional)</label><input id="buyerGstin" placeholder="If the buyer is GST-registered"></div>
         <div class="field"><label>Place of Supply State</label><input id="placeOfSupply" value="Jharkhand" oninput="recalculateBill()"></div>
         <div class="field"><label>Tax Type</label>
           <select id="taxType" onchange="recalculateBill()">
@@ -1387,8 +1387,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Seed Distribution Report</h2>
     <div class="section-body">
       <div class="note">
-        Date, Mission, Year, Crop, Variety ya Farmer ke hisaab se distribution report dekhein.
-        Aadhaar report me masked rahega.
+        View distribution reports by Date, Mission, Year, Crop, Variety, or Farmer.
+        Aadhaar numbers will be masked in reports.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1447,8 +1447,8 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>GST Bill History</h2>
     <div class="section-body">
       <div class="note">
-        Purane finalized bills ko search, view, reprint aur CSV me export kar sakte hain.
-        Final bill direct delete/edit nahi hoga. Galti hone par <b>Cancel Bill</b> se stock reverse hoga aur accounting receipt bhi cancel ho jayegi.
+        Search, view, reprint, and export previously finalized invoices as CSV.
+        Final invoices cannot be directly edited or deleted. Use <b>Cancel Bill</b> to reverse stock and cancel the linked accounting receipt if a correction is needed.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1545,9 +1545,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <div class="section-body">
 
       <div class="note">
-        Ye balance sirf system start karte samay ka actual <b>Cash in Hand</b> aur
-        <b>Bank Balance</b> hai. Daily receipt/payment ko Opening Balance me include na karein.
-        Save hone ke baad ye Cash Book, Bank Book aur Dashboard me automatically add ho jayega.
+        Opening balances must reflect the actual <b>Cash in Hand</b> and
+        <b>Bank Balance</b> at the system start date. Do not include daily receipts or payments in the opening balance.
+        Once saved, these amounts are automatically included in the Cash Book, Bank Book, and Dashboard.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1676,7 +1676,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
   <div class="section">
     <h2>Supplier Ledger</h2>
     <div class="section-body">
-      <div class="note">Stock Inward / Purchase payable badhata hai. "Purchase Payment" aur "Purchase Return" supplier balance ko kam karte hain.</div>
+      <div class="note">Stock Inward and purchases increase Supplier Payable; Purchase Payments and Purchase Returns decrease it.</div>
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Supplier *</label><select id="supplierLedgerSelect" onchange="loadSupplierLedger()"><option value="">Select Supplier</option></select></div>
         <div class="field"><label>From Date</label><input id="supplierFrom" type="date" onchange="renderSupplierLedger()"></div>
@@ -1757,9 +1757,9 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <div class="section-body">
 
       <div class="note">
-        Month aur Year select karke Sales, Purchase, Cash Book, Bank Book,
-        Supplier Ledger aur Seed Distribution ka monthly backup CSV me download karein.
-        CSV file Excel me directly open ho jayegi.
+        Select a Month and Year to download a monthly CSV backup of Sales, Purchases, Cash Book, Bank Book,
+        Supplier Ledger, and Seed Distribution.
+        The CSV file can be opened directly in Excel.
       </div>
 
       <div class="form-grid" style="margin-top:14px">
@@ -1788,7 +1788,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
         <div class="field">
           <label>Period</label>
-          <input id="mbPeriod" readonly placeholder="Month load karne par auto">
+          <input id="mbPeriod" readonly placeholder="Filled after loading month data">
         </div>
       </div>
 
@@ -1928,7 +1928,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     <h2>Accounts Audit Trail</h2>
     <div class="section-body">
       <div class="note">
-        Accountant entry, edit request, officer approval, reversal aur deletion attempt ka audit record database me rakhna recommended hai.
+        Keep an audit history of Accountant entries, edit requests, Officer approvals, reversals, and deletion attempts.
       </div>
       <br>
       <div class="table-wrap">
@@ -2070,7 +2070,7 @@ function loadGstSettings(){
 function saveGstSettings(){
   const gstin=document.getElementById("gstGstin").value.trim().toUpperCase();
   if(gstin && !/^[0-9A-Z]{15}$/.test(gstin)){
-    showMessage("GSTIN 15 characters ka hona chahiye.","error");
+    showMessage("GSTIN must be 15 characters long.","error");
     return;
   }
 
@@ -2084,7 +2084,7 @@ function saveGstSettings(){
   };
 
   localStorage.setItem(STORE_KEYS.gst,JSON.stringify(settings));
-  showMessage("FPO GST Settings save ho gaya.");
+  showMessage("FPO GST Settings saved successfully.");
 }
 
 function resolvedTaxType(){
@@ -2167,14 +2167,14 @@ function saveItemMaster(){
   const saleRate=num(document.getElementById("imSaleRate").value);
 
   if(!name || !category || saleRate<0){
-    showMessage("Item Name, Category aur valid Sale Rate भरें।","error");
+    showMessage("Enter the Item Name, Category, and a valid Sale Rate.","error");
     return;
   }
 
   const items=getStore(STORE_KEYS.items);
   const duplicate=items.find(i=>String(i.name).toLowerCase()===name.toLowerCase() && String(i.brand||"").toLowerCase()===document.getElementById("imBrand").value.trim().toLowerCase());
   if(duplicate){
-    showMessage("Same Item Name / Brand pehle se Item Master me hai.","error");
+    showMessage("This Item Name / Brand already exists in Item Master.","error");
     return;
   }
 
@@ -2207,7 +2207,7 @@ function saveItemMaster(){
   clearItemMasterForm();
   renderItemMaster();
   refreshItemDropdowns();
-  showMessage("Item Master me item save ho gaya.");
+  showMessage("Item saved in Item Master.");
 }
 
 function deleteItem(id){
@@ -2219,7 +2219,7 @@ function deleteItem(id){
     bills.some(b=>(b.items||[]).some(x=>x.itemId===id));
 
   if(used){
-    showMessage("Is item par transaction ho chuka hai. Delete ke badle Inactive karein.","error");
+    showMessage("This item already has transactions. Deactivate it instead of deleting it.","error");
     return;
   }
 
@@ -2298,14 +2298,14 @@ function saveStockInward(){
   const supplier=document.getElementById("siSupplier").value.trim();
 
   if(!itemId || qty<=0 || rate<0 || !supplier){
-    showMessage("Supplier, Item, Quantity aur valid Purchase Rate भरें।","error");
+    showMessage("Enter Supplier, Item, Quantity, and a valid Purchase Rate.","error");
     return;
   }
 
   const items=getStore(STORE_KEYS.items);
   const item=items.find(i=>i.id===itemId);
   if(!item){
-    showMessage("Selected item नहीं मिला।","error");
+    showMessage("Selected item not found.","error");
     return;
   }
 
@@ -2346,7 +2346,7 @@ function saveStockInward(){
   renderStockInward();
   refreshItemDropdowns();
   renderStockRegister();
-  showMessage("Stock inward save ho gaya. Current stock update ho gaya.");
+  showMessage("Stock inward saved. Current stock updated.");
 }
 
 function renderStockInward(){
@@ -2505,14 +2505,14 @@ function collectBillItems(){
     if(!itemId) continue;
 
     const item=items.find(i=>i.id===itemId);
-    if(!item) throw new Error("Bill item master me नहीं मिला।");
+    if(!item) throw new Error("Bill item was not found in Item Master.");
 
     const qty=num(tr.querySelector(".billQty").value);
     const rate=num(tr.querySelector(".billRate").value);
     const gst=num(tr.querySelector(".billGst").value);
 
-    if(qty<=0) throw new Error(item.name+": Quantity zero se zyada honi chahiye.");
-    if(qty>num(item.currentStock)) throw new Error(item.name+": Available stock se zyada quantity nahi bech sakte.");
+    if(qty<=0) throw new Error(item.name+": Quantity must be greater than zero.");
+    if(qty>num(item.currentStock)) throw new Error(item.name+": Sale quantity cannot exceed available stock.");
 
     const base=qty*rate;
     const tax=base*gst/100;
@@ -2530,14 +2530,14 @@ function collectBillItems(){
     });
   }
 
-  if(!output.length) throw new Error("Bill me kam se kam ek item add karein.");
+  if(!output.length) throw new Error("Add at least one item to the bill.");
   return output;
 }
 
 function saveSalesBill(){
   try{
     const customer=document.getElementById("customerName").value.trim();
-    if(!customer) throw new Error("Customer / Farmer Name भरें।");
+    if(!customer) throw new Error("Enter Customer / Farmer Name.");
 
     const lineItems=collectBillItems();
     const totals=recalculateBill();
@@ -2550,7 +2550,7 @@ function saveSalesBill(){
     for(const [itemId,qty] of Object.entries(qtyByItem)){
       const item=itemMaster.find(i=>i.id===itemId);
       if(!item || qty>num(item.currentStock)){
-        throw new Error((item?.name||"Item")+": Total bill quantity available stock se zyada hai.");
+        throw new Error((item?.name||"Item")+": Total bill quantity exceeds available stock.");
       }
     }
 
@@ -2610,7 +2610,7 @@ function saveSalesBill(){
     refreshItemDropdowns();
     renderSalesBills();
     renderStockRegister();
-    showMessage("Sales bill final ho gaya aur stock deduct ho gaya.");
+    showMessage("Sales invoice finalized and stock deducted.");
 
   }catch(error){
     showMessage(error.message||String(error),"error");
@@ -2637,7 +2637,7 @@ function renderSalesBills(){
 function printLastBill(){
   const bills=getStore(STORE_KEYS.bills);
   if(!bills.length){
-    showMessage("Abhi koi saved bill नहीं है।","error");
+    showMessage("No saved bills found.","error");
     return;
   }
   printBill(bills[bills.length-1].id);
@@ -2800,7 +2800,7 @@ async function getLiveAccountantProfile(){
   if(liveAccountantProfile) return liveAccountantProfile;
 
   const {data:{session}} = await authDb.auth.getSession();
-  if(!session?.user) throw new Error("Accountant login session nahi mila.");
+  if(!session?.user) throw new Error("Accountant login session not found. Please sign in again.");
 
   const {data,error} = await authDb
     .from("accountants")
@@ -2810,7 +2810,7 @@ async function getLiveAccountantProfile(){
 
   if(error) throw error;
   if(!data || String(data.status||"").toLowerCase()!=="active"){
-    throw new Error("Active Accountant profile nahi mila.");
+    throw new Error("Active Accountant profile not found.");
   }
 
   liveAccountantProfile=data;
@@ -2912,7 +2912,7 @@ window.saveGstSettings=async function(){
   try{
     const gstin=document.getElementById("gstGstin").value.trim().toUpperCase();
     if(gstin && !/^[0-9A-Z]{15}$/.test(gstin)){
-      throw new Error("GSTIN 15 characters ka hona chahiye.");
+      throw new Error("GSTIN must be 15 characters long.");
     }
 
     const payload={
@@ -2932,7 +2932,7 @@ window.saveGstSettings=async function(){
 
     if(error) throw error;
     await loadGstSettings();
-    showMessage("FPO GST Settings Supabase me save ho gaya.");
+    showMessage("FPO GST Settings saved to the database.");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -2962,14 +2962,14 @@ window.saveItemMaster=async function(){
     const brand=document.getElementById("imBrand").value.trim();
     const saleRate=num(document.getElementById("imSaleRate").value);
 
-    if(!name || !category) throw new Error("Item Name aur Category भरें।");
-    if(saleRate<0) throw new Error("Sale Rate valid hona chahiye.");
+    if(!name || !category) throw new Error("Enter Item Name and Category.");
+    if(saleRate<0) throw new Error("Enter a valid Sale Rate.");
 
     const duplicate=liveInventoryItems.find(i=>
       String(i.name).trim().toLowerCase()===name.toLowerCase() &&
       String(i.brand||"").trim().toLowerCase()===brand.toLowerCase()
     );
-    if(duplicate) throw new Error("Same Item Name / Brand pehle se Item Master me hai.");
+    if(duplicate) throw new Error("This Item Name / Brand already exists in Item Master.");
 
     const payload={
       item_name:name,
@@ -2995,7 +2995,7 @@ window.saveItemMaster=async function(){
 
     clearItemMasterForm();
     await liveLoadInventory();
-    showMessage("Item Master save ho gaya. Item Code: "+data.item_code);
+    showMessage("Item saved in Item Master. Item Code: "+data.item_code);
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -3004,7 +3004,7 @@ window.saveItemMaster=async function(){
 window.toggleItemStatus=async function(id){
   try{
     const item=liveInventoryItems.find(i=>i.id===id);
-    if(!item) throw new Error("Item nahi mila.");
+    if(!item) throw new Error("Item not found.");
 
     const next=item.status==="Active"?"Inactive":"Active";
     const {error}=await authDb
@@ -3014,14 +3014,14 @@ window.toggleItemStatus=async function(id){
 
     if(error) throw error;
     await liveLoadInventory();
-    showMessage("Item status "+next+" ho gaya.");
+    showMessage("Item status "+next+" updated successfully.");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
 };
 
 window.deleteItem=function(){
-  showMessage("Live accounting me Item delete disabled hai. Deactivate button use karein.","error");
+  showMessage("Items cannot be deleted once live accounting is enabled. Use Deactivate instead.","error");
 };
 
 window.renderItemMaster=function(){
@@ -3077,7 +3077,7 @@ window.saveStockInward=async function(){
     const supplier=document.getElementById("siSupplier").value.trim();
 
     if(!itemId || qty<=0 || rate<0 || !supplier){
-      throw new Error("Supplier, Item, Quantity aur valid Purchase Rate भरें।");
+      throw new Error("Enter Supplier, Item, Quantity, and a valid Purchase Rate.");
     }
 
     const payloadItems=[{
@@ -3109,7 +3109,7 @@ window.saveStockInward=async function(){
     await renderStockInward();
 
     const ref=data?.[0]?.purchase_no || "";
-    showMessage("Stock inward save ho gaya"+(ref?" — "+ref:"")+".");
+    showMessage("Stock inward saved"+(ref?" — "+ref:"")+".");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -3202,7 +3202,7 @@ window.addBillRow=function(){
     <td><input class="billQty" type="number" min="0.001" step="0.001" value="1" oninput="recalculateBill()"></td>
     <td class="billUnit">-</td>
     <td><input class="billRate" type="number" min="0" step="0.01" value="0" oninput="recalculateBill()"></td>
-    <td><input class="billGst" type="number" min="0" step="0.01" value="0" readonly title="GST Item Master se automatic"></td>
+    <td><input class="billGst" type="number" min="0" step="0.01" value="0" readonly title="Calculated automatically from GST Item Master"></td>
     <td class="billAmount">${money(0)}</td>
     <td><button class="small-btn" onclick="removeBillRow(this)">✕</button></td>
   `;
@@ -3241,13 +3241,13 @@ window.collectBillItems=function(){
     if(!itemId) continue;
 
     const item=liveInventoryItems.find(i=>i.id===itemId);
-    if(!item) throw new Error("Bill item Item Master me nahi mila.");
+    if(!item) throw new Error("Invoice item not found in Item Master.");
 
     const qty=num(tr.querySelector(".billQty").value);
     const rate=num(tr.querySelector(".billRate").value);
 
-    if(qty<=0) throw new Error(item.name+": Quantity zero se zyada honi chahiye.");
-    if(qty>num(item.currentStock)) throw new Error(item.name+": Available stock se zyada quantity nahi bech sakte.");
+    if(qty<=0) throw new Error(item.name+": Quantity must be greater than zero.");
+    if(qty>num(item.currentStock)) throw new Error(item.name+": Sale quantity cannot exceed available stock.");
 
     output.push({
       item_id:item.id,
@@ -3256,14 +3256,14 @@ window.collectBillItems=function(){
     });
   }
 
-  if(!output.length) throw new Error("Bill me kam se kam ek item add karein.");
+  if(!output.length) throw new Error("Add at least one item to the bill.");
 
   const combined={};
   output.forEach(x=>combined[x.item_id]=(combined[x.item_id]||0)+x.quantity);
   for(const [itemId,qty] of Object.entries(combined)){
     const item=liveInventoryItems.find(i=>i.id===itemId);
     if(!item || qty>num(item.currentStock)){
-      throw new Error((item?.name||"Item")+": Total quantity available stock se zyada hai.");
+      throw new Error((item?.name||"Item")+": Total quantity exceeds available stock.");
     }
   }
 
@@ -3273,11 +3273,11 @@ window.collectBillItems=function(){
 window.saveSalesBill=async function(){
   try{
     const customer=document.getElementById("customerName").value.trim();
-    if(!customer) throw new Error("Customer / Farmer Name भरें।");
+    if(!customer) throw new Error("Enter Customer / Farmer Name.");
 
     const buyerGstin=document.getElementById("buyerGstin").value.trim().toUpperCase();
     if(buyerGstin && !/^[0-9A-Z]{15}$/.test(buyerGstin)){
-      throw new Error("Buyer GSTIN 15 characters ka hona chahiye.");
+      throw new Error("Buyer GSTIN must be 15 characters long.");
     }
 
     const lineItems=collectBillItems();
@@ -3317,7 +3317,7 @@ window.saveSalesBill=async function(){
     await renderSalesBills();
 
     showMessage(
-      "Bill save ho gaya — "+(saved.invoice_no||"Invoice")+
+      "Invoice saved — "+(saved.invoice_no||"Invoice")+
       (saved.grand_total!=null?" | Total "+money(saved.grand_total):"")
     );
   }catch(error){
@@ -3357,7 +3357,7 @@ window.renderSalesBills=async function(){
 
 window.printLastBill=function(){
   if(!liveSalesInvoices.length){
-    showMessage("Abhi koi saved live bill nahi hai.","error");
+    showMessage("No saved live invoices found.","error");
     return;
   }
   printBill(liveSalesInvoices[0].id);
@@ -3366,11 +3366,11 @@ window.printLastBill=function(){
 window.printBill=async function(id){
   const w=window.open("","_blank","width=950,height=760");
   if(!w){
-    showMessage("Browser popup allow kijiye, phir Print dobara click karein.","error");
+    showMessage("Allow pop-ups in your browser and try printing again.","error");
     return;
   }
 
-  w.document.write("<p style='font-family:Arial;padding:20px'>Bill load ho raha hai...</p>");
+  w.document.write("<p style='font-family:Arial;padding:20px'>Loading invoice...</p>");
 
   try{
     const [{data:bill,error:billErr},{data:lines,error:lineErr},{data:gst,error:gstErr}]=await Promise.all([
@@ -3538,7 +3538,7 @@ document.addEventListener("DOMContentLoaded",async ()=>{
   }catch(error){
     showMessage(
       "Live Supabase setup error: "+liveErrorMessage(error)+
-      " — pehle CBMS Live Backend SQL run kijiye.",
+      " — Run the CBMS Live Backend SQL first.",
       "error"
     );
   }
@@ -3619,15 +3619,15 @@ window.saveItemMaster=async function(){
     const variety=document.getElementById("imBrand").value.trim();
     const isSeed=category==="Seed";
 
-    if(!name || !category) throw new Error("Product/Item Name aur Category bharें.");
+    if(!name || !category) throw new Error("Enter Product / Item Name and Category.");
 
     const mission=(document.getElementById("imMissionName")?.value || "").trim();
     const yearText=(document.getElementById("imSeedYear")?.value || "").trim();
 
     if(isSeed){
-      if(!variety) throw new Error("Variety bharें.");
-      if(!mission) throw new Error("Mission Name bharें.");
-      if(!/^\d{4}$/.test(yearText)) throw new Error("Year 4 digit me bharें, jaise 2026.");
+      if(!variety) throw new Error("Enter Variety.");
+      if(!mission) throw new Error("Enter Mission Name.");
+      if(!/^\d{4}$/.test(yearText)) throw new Error("Enter a four-digit Year, e.g. 2026.");
     }
 
     const {data:existing,error:dupError}=await authDb
@@ -3648,8 +3648,8 @@ window.saveItemMaster=async function(){
 
     if(duplicate){
       throw new Error(isSeed
-        ? "Same Product, Variety, Mission aur Year pehle se saved hai."
-        : "Same Item / Brand pehle se saved hai."
+        ? "A record with this Product, Variety, Mission, and Year already exists."
+        : "This Item / Brand already exists."
       );
     }
 
@@ -3680,7 +3680,7 @@ window.saveItemMaster=async function(){
 
     clearItemMasterForm();
     await liveLoadInventory();
-    showMessage((isSeed?"Seed Product":"Item")+" save ho gaya. Item Code: "+data.item_code);
+    showMessage((isSeed?"Seed Product":"Item")+" saved. Item Code: "+data.item_code);
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -3840,7 +3840,7 @@ window.saveSeedTransfer=async function(){
     const qty=num(document.getElementById("stQty").value);
 
     if(!itemId) throw new Error("Product / Crop select karein.");
-    if(qty<=0) throw new Error("Received by Transfer quantity zero se zyada honi chahiye.");
+    if(qty<=0) throw new Error("Transfer receipt quantity must be greater than zero.");
 
     const {data,error}=await authDb.rpc("cbms_create_seed_transfer",{
       p_transfer_date:document.getElementById("stDate").value || today(),
@@ -3856,7 +3856,7 @@ window.saveSeedTransfer=async function(){
     await liveLoadInventory();
 
     const no=data?.[0]?.transfer_no || "";
-    showMessage("Seed received stock save ho gaya"+(no?" — "+no:"")+".");
+    showMessage("Seed stock receipt saved"+(no?" — "+no:"")+".");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -3992,30 +3992,30 @@ window.saveSeedDistribution=async function(){
     ];
 
     for(const [label,value] of required){
-      if(!value) throw new Error(label+" भरें।");
+      if(!value) throw new Error(label+" is required.");
     }
 
     if(!/^\d{10}$/.test(mobile)){
-      throw new Error("Mobile number 10 digit ka hona chahiye.");
+      throw new Error("Mobile number must contain 10 digits.");
     }
 
     if(!/^\d{12}$/.test(aadhaar)){
-      throw new Error("Aadhaar number 12 digit ka hona chahiye.");
+      throw new Error("Aadhaar number must contain 12 digits.");
     }
 
     if(!itemId) throw new Error("Seed Name select karein.");
-    if(qty<=0) throw new Error("Distribution Quantity zero se zyada honi chahiye.");
+    if(qty<=0) throw new Error("Distribution quantity must be greater than zero.");
 
     const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
     if(!item || item.category!=="Seed"){
-      throw new Error("Selected item Seed category ka nahi hai.");
+      throw new Error("The selected item is not in the Seed category.");
     }
 
     const stock=(liveSeedStockRows||[]).find(r=>r.item_id===itemId);
     const available=stock ? num(stock.available) : 0;
 
     if(qty>available){
-      throw new Error("Available seed stock se zyada distribution nahi kar sakte. Available: "+available.toFixed(3)+" "+(item.unit||"Kg"));
+      throw new Error("Distribution cannot exceed available seed stock. Available: "+available.toFixed(3)+" "+(item.unit||"Kg"));
     }
 
     const {data,error}=await authDb.rpc("cbms_create_seed_distribution_no_photo",{
@@ -4041,7 +4041,7 @@ window.saveSeedDistribution=async function(){
     await renderSeedDistribution();
 
     const no=data?.[0]?.distribution_no || "";
-    showMessage("Seed Distribution save ho gaya"+(no?" — "+no:"")+" aur stock deduct ho gaya.");
+    showMessage("Seed Distribution saved"+(no?" — "+no:"")+" and stock deducted.");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -4265,7 +4265,7 @@ window.renderSeedDistributionReport=function(){
         <td>${num(r.quantity).toFixed(3)}</td>
         <td>${escapeHtml(r.unit||"Kg")}</td>
       </tr>`).join("")
-    : `<tr><td colspan="14" class="muted">Is filter me koi seed distribution record nahi mila.</td></tr>`;
+    : `<tr><td colspan="14" class="muted">No seed distribution records match these filters.</td></tr>`;
 };
 
 window.clearSeedReportFilters=function(){
@@ -4279,7 +4279,7 @@ window.clearSeedReportFilters=function(){
 window.exportSeedDistributionCSV=function(){
   const rows=filteredSeedDistributionReportRows||[];
   if(!rows.length){
-    showMessage("Export ke liye seed distribution record nahi hai.","error");
+    showMessage("There are no seed distribution records to export.","error");
     return;
   }
 
@@ -4309,7 +4309,7 @@ window.exportSeedDistributionCSV=function(){
 window.printSeedDistributionReport=function(){
   const rows=filteredSeedDistributionReportRows||[];
   if(!rows.length){
-    showMessage("Print ke liye seed distribution record nahi hai.","error");
+    showMessage("There are no seed distribution records to print.","error");
     return;
   }
 
@@ -4318,7 +4318,7 @@ window.printSeedDistributionReport=function(){
   const w=window.open("","_blank","width=1100,height=800");
 
   if(!w){
-    showMessage("Browser popup allow kijiye.","error");
+    showMessage("Allow pop-ups in your browser.","error");
     return;
   }
 
@@ -4448,7 +4448,7 @@ window.renderBillHistory=function(){
         <td><span class="badge ${b.status==="Cancelled"?"red":"green"}">${escapeHtml(b.status||"Final")}</span></td>
         <td><button class="small-btn" onclick="printBill('${b.id}')">View / Print</button></td>
       </tr>`).join("")
-    : `<tr><td colspan="11" class="muted">Is filter me koi GST bill nahi mila.</td></tr>`;
+    : `<tr><td colspan="11" class="muted">No GST invoices match these filters.</td></tr>`;
 };
 
 window.clearBillHistoryFilters=function(){
@@ -4462,7 +4462,7 @@ window.clearBillHistoryFilters=function(){
 window.exportBillHistoryCSV=function(){
   const rows=filteredBillHistoryRows||[];
   if(!rows.length){
-    showMessage("Export ke liye bill record nahi hai.","error");
+    showMessage("There are no invoices to export.","error");
     return;
   }
 
@@ -4545,7 +4545,7 @@ window.updatePaymentSupplierHelp=function(){
   const party=document.getElementById("pyParty");
   if(party){
     party.placeholder=isPurchase
-      ? "Supplier name - list se select karein"
+      ? "Select the supplier name from the list"
       : "Vendor / Person / Agency";
   }
 };
@@ -4554,8 +4554,8 @@ window.saveReceiptVoucher=async function(){
   try{
     const party=document.getElementById("rcParty").value.trim();
     const amount=num(document.getElementById("rcAmount").value);
-    if(!party) throw new Error("Received From भरें.");
-    if(amount<=0) throw new Error("Amount zero se zyada hona chahiye.");
+    if(!party) throw new Error("Enter Received From.");
+    if(amount<=0) throw new Error("Amount must be greater than zero.");
 
     const {data,error}=await authDb.rpc("cbms_create_account_voucher",{
       p_voucher_date:document.getElementById("rcDate").value || today(),
@@ -4575,7 +4575,7 @@ window.saveReceiptVoucher=async function(){
     const no=data?.[0]?.voucher_no || "";
     clearReceiptVoucher();
     await Promise.all([loadCashBook(),loadBankBook()]);
-    showMessage("Receipt Voucher save ho gaya"+(no?" — "+no:"")+".");
+    showMessage("Receipt Voucher saved"+(no?" — "+no:"")+".");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -4587,13 +4587,13 @@ window.savePaymentVoucher=async function(){
     const amount=num(document.getElementById("pyAmount").value);
     const type=document.getElementById("pyType").value;
 
-    if(!party) throw new Error("Paid To भरें.");
-    if(amount<=0) throw new Error("Amount zero se zyada hona chahiye.");
+    if(!party) throw new Error("Enter Paid To.");
+    if(amount<=0) throw new Error("Amount must be greater than zero.");
 
     if(type==="Purchase Payment" && supplierNamesCache.length){
       const ok=supplierNamesCache.some(x=>x.toLowerCase()===party.toLowerCase());
       if(!ok){
-        throw new Error("Purchase Payment ke liye supplier list ka exact naam select karein.");
+        throw new Error("For Purchase Payment, select the exact supplier name from the list.");
       }
     }
 
@@ -4615,7 +4615,7 @@ window.savePaymentVoucher=async function(){
     const no=data?.[0]?.voucher_no || "";
     clearPaymentVoucher();
     await Promise.all([loadCashBook(),loadBankBook(),loadSupplierNames()]);
-    showMessage("Payment Voucher save ho gaya"+(no?" — "+no:"")+".");
+    showMessage("Payment Voucher saved"+(no?" — "+no:"")+".");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }
@@ -4674,7 +4674,7 @@ window.renderCashBook=function(){
 
 window.exportCashBookCSV=function(){
   if(!filteredCashBookRows.length){
-    showMessage("Export ke liye Cash Book entry nahi hai.","error"); return;
+    showMessage("No Cash Book entries are available for export.","error"); return;
   }
   downloadCSV("CBMS-Cash-Book.csv",
     ["Date","Voucher","Particular","Reference","Receipt","Payment","Running Balance"],
@@ -4740,7 +4740,7 @@ window.renderBankBook=function(){
 
 window.exportBankBookCSV=function(){
   if(!filteredBankBookRows.length){
-    showMessage("Export ke liye Bank Book entry nahi hai.","error"); return;
+    showMessage("No Bank Book entries are available for export.","error"); return;
   }
   downloadCSV("CBMS-Bank-Book.csv",
     ["Date","Voucher","Particular","Mode","Reference","Deposit","Withdrawal","Running Balance"],
@@ -4834,7 +4834,7 @@ window.renderSupplierLedger=function(){
 window.exportSupplierLedgerCSV=function(){
   const supplier=document.getElementById("supplierLedgerSelect")?.value||"Supplier";
   if(!filteredSupplierLedgerRows.length){
-    showMessage("Export ke liye Supplier Ledger entry nahi hai.","error"); return;
+    showMessage("No Supplier Ledger entries are available for export.","error"); return;
   }
   downloadCSV(
     "CBMS-Supplier-Ledger-"+supplier.replace(/[^a-z0-9]+/gi,"-")+".csv",
@@ -4907,7 +4907,7 @@ window.saveReceiptVoucher=async function(){
     const amount=num(document.getElementById("rcAmount")?.value);
 
     if(!party) throw new Error("Received From bharna zaroori hai.");
-    if(amount<=0) throw new Error("Amount zero se zyada hona chahiye.");
+    if(amount<=0) throw new Error("Amount must be greater than zero.");
 
     updateReceiptLedger();
 
@@ -4934,7 +4934,7 @@ window.saveReceiptVoucher=async function(){
       await Promise.all([loadCashBook(),loadBankBook()]);
     }catch(e){}
 
-    showMessage("Receipt save ho gaya"+(no?" — "+no:"")+".");
+    showMessage("Receipt saved"+(no?" — "+no:"")+".");
   }catch(error){
     showMessage(liveErrorMessage(error),"error");
   }finally{
@@ -5239,26 +5239,26 @@ window.renderBillHistory=function(){
           </td>
         </tr>`;
       }).join("")
-    : `<tr><td colspan="11" class="muted">Is filter me koi GST bill nahi mila.</td></tr>`;
+    : `<tr><td colspan="11" class="muted">No GST invoices match these filters.</td></tr>`;
 };
 
 
 window.cancelSalesInvoice=async function(invoiceId, invoiceNo){
   try{
     const reason=window.prompt(
-      "Bill "+invoiceNo+" cancel karne ka reason likhiye:"
+      "Bill "+invoiceNo+" - Enter a reason for cancellation:"
     );
 
     if(reason===null) return;
 
     if(reason.trim().length<3){
-      throw new Error("Cancellation reason kam se kam 3 characters ka hona chahiye.");
+      throw new Error("Cancellation reason must be at least 3 characters.");
     }
 
     const ok=window.confirm(
       "Confirm karein:\n\n"+
-      invoiceNo+" ko CANCEL karna hai?\n\n"+
-      "Isse sold stock wapas inventory me aa jayega aur linked Sales Receipt bhi cancel ho jayega."
+      invoiceNo+" should be CANCELLED?\n\n"+
+      "This returns the sold quantity to inventory and cancels the linked Sales Receipt."
     );
 
     if(!ok) return;
@@ -5540,22 +5540,22 @@ window.saveStockAdjustment=async function(){
 
     if(type==="PURCHASE_RETURN"){
       const value=document.getElementById("soPurchaseLine").value;
-      if(!value) throw new Error("Original Purchase / Item select kijiye.");
+      if(!value) throw new Error("Select the original Purchase / Item.");
       [purchaseId,itemId]=value.split("|");
     }else{
       itemId=document.getElementById("soItem").value;
-      if(!itemId) throw new Error("Inventory Item select kijiye.");
+      if(!itemId) throw new Error("Select an Inventory Item.");
     }
 
-    if(qty<=0) throw new Error("Quantity 0 se jyada honi chahiye.");
+    if(qty<=0) throw new Error("Quantity must be greater than zero.");
     if(reason.length<3) throw new Error("Reason likhiye.");
 
     const msg=
       type==="PURCHASE_RETURN"
-        ? "Purchase Return save karna hai? Stock aur Supplier Payable dono kam honge."
+        ? "Save Purchase Return? Both stock and Supplier Payable will decrease."
         : type==="DAMAGE"
-          ? "Damage Stock save karna hai? Physical stock kam ho jayega."
-          : "Expired Stock save karna hai? Physical stock kam ho jayega.";
+          ? "Save Damage Stock? Physical stock will decrease."
+          : "Save Expired Stock? Physical stock will decrease.";
 
     if(!window.confirm(msg)) return;
 
@@ -5594,7 +5594,7 @@ window.saveStockAdjustment=async function(){
     try{ await loadDashboardSummary(); }catch(e){}
 
     showMessage(
-      "Entry save ho gaya — "+(result.entry_no||"")+
+      "Entry saved — "+(result.entry_no||"")+
       (num(result.amount)>0 ? " | Value "+money(result.amount) : "")
     );
 
@@ -5928,7 +5928,7 @@ window.saveStockAdjustment=async function(){
 
     if(type==="PURCHASE_RETURN"){
       const value=document.getElementById("soPurchaseLine").value;
-      if(!value) throw new Error("Original Purchase / Item select kijiye.");
+      if(!value) throw new Error("Select the original Purchase / Item.");
 
       [purchaseId,itemId]=value.split("|");
 
@@ -5936,7 +5936,7 @@ window.saveStockAdjustment=async function(){
         r=>r.purchase_id===purchaseId && r.item_id===itemId
       );
 
-      if(!x) throw new Error("Selected purchase item load nahi hua.");
+      if(!x) throw new Error("Selected purchase item could not be loaded.");
 
       const maxAllowed=Math.max(
         0,
@@ -5945,30 +5945,30 @@ window.saveStockAdjustment=async function(){
 
       if(qty>maxAllowed){
         throw new Error(
-          "Maximum Return Allowed "+maxAllowed.toFixed(3)+" "+(x.unit||"")+" hai."
+          "Maximum Return Allowed "+maxAllowed.toFixed(3)+" "+(x.unit||"")+"."
         );
       }
     }else{
       itemId=document.getElementById("soItem").value;
-      if(!itemId) throw new Error("Inventory Item select kijiye.");
+      if(!itemId) throw new Error("Select an Inventory Item.");
 
       const item=(liveInventoryItems||[]).find(i=>i.id===itemId);
       if(item && qty>num(item.currentStock)){
         throw new Error(
-          "Available stock sirf "+num(item.currentStock).toFixed(3)+" "+(item.unit||"")+" hai."
+          "Available stock is only "+num(item.currentStock).toFixed(3)+" "+(item.unit||"")+"."
         );
       }
     }
 
-    if(qty<=0) throw new Error("Quantity 0 se jyada honi chahiye.");
+    if(qty<=0) throw new Error("Quantity must be greater than zero.");
     if(reason.length<3) throw new Error("Reason likhiye.");
 
     const msg=
       type==="PURCHASE_RETURN"
-        ? "Purchase Return save karna hai? Stock aur Supplier Payable dono kam honge."
+        ? "Save Purchase Return? Both stock and Supplier Payable will decrease."
         : type==="DAMAGE"
-          ? "Damage Stock save karna hai? Physical stock kam ho jayega."
-          : "Expired Stock save karna hai? Physical stock kam ho jayega.";
+          ? "Save Damage Stock? Physical stock will decrease."
+          : "Save Expired Stock? Physical stock will decrease.";
 
     if(!window.confirm(msg)) return;
 
@@ -6007,7 +6007,7 @@ window.saveStockAdjustment=async function(){
     try{ await loadDashboardSummary(); }catch(e){}
 
     showMessage(
-      "Entry save ho gaya — "+(result.entry_no||"")+
+      "Entry saved — "+(result.entry_no||"")+
       (num(result.amount)>0 ? " | Value "+money(result.amount) : "")
     );
 
@@ -6091,7 +6091,7 @@ window.updatePaymentSupplierHelp=async function(){
     if(billInput){
       billInput.value="";
       billInput.readOnly=true;
-      billInput.placeholder="Purchase Bill select karne par auto";
+      billInput.placeholder="Filled automatically after selecting a Purchase Bill";
     }
 
     await loadPurchasePaymentSuppliers();
@@ -6136,7 +6136,7 @@ window.loadPurchasePaymentBills=async function(){
 
     if(!cbmsPurchasePaymentBills.length){
       bill.innerHTML='<option value="">No pending purchase bill</option>';
-      showMessage("Is supplier ka koi pending Purchase Bill nahi hai.");
+      showMessage("No pending Purchase Bills found for this supplier.");
       return;
     }
 
@@ -6228,7 +6228,7 @@ window.savePaymentVoucher=async function(){
     const amount=num(document.getElementById("pyAmount").value);
 
     if(amount<=0){
-      throw new Error("Amount zero se zyada hona chahiye.");
+      throw new Error("Amount must be greater than zero.");
     }
 
     /* -------- LINKED PURCHASE PAYMENT -------- */
@@ -6236,18 +6236,18 @@ window.savePaymentVoucher=async function(){
       const supplier=document.getElementById("pyPurchaseSupplier")?.value||"";
       const purchaseId=document.getElementById("pyPurchaseBill")?.value||"";
 
-      if(!supplier) throw new Error("Supplier select kijiye.");
-      if(!purchaseId) throw new Error("Pending Purchase Bill select kijiye.");
+      if(!supplier) throw new Error("Select a Supplier.");
+      if(!purchaseId) throw new Error("Select a pending Purchase Bill.");
 
       const bill=cbmsPurchasePaymentBills.find(x=>x.purchase_id===purchaseId);
 
-      if(!bill) throw new Error("Selected Purchase Bill load nahi hua.");
+      if(!bill) throw new Error("Unable to load the selected Purchase Bill.");
 
       const outstanding=num(bill.outstanding);
 
       if(amount>outstanding){
         throw new Error(
-          "Maximum payment "+money(outstanding)+" hai."
+          "Maximum payment "+money(outstanding)+"."
         );
       }
 
@@ -6291,7 +6291,7 @@ window.savePaymentVoucher=async function(){
       ]);
 
       showMessage(
-        "Purchase Payment save ho gaya"+
+        "Purchase Payment saved"+
         (no?" — "+no:"")+
         ". Remaining Outstanding: "+
         money(result.outstanding_after)
@@ -6303,7 +6303,7 @@ window.savePaymentVoucher=async function(){
     /* -------- NORMAL PAYMENT -------- */
     const party=document.getElementById("pyParty").value.trim();
 
-    if(!party) throw new Error("Paid To भरें.");
+    if(!party) throw new Error("Enter Paid To.");
 
     const {data,error}=await authDb.rpc(
       "cbms_create_account_voucher",
@@ -6338,7 +6338,7 @@ window.savePaymentVoucher=async function(){
     ]);
 
     showMessage(
-      "Payment Voucher save ho gaya"+
+      "Payment Voucher saved"+
       (no?" — "+no:"")+"."
     );
 
@@ -6457,11 +6457,11 @@ window.saveOpeningBalance=async function(){
     const bank=num(document.getElementById("obBank").value);
 
     if(cash<0 || bank<0){
-      throw new Error("Opening balance negative nahi ho sakta.");
+      throw new Error("Opening balance cannot be negative.");
     }
 
     const ok=window.confirm(
-      "Opening Balance save/update karna hai?\n\n"+
+      "Save or update the Opening Balance?\n\n"+
       "Opening Cash: "+money(cash)+"\n"+
       "Opening Bank: "+money(bank)
     );
@@ -6490,7 +6490,7 @@ window.saveOpeningBalance=async function(){
 
     await loadPaymentAvailableBalance(false);
 
-    showMessage("Opening Balance save ho gaya.");
+    showMessage("Opening Balance saved.");
 
   }catch(error){
     showMessage(
@@ -6631,10 +6631,10 @@ window.loadLowStockAlert = async function(){
       if(alerts.length){
         note.innerHTML=
           '<b>Attention:</b> '+alerts.length+
-          ' item(s) ko stock refill / purchase planning ki zarurat hai.';
+          ' item(s) require restocking or a purchase plan.';
       }else{
         note.textContent=
-          'Sabhi configured items ka stock minimum alert level se upar hai.';
+          'All configured items have stock above their minimum alert levels.';
       }
     }
 
@@ -6738,7 +6738,7 @@ window.editItemMaster = function(itemId){
   const i=(liveInventoryItems||[]).find(x=>x.id===itemId);
 
   if(!i){
-    showMessage("Item nahi mila.","error");
+    showMessage("Item not found.","error");
     return;
   }
 
@@ -6784,7 +6784,7 @@ window.editItemMaster = function(itemId){
 
   showMessage(
     "Edit mode: "+(i.name||"Item")+
-    ". Minimum Stock Alert Level badal kar Update Item kijiye."
+    ". Change the Minimum Stock Alert Level and select Update Item."
   );
 };
 
@@ -6797,17 +6797,17 @@ window.saveItemMaster = async function(){
     const isSeed=category==="Seed";
 
     if(!name || !category){
-      throw new Error("Product/Item Name aur Category bharें.");
+      throw new Error("Enter Product / Item Name and Category.");
     }
 
     const mission=(document.getElementById("imMissionName")?.value || "").trim();
     const yearText=(document.getElementById("imSeedYear")?.value || "").trim();
 
     if(isSeed){
-      if(!variety) throw new Error("Variety bharें.");
-      if(!mission) throw new Error("Mission Name bharें.");
+      if(!variety) throw new Error("Enter Variety.");
+      if(!mission) throw new Error("Enter Mission Name.");
       if(!/^\d{4}$/.test(yearText)){
-        throw new Error("Year 4 digit me bharें, jaise 2026.");
+        throw new Error("Enter a four-digit Year, e.g. 2026.");
       }
     }
 
@@ -6832,8 +6832,8 @@ window.saveItemMaster = async function(){
     if(duplicate){
       throw new Error(
         isSeed
-          ? "Same Product, Variety, Mission aur Year pehle se saved hai."
-          : "Same Item / Brand pehle se saved hai."
+          ? "A record with this Product, Variety, Mission, and Year already exists."
+          : "This Item / Brand already exists."
       );
     }
 
@@ -6875,7 +6875,7 @@ window.saveItemMaster = async function(){
       }
 
       showMessage(
-        (isSeed?"Seed Product":"Item")+" update ho gaya. Item Code: "+savedCode
+        (isSeed?"Seed Product":"Item")+" updated. Item Code: "+savedCode
       );
 
     }else{
@@ -6901,7 +6901,7 @@ window.saveItemMaster = async function(){
       }
 
       showMessage(
-        (isSeed?"Seed Product":"Item")+" save ho gaya. Item Code: "+savedCode
+        (isSeed?"Seed Product":"Item")+" saved. Item Code: "+savedCode
       );
     }
 
@@ -6974,7 +6974,7 @@ function cbmsMonthRange(){
   const year=Number(document.getElementById("mbYear")?.value || new Date().getFullYear());
 
   if(!Number.isInteger(year) || year<2020 || year>2100){
-    throw new Error("Valid Year select kijiye.");
+    throw new Error("Select a valid Year.");
   }
 
   const start=`${year}-${String(month).padStart(2,"0")}-01`;
@@ -7378,7 +7378,7 @@ window.loadMonthlyBackup=async function(){
     };
 
     renderMonthlyBackupStatus();
-    showMessage(r.label+" ka monthly backup data load ho gaya.");
+    showMessage(r.label+" monthly backup data loaded.");
 
   }catch(error){
     cbmsMonthlyBackup=null;
@@ -7425,7 +7425,7 @@ window.renderMonthlyBackupStatus=function(){
 
 function cbmsBackupRequired(){
   if(!cbmsMonthlyBackup){
-    throw new Error("Pehle Load Monthly Data par click kijiye.");
+    throw new Error("Select Load Monthly Data first.");
   }
   return cbmsMonthlyBackup;
 }
@@ -7634,7 +7634,7 @@ window.toggleSidebarGroup=function(button){
 
   const willOpen=!group.classList.contains("open");
 
-  // Accordion: ek samay me sirf ek dropdown open.
+  // Accordion: allow only one dropdown to remain open.
   document.querySelectorAll(".sidebar-group.open").forEach(g=>{
     if(g!==group) g.classList.remove("open");
   });
@@ -7651,7 +7651,7 @@ document.addEventListener("click",function(e){
   if(group) group.classList.add("open");
 });
 
-/* Agar kisi submenu item ko active kiya gaya ho to uska group open rakhein. */
+/* Keep the parent group open when a submenu item becomes active. */
 window.cbmsOpenActiveSidebarGroup=function(){
   const active=document.querySelector(".sidebar-group-menu .sidebar-link.active");
   if(active){
@@ -7704,7 +7704,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         throw new Error("Received From bharna zaroori hai.");
       }
       if(amount <= 0){
-        throw new Error("Amount zero se zyada hona chahiye.");
+        throw new Error("Amount must be greater than zero.");
       }
 
       if(typeof updateReceiptLedger === "function"){
@@ -7746,7 +7746,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       }
 
       showMessage(
-        "Receipt save ho gaya" +
+        "Receipt saved" +
         (voucherNo ? " — " + voucherNo : "") +
         "."
       );
@@ -7782,7 +7782,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       const business = document.getElementById("pyBusiness")?.value.trim() || "";
 
       if(amount <= 0){
-        throw new Error("Amount zero se zyada hona chahiye.");
+        throw new Error("Amount must be greater than zero.");
       }
 
       if(type === "Purchase Payment"){
@@ -7790,10 +7790,10 @@ document.addEventListener("DOMContentLoaded",()=>{
         const purchaseId = document.getElementById("pyPurchaseBill")?.value || "";
 
         if(!supplier){
-          throw new Error("Supplier select kijiye.");
+          throw new Error("Select a Supplier.");
         }
         if(!purchaseId){
-          throw new Error("Pending Purchase Bill select kijiye.");
+          throw new Error("Select a pending Purchase Bill.");
         }
 
         const bill = cbmsPurchasePaymentBills.find(
@@ -7801,7 +7801,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         );
 
         if(!bill){
-          throw new Error("Selected Purchase Bill load nahi hua.");
+          throw new Error("Unable to load the selected Purchase Bill.");
         }
 
         const outstanding = num(bill.outstanding);
@@ -7854,7 +7854,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         ]);
 
         showMessage(
-          "Purchase Payment save ho gaya" +
+          "Purchase Payment saved" +
           (voucherNo ? " — " + voucherNo : "") +
           ". Remaining Outstanding: " +
           money(result.outstanding_after)
@@ -7902,7 +7902,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       ]);
 
       showMessage(
-        "Payment Voucher save ho gaya" +
+        "Payment Voucher saved" +
         (voucherNo ? " — " + voucherNo : "") +
         "."
       );
@@ -7941,11 +7941,11 @@ async function cbmsSaveTransfer(){
   const btn=cbmsRegEl('cbmsTSave');
   try{
     const amt=Number(cbmsVal('cbmsTAmount'));
-    if(!cbmsVal('cbmsTPayee')||!cbmsVal('cbmsTPurpose')||!cbmsVal('cbmsTBank')||!cbmsVal('cbmsTRef'))throw Error('Name, Purpose, Bank aur Cheque/UTR Number bharein.');
-    if(!Number.isFinite(amt)||amt<=0)throw Error('Amount zero se zyada bharein.');
-    if(cbmsVal('cbmsTLast4')&&!/^\d{4}$/.test(cbmsVal('cbmsTLast4')))throw Error('Bank account ke last 4 digits hi bharein.');
+    if(!cbmsVal('cbmsTPayee')||!cbmsVal('cbmsTPurpose')||!cbmsVal('cbmsTBank')||!cbmsVal('cbmsTRef'))throw Error('Enter Beneficiary Name, Purpose, Bank, and Cheque / UTR Number.');
+    if(!Number.isFinite(amt)||amt<=0)throw Error('Enter an amount greater than zero.');
+    if(cbmsVal('cbmsTLast4')&&!/^\d{4}$/.test(cbmsVal('cbmsTLast4')))throw Error('Enter only the last four digits of the bank account.');
     const method=cbmsVal('cbmsTMethod'),status=cbmsVal('cbmsTStatus');
-    if(!confirm('Confirm '+method+' '+status+'?\n'+cbmsVal('cbmsTPayee')+' | '+cbmsRegMoney(amt)+'\n'+(status==='COMPLETED'?'Bank Book me Payment Voucher create hoga.':'Abhi Bank Balance nahi katega.')))return;
+    if(!confirm('Confirm '+method+' '+status+'?\n'+cbmsVal('cbmsTPayee')+' | '+cbmsRegMoney(amt)+'\n'+(status==='COMPLETED'?'A Payment Voucher will be created in the Bank Book.':'The Bank Balance will not be reduced yet.')))return;
     btn.disabled=true;
     const {data,error}=await authDb.rpc('cbms_save_payment_instrument',{
       p_txn_date:cbmsVal('cbmsTDate'),p_method:method,p_beneficiary_name:cbmsVal('cbmsTPayee'),
@@ -7995,7 +7995,7 @@ function cbmsRenderTransfers(){
 }
 async function cbmsCompleteTransfer(id){
   const clearDate=cbmsVal('cbmsTClearDate')||cbmsRegToday();
-  if(!confirm('Bank ne payment complete kiya hai? Date '+clearDate+'\nBank Book me PAYMENT voucher generate hoga.'))return;
+  if(!confirm('Has the bank completed this payment? Date: '+clearDate+'\nA PAYMENT voucher will be created in the Bank Book.'))return;
   try{
     const {data,error}=await authDb.rpc('cbms_complete_payment_instrument',{p_id:id,p_completed_on:clearDate});
     if(error)throw error;
@@ -8004,7 +8004,7 @@ async function cbmsCompleteTransfer(id){
   }catch(e){showMessage(cbmsRegError(e),'error');}
 }
 async function cbmsCancelTransfer(id){
-  if(!confirm('Issued payment ko cancel karna hai? Cleared payment cancel nahi hoga.'))return;
+  if(!confirm('Cancel this issued payment? Cleared payments cannot be cancelled.'))return;
   try{
     const {error}=await authDb.rpc('cbms_cancel_payment_instrument',{p_id:id});
     if(error)throw error;
@@ -8023,7 +8023,7 @@ async function cbmsSaveAsset(){
   try{
     const qty=Number(cbmsVal('cbmsAQty'));const cost=Number(cbmsVal('cbmsACost')||'0');
     if(!cbmsVal('cbmsAName'))throw Error('Item Name bharein.');
-    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(cost)||cost<0)throw Error('Quantity/Cost sahi bharein.');
+    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(cost)||cost<0)throw Error('Enter valid Quantity and Cost.');
     btn.disabled=true;
     const {data,error}=await authDb.rpc('cbms_save_office_asset',{
       p_id:cbmsVal('cbmsAId')||null,p_item_name:cbmsVal('cbmsAName'),p_category:cbmsVal('cbmsACategory'),
@@ -8078,9 +8078,9 @@ async function cbmsSavePayroll(){
   const btn=cbmsRegEl('cbmsPSave');
   try{
     const amount=Number(cbmsVal('cbmsPAmount'));
-    if(!cbmsVal('cbmsPName')||!Number.isFinite(amount)||amount<=0)throw Error('Name aur sahi Amount bharein.');
-    if(cbmsVal('cbmsPMode')!=='Cash'&&!cbmsVal('cbmsPRef'))throw Error('Non-cash payment ka UTR / Cheque Number zaroori hai.');
-    if(!confirm('Kya payment sach me diya ja chuka hai?\n'+cbmsVal('cbmsPName')+' | '+cbmsVal('cbmsPType')+' | '+cbmsRegMoney(amount)+'\nCash/Bank Book me ek payment voucher create hoga.'))return;
+    if(!cbmsVal('cbmsPName')||!Number.isFinite(amount)||amount<=0)throw Error('Enter Name and a valid Amount.');
+    if(cbmsVal('cbmsPMode')!=='Cash'&&!cbmsVal('cbmsPRef'))throw Error('UTR / Cheque Number is required for non-cash payments.');
+    if(!confirm('Confirm that the payment has already been made.\n'+cbmsVal('cbmsPName')+' | '+cbmsVal('cbmsPType')+' | '+cbmsRegMoney(amount)+'\nOne Payment Voucher will be created in the Cash / Bank Book.'))return;
     btn.disabled=true;
     const {data,error}=await authDb.rpc('cbms_save_staff_payment',{
       p_payment_date:cbmsVal('cbmsPDate'),p_person_name:cbmsVal('cbmsPName'),p_staff_id:cbmsVal('cbmsPStaffId'),
@@ -8124,7 +8124,7 @@ function cbmsExportRegister(type){
     asset:['asset_code','item_name','category','quantity','unit','unit_cost','acquired_on','location','assigned_to','item_condition','status','serial_or_bill_no','notes'],
     payroll:['payment_no','payment_date','person_name','staff_id','payment_type','pay_period','amount','mode','reference_no','block','business_name','notes']
   }[type];
-  const items=cbmsRegisterCache[type]||[];if(!items.length){showMessage('Export ke liye koi data nahi hai.','error');return;}
+  const items=cbmsRegisterCache[type]||[];if(!items.length){showMessage('There is no data to export.','error');return;}
   const csvCell=x=>{let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
   const csv='\ufeff'+[fields.join(','),...items.map(row=>fields.map(k=>csvCell(row[k])).join(','))].join('\r\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
