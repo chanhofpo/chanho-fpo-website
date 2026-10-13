@@ -310,6 +310,22 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       </div>
     </div>
 
+
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">🏢</span>Office &amp; Staff Registers</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Cheque / RTGS / NEFT Register"
+          onclick="showPanel('cbmsTransferPanel',this);cbmsLoadTransfers()"><span class="ico">🏦</span>Cheque / RTGS / NEFT</button>
+        <button class="sidebar-link" data-title="Office Assets Register"
+          onclick="showPanel('cbmsAssetsPanel',this);cbmsLoadAssets()"><span class="ico">🪑</span>Office Saman Register</button>
+        <button class="sidebar-link" data-title="Salary / Commission Register"
+          onclick="showPanel('cbmsPayrollPanel',this);cbmsLoadPayroll()"><span class="ico">👥</span>Salary / Commission</button>
+      </div>
+    </div>
+
     <div class="sidebar-group">
       <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
         <span class="group-left"><span class="ico">📚</span>Accounts</span>
@@ -561,6 +577,96 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       </div>
     </div>
   </div>
+</section>
+
+
+
+<!-- ====================================================== -->
+<!-- 3 NEW ACCOUNTANT REGISTERS: CBMS OCT-2026 UPGRADE -->
+<!-- ====================================================== -->
+<section id="cbmsTransferPanel" class="portal-panel">
+  <div class="section"><h2>Cheque Issue / RTGS / NEFT Register</h2><div class="section-body">
+    <div class="note"><b>Accounting rule:</b> Cheque <b>Issued</b> = record only, bank balance not reduced. Mark <b>Cleared/Completed</b> when bank actually pays; it posts exactly one Payment Voucher. RTGS/NEFT can be saved Completed directly. <b>Same payment ko Payment Entry me dobara mat dalein.</b> Salary/Commission ke payments neeche alag form me bharein.</div>
+    <div class="form-grid" style="margin-top:14px">
+      <div class="field"><label>Issue / Transfer Date *</label><input type="date" id="cbmsTDate"></div>
+      <div class="field"><label>Mode *</label><select id="cbmsTMethod" onchange="cbmsTransferMethodChanged()"><option value="CHEQUE">Cheque</option><option value="RTGS">RTGS</option><option value="NEFT">NEFT</option></select></div>
+      <div class="field"><label>Kiske Naam / Beneficiary *</label><input id="cbmsTPayee" placeholder="Person / Vendor / Company"></div>
+      <div class="field"><label>Kis Purpose se? *</label><input id="cbmsTPurpose" placeholder="Machine / Training / Bill / Rent"></div>
+      <div class="field"><label>Amount ₹ *</label><input id="cbmsTAmount" type="number" min="0.01" step="0.01"></div>
+      <div class="field"><label id="cbmsTRefLabel">Cheque Number *</label><input id="cbmsTRef" placeholder="Cheque No."></div>
+      <div class="field"><label>Issuing Bank Name *</label><input id="cbmsTBank" placeholder="SBI Mandar etc."></div>
+      <div class="field"><label>Bank A/C last 4 digits (optional)</label><input id="cbmsTLast4" inputmode="numeric" maxlength="4" placeholder="Last 4 only"></div>
+      <div class="field"><label>Block</label><select id="cbmsTBlock"><option value="">Common</option><option>Chanho</option><option>Mandar</option></select></div>
+      <div class="field"><label>Business / Activity</label><input id="cbmsTBusiness" placeholder="Fertilizer / Training / Other"></div>
+      <div class="field"><label>Transaction Status *</label><select id="cbmsTStatus"><option value="ISSUED">Issued / Initiated (not yet cleared)</option><option value="COMPLETED">Completed / Cleared (post to Bank Book)</option></select></div>
+      <div class="field"><label>Remark</label><input id="cbmsTNotes" placeholder="Bank details / memo / notes"></div>
+    </div>
+    <br><button type="button" class="primary-btn" id="cbmsTSave" onclick="cbmsSaveTransfer()">Save Cheque / Transfer</button>
+    <button type="button" class="secondary-btn" onclick="cbmsClearTransfer()">Clear</button>
+    <div class="note" style="margin-top:12px">Already issued payment ko <b>Mark Cleared</b> karne ke liye neeche Clearing Date select karein. Cleared payment cancel nahi hoga; correction ke liye Accountant/Officer review karein.</div>
+    <div class="form-grid" style="margin-top:12px">
+      <div class="field"><label>Cheque Clearing / Bank Payment Date</label><input type="date" id="cbmsTClearDate"></div>
+      <div class="field"><label>Search</label><input id="cbmsTSearch" oninput="cbmsRenderTransfers()" placeholder="Name / reference / purpose"></div>
+    </div>
+    <br><button type="button" class="secondary-btn" onclick="cbmsLoadTransfers()">Refresh Register</button>
+    <button type="button" class="secondary-btn" onclick="cbmsExportRegister('transfer')">Export CSV</button>
+    <div id="cbmsTSummary" class="note" style="margin-top:12px">Loading entries...</div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Issue Date</th><th>Entry No.</th><th>Mode / Ref.</th><th>Beneficiary</th><th>Purpose</th><th>Amount</th><th>Bank</th><th>Status</th><th>Voucher</th><th>Action</th></tr></thead><tbody id="cbmsTBody"><tr><td colspan="10">Register kholiye...</td></tr></tbody></table></div>
+  </div></div>
+</section>
+
+<section id="cbmsAssetsPanel" class="portal-panel">
+  <div class="section"><h2>Office Saman / Assets Register</h2><div class="section-body">
+    <div class="note">Office ka furniture, printer, computer, machine, table, chair, almirah etc. ka record save karein. <b>Is register se expense automatic nahi banega</b>; purchase/payment hua ho to original Voucher alag se hona chahiye. Purane record ko Edit kiya ja sakta hai.</div>
+    <input type="hidden" id="cbmsAId">
+    <div class="form-grid" style="margin-top:14px">
+      <div class="field"><label>Item / Saman Ka Naam *</label><input id="cbmsAName" placeholder="Canon Printer / Chair / Laptop"></div>
+      <div class="field"><label>Category</label><select id="cbmsACategory"><option>Furniture</option><option>Electronics</option><option>Office Equipment</option><option>Stationery</option><option>Machinery</option><option>Other</option></select></div>
+      <div class="field"><label>Quantity *</label><input id="cbmsAQty" type="number" min="0.01" step="0.01" value="1"></div>
+      <div class="field"><label>Unit</label><select id="cbmsAUnit"><option>Pcs</option><option>Set</option><option>Box</option><option>Kg</option><option>Nos</option></select></div>
+      <div class="field"><label>Purchase / Received Date</label><input id="cbmsADate" type="date"></div>
+      <div class="field"><label>Per Unit Cost ₹</label><input id="cbmsACost" type="number" min="0" step="0.01" value="0"></div>
+      <div class="field"><label>Office Location / Room</label><input id="cbmsALocation" placeholder="Chanho Office / Store Room"></div>
+      <div class="field"><label>Kiske Paas / Assigned To</label><input id="cbmsAAssigned" placeholder="Employee name"></div>
+      <div class="field"><label>Condition</label><select id="cbmsACondition"><option>Good</option><option>New</option><option>Repair Needed</option><option>Damaged</option></select></div>
+      <div class="field"><label>Status</label><select id="cbmsAStatus"><option>In Use</option><option>In Store</option><option>Repair</option><option>Disposed</option></select></div>
+      <div class="field"><label>Serial No. / Bill No.</label><input id="cbmsASerial" placeholder="Serial / Invoice"></div>
+      <div class="field"><label>Notes</label><input id="cbmsANotes" placeholder="Warranty / condition details"></div>
+    </div>
+    <br><button type="button" class="primary-btn" id="cbmsASave" onclick="cbmsSaveAsset()">Save Office Item</button>
+    <button type="button" class="secondary-btn" onclick="cbmsResetAsset()">New / Clear</button>
+    <div class="form-grid" style="margin-top:16px"><div class="field"><label>Search Office Item</label><input id="cbmsASearch" oninput="cbmsRenderAssets()" placeholder="Name / location / code"></div></div>
+    <br><button type="button" class="secondary-btn" onclick="cbmsLoadAssets()">Refresh Items</button>
+    <button type="button" class="secondary-btn" onclick="cbmsExportRegister('asset')">Export CSV</button>
+    <div id="cbmsASummary" class="note" style="margin-top:12px">Loading assets...</div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Item Code</th><th>Item</th><th>Qty.</th><th>Cost / Total</th><th>Location</th><th>Assigned To</th><th>Condition</th><th>Status</th><th>Action</th></tr></thead><tbody id="cbmsABody"><tr><td colspan="9">Register kholiye...</td></tr></tbody></table></div>
+  </div></div>
+</section>
+
+<section id="cbmsPayrollPanel" class="portal-panel">
+  <div class="section"><h2>Salary / Commission Payment Register</h2><div class="section-body">
+    <div class="note"><b>Ye paid payments ka register hai.</b> Save karte hi Salary ya Commission ka <b>ek Payment Voucher</b> bhi Cash/Bank Book me banega. Same payment ko Payment Entry ya Cheque Issue Register me dobara post mat karein. Cheque mode tabhi chunein jab payment ko book karna sahi ho. Unpaid salary yahan save na karein.</div>
+    <div class="form-grid" style="margin-top:14px">
+      <div class="field"><label>Payment Date *</label><input type="date" id="cbmsPDate"></div>
+      <div class="field"><label>Payment Type *</label><select id="cbmsPType"><option value="SALARY">Salary / Honorarium</option><option value="COMMISSION">Commission</option></select></div>
+      <div class="field"><label>Kisko Diya / Name *</label><input id="cbmsPName" placeholder="Admin / Staff / Field worker"></div>
+      <div class="field"><label>Staff / Admin / Officer ID (optional)</label><input id="cbmsPStaffId" placeholder="ADM/2026/07"></div>
+      <div class="field"><label>Kis Month/Period Ka</label><input type="month" id="cbmsPPeriod"></div>
+      <div class="field"><label>Kitna Amount ₹ *</label><input type="number" min="0.01" step="0.01" id="cbmsPAmount"></div>
+      <div class="field"><label>Payment Mode *</label><select id="cbmsPMode" onchange="cbmsPayrollModeChanged()"><option>Cash</option><option>UPI</option><option>Cheque</option><option>Bank</option></select></div>
+      <div class="field"><label>UPI UTR / Cheque No. / Bank Ref.</label><input id="cbmsPRef" placeholder="Non-Cash payments me zaroori"></div>
+      <div class="field"><label>Block</label><select id="cbmsPBlock"><option value="">Common</option><option>Chanho</option><option>Mandar</option></select></div>
+      <div class="field"><label>Business / Activity</label><input id="cbmsPBusiness" placeholder="Farmer Registration / Marketing etc."></div>
+      <div class="field"><label>Payment Remark</label><input id="cbmsPNotes" placeholder="Commission rate / salary details"></div>
+    </div>
+    <br><button type="button" class="primary-btn" id="cbmsPSave" onclick="cbmsSavePayroll()">Save Paid Salary / Commission</button>
+    <button type="button" class="secondary-btn" onclick="cbmsClearPayroll()">Clear</button>
+    <div class="form-grid" style="margin-top:16px"><div class="field"><label>Search Salary / Commission</label><input id="cbmsPSearch" oninput="cbmsRenderPayroll()" placeholder="Person / date / ID"></div></div>
+    <br><button type="button" class="secondary-btn" onclick="cbmsLoadPayroll()">Refresh Payments</button>
+    <button type="button" class="secondary-btn" onclick="cbmsExportRegister('payroll')">Export CSV</button>
+    <div id="cbmsPSummary" class="note" style="margin-top:12px">Loading payments...</div>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Date</th><th>Payment No.</th><th>Type</th><th>Person / ID</th><th>Period</th><th>Amount</th><th>Mode / Reference</th><th>Block</th><th>Voucher</th></tr></thead><tbody id="cbmsPBody"><tr><td colspan="9">Register kholiye...</td></tr></tbody></table></div>
+  </div></div>
 </section>
 
 
@@ -7807,6 +7913,227 @@ document.addEventListener("DOMContentLoaded",()=>{
   };
 
 })();
+</script>
+
+
+<script>
+/* CBMS OFFICE REGISTERS 2026: All writes authenticated via Supabase RPC. */
+const cbmsRegisterCache = {transfer:[],asset:[],payroll:[]};
+const cbmsRegEl=id=>document.getElementById(id);
+const cbmsVal=id=>(cbmsRegEl(id)?.value||"").trim();
+const cbmsRegToday=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');};
+const cbmsRegMoney=value=>'₹'+Number(value||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const cbmsRegEsc=value=>escapeHtml(value??'');
+const cbmsRegError=err=>err?.message||String(err||'Unknown error');
+
+function cbmsTransferMethodChanged(){
+  const m=cbmsVal('cbmsTMethod');
+  cbmsRegEl('cbmsTRefLabel').textContent=m==='CHEQUE'?'Cheque Number *':m+' UTR / Transaction Reference *';
+  cbmsRegEl('cbmsTRef').placeholder=m==='CHEQUE'?'Cheque No.':'UTR / Transaction No.';
+  cbmsRegEl('cbmsTStatus').value=m==='CHEQUE'?'ISSUED':'COMPLETED';
+}
+function cbmsClearTransfer(){
+  for(const id of ['cbmsTPayee','cbmsTPurpose','cbmsTAmount','cbmsTRef','cbmsTBank','cbmsTLast4','cbmsTBusiness','cbmsTNotes'])cbmsRegEl(id).value='';
+  cbmsRegEl('cbmsTDate').value=cbmsRegToday();cbmsRegEl('cbmsTMethod').value='CHEQUE';cbmsRegEl('cbmsTBlock').value='';
+  cbmsTransferMethodChanged();
+}
+async function cbmsSaveTransfer(){
+  const btn=cbmsRegEl('cbmsTSave');
+  try{
+    const amt=Number(cbmsVal('cbmsTAmount'));
+    if(!cbmsVal('cbmsTPayee')||!cbmsVal('cbmsTPurpose')||!cbmsVal('cbmsTBank')||!cbmsVal('cbmsTRef'))throw Error('Name, Purpose, Bank aur Cheque/UTR Number bharein.');
+    if(!Number.isFinite(amt)||amt<=0)throw Error('Amount zero se zyada bharein.');
+    if(cbmsVal('cbmsTLast4')&&!/^\d{4}$/.test(cbmsVal('cbmsTLast4')))throw Error('Bank account ke last 4 digits hi bharein.');
+    const method=cbmsVal('cbmsTMethod'),status=cbmsVal('cbmsTStatus');
+    if(!confirm('Confirm '+method+' '+status+'?\n'+cbmsVal('cbmsTPayee')+' | '+cbmsRegMoney(amt)+'\n'+(status==='COMPLETED'?'Bank Book me Payment Voucher create hoga.':'Abhi Bank Balance nahi katega.')))return;
+    btn.disabled=true;
+    const {data,error}=await authDb.rpc('cbms_save_payment_instrument',{
+      p_txn_date:cbmsVal('cbmsTDate'),p_method:method,p_beneficiary_name:cbmsVal('cbmsTPayee'),
+      p_purpose:cbmsVal('cbmsTPurpose'),p_amount:amt,p_reference_no:cbmsVal('cbmsTRef'),
+      p_bank_name:cbmsVal('cbmsTBank'),p_bank_account_last4:cbmsVal('cbmsTLast4'),
+      p_block:cbmsVal('cbmsTBlock'),p_business_name:cbmsVal('cbmsTBusiness'),
+      p_notes:cbmsVal('cbmsTNotes'),p_status:status
+    });
+    if(error)throw error;
+    cbmsClearTransfer();await cbmsLoadTransfers();
+    if(status==='COMPLETED')await cbmsRegRefreshAccounting();
+    showMessage('Saved '+(data?.entry_no||'')+(data?.voucher_no?' | Voucher '+data.voucher_no:''));
+  }catch(err){showMessage(cbmsRegError(err),'error');}finally{btn.disabled=false;}
+}
+async function cbmsLoadTransfers(){
+  try{
+    const results=await Promise.all([authDb.rpc('cbms_list_payment_instruments'),authDb.rpc('cbms_list_staff_payments')]);
+    if(results[0].error)throw results[0].error;
+    if(results[1].error)throw results[1].error;
+    const recorded=results[0].data||[];
+    // Existing salary-by-cheque appears in Cheque register as a READ-ONLY linked entry.
+    // It is already posted by the Salary register, so no second voucher is generated.
+    const salaryCheques=(results[1].data||[]).filter(x=>x.mode==='Cheque').map(x=>({
+      id:x.id,entry_no:x.payment_no,txn_date:x.payment_date,method:'CHEQUE',
+      beneficiary_name:x.person_name,purpose:x.payment_type==='SALARY'?'Salary / Honorarium':'Commission',
+      amount:x.amount,reference_no:x.reference_no,bank_name:'Salary Payment',
+      status:'COMPLETED',voucher_id:x.voucher_id,linked_salary:true,completed_on:x.payment_date
+    }));
+    cbmsRegisterCache.transfer=[...recorded,...salaryCheques].sort((a,b)=>String(b.txn_date||'').localeCompare(String(a.txn_date||'')));
+    cbmsRenderTransfers();
+  }catch(e){showMessage('Cheque Register: '+cbmsRegError(e),'error');}
+}
+function cbmsRenderTransfers(){
+  const q=cbmsVal('cbmsTSearch').toLowerCase();
+  const data=cbmsRegisterCache.transfer.filter(r=>[r.entry_no,r.txn_date,r.beneficiary_name,r.purpose,r.reference_no,r.method].some(x=>String(x||'').toLowerCase().includes(q)));
+  const pending=cbmsRegisterCache.transfer.filter(r=>r.status==='ISSUED').reduce((n,r)=>n+Number(r.amount||0),0);
+  const completed=cbmsRegisterCache.transfer.filter(r=>r.status==='COMPLETED').reduce((n,r)=>n+Number(r.amount||0),0);
+  cbmsRegEl('cbmsTSummary').textContent='Total '+cbmsRegisterCache.transfer.length+' entries | Pending: '+cbmsRegMoney(pending)+' | Completed: '+cbmsRegMoney(completed)+' (including payroll cheques)';
+  cbmsRegEl('cbmsTBody').innerHTML=data.length?data.map(r=>`<tr>
+    <td>${cbmsRegEsc(r.txn_date)}</td><td>${cbmsRegEsc(r.entry_no)}</td>
+    <td>${cbmsRegEsc(r.method)}<br><small>${cbmsRegEsc(r.reference_no)}</small></td>
+    <td>${cbmsRegEsc(r.beneficiary_name)}</td><td>${cbmsRegEsc(r.purpose)}</td>
+    <td>${cbmsRegMoney(r.amount)}</td><td>${cbmsRegEsc(r.bank_name)}</td>
+    <td>${cbmsRegEsc(r.status)}${r.linked_salary?' (Staff)':''}</td><td>${r.voucher_id?'Linked':'-'}</td>
+    <td>${r.status==='ISSUED'&&!r.linked_salary?`<button type="button" class="secondary-btn" onclick="cbmsCompleteTransfer('${r.id}')">Mark Cleared</button> <button type="button" class="secondary-btn" onclick="cbmsCancelTransfer('${r.id}')">Cancel</button>`:'-'}</td>
+  </tr>`).join(''):'<tr><td colspan="10">No records found.</td></tr>';
+}
+async function cbmsCompleteTransfer(id){
+  const clearDate=cbmsVal('cbmsTClearDate')||cbmsRegToday();
+  if(!confirm('Bank ne payment complete kiya hai? Date '+clearDate+'\nBank Book me PAYMENT voucher generate hoga.'))return;
+  try{
+    const {data,error}=await authDb.rpc('cbms_complete_payment_instrument',{p_id:id,p_completed_on:clearDate});
+    if(error)throw error;
+    await cbmsLoadTransfers();await cbmsRegRefreshAccounting();
+    showMessage('Payment completed. '+(data?.voucher_no||''));
+  }catch(e){showMessage(cbmsRegError(e),'error');}
+}
+async function cbmsCancelTransfer(id){
+  if(!confirm('Issued payment ko cancel karna hai? Cleared payment cancel nahi hoga.'))return;
+  try{
+    const {error}=await authDb.rpc('cbms_cancel_payment_instrument',{p_id:id});
+    if(error)throw error;
+    await cbmsLoadTransfers();showMessage('Uncleared payment cancelled.');
+  }catch(e){showMessage(cbmsRegError(e),'error');}
+}
+
+function cbmsResetAsset(){
+  for(const id of ['cbmsAId','cbmsAName','cbmsALocation','cbmsAAssigned','cbmsASerial','cbmsANotes','cbmsADate'])cbmsRegEl(id).value='';
+  cbmsRegEl('cbmsACategory').value='Furniture';cbmsRegEl('cbmsAQty').value='1';cbmsRegEl('cbmsAUnit').value='Pcs';
+  cbmsRegEl('cbmsACost').value='0';cbmsRegEl('cbmsACondition').value='Good';cbmsRegEl('cbmsAStatus').value='In Use';
+  cbmsRegEl('cbmsASave').textContent='Save Office Item';
+}
+async function cbmsSaveAsset(){
+  const btn=cbmsRegEl('cbmsASave');
+  try{
+    const qty=Number(cbmsVal('cbmsAQty'));const cost=Number(cbmsVal('cbmsACost')||'0');
+    if(!cbmsVal('cbmsAName'))throw Error('Item Name bharein.');
+    if(!Number.isFinite(qty)||qty<=0||!Number.isFinite(cost)||cost<0)throw Error('Quantity/Cost sahi bharein.');
+    btn.disabled=true;
+    const {data,error}=await authDb.rpc('cbms_save_office_asset',{
+      p_id:cbmsVal('cbmsAId')||null,p_item_name:cbmsVal('cbmsAName'),p_category:cbmsVal('cbmsACategory'),
+      p_quantity:qty,p_unit:cbmsVal('cbmsAUnit'),p_acquired_on:cbmsVal('cbmsADate')||null,
+      p_unit_cost:cost,p_location:cbmsVal('cbmsALocation'),p_assigned_to:cbmsVal('cbmsAAssigned'),
+      p_item_condition:cbmsVal('cbmsACondition'),p_status:cbmsVal('cbmsAStatus'),
+      p_serial_or_bill_no:cbmsVal('cbmsASerial'),p_notes:cbmsVal('cbmsANotes')
+    });
+    if(error)throw error;
+    cbmsResetAsset();await cbmsLoadAssets();showMessage('Office item saved '+(data?.asset_code||''));
+  }catch(e){showMessage(cbmsRegError(e),'error');}finally{btn.disabled=false;}
+}
+async function cbmsLoadAssets(){
+  try{const {data,error}=await authDb.rpc('cbms_list_office_assets');if(error)throw error;
+    cbmsRegisterCache.asset=data||[];cbmsRenderAssets();
+  }catch(e){showMessage('Office Register: '+cbmsRegError(e),'error');}
+}
+function cbmsRenderAssets(){
+  const q=cbmsVal('cbmsASearch').toLowerCase();
+  const records=cbmsRegisterCache.asset.filter(r=>[r.item_name,r.asset_code,r.location,r.assigned_to].some(x=>String(x||'').toLowerCase().includes(q)));
+  const active=cbmsRegisterCache.asset.filter(r=>r.status!=='Disposed');
+  const value=active.reduce((n,r)=>n+Number(r.quantity||0)*Number(r.unit_cost||0),0);
+  cbmsRegEl('cbmsASummary').textContent='Records: '+cbmsRegisterCache.asset.length+' | In use/store/repair: '+active.length+' | Recorded acquisition value: '+cbmsRegMoney(value)+' (not depreciation or current market value)';
+  cbmsRegEl('cbmsABody').innerHTML=records.length?records.map(r=>`<tr>
+    <td>${cbmsRegEsc(r.asset_code)}</td><td>${cbmsRegEsc(r.item_name)}<br><small>${cbmsRegEsc(r.category)}</small></td>
+    <td>${cbmsRegEsc(r.quantity)} ${cbmsRegEsc(r.unit)}</td><td>${cbmsRegMoney(r.unit_cost)}<br><small>Total ${cbmsRegMoney(Number(r.unit_cost)*Number(r.quantity))}</small></td>
+    <td>${cbmsRegEsc(r.location||'-')}</td><td>${cbmsRegEsc(r.assigned_to||'-')}</td>
+    <td>${cbmsRegEsc(r.item_condition)}</td><td>${cbmsRegEsc(r.status)}</td>
+    <td><button type="button" class="secondary-btn" onclick="cbmsEditAsset('${r.id}')">Edit</button></td>
+  </tr>`).join(''):'<tr><td colspan="9">No office items found.</td></tr>';
+}
+function cbmsEditAsset(id){
+  const r=cbmsRegisterCache.asset.find(x=>x.id===id);if(!r)return;
+  const set=(name,val)=>cbmsRegEl(name).value=val??'';
+  set('cbmsAId',r.id);set('cbmsAName',r.item_name);set('cbmsACategory',r.category);set('cbmsAQty',r.quantity);
+  set('cbmsAUnit',r.unit);set('cbmsADate',r.acquired_on);set('cbmsACost',r.unit_cost);
+  set('cbmsALocation',r.location);set('cbmsAAssigned',r.assigned_to);set('cbmsACondition',r.item_condition);
+  set('cbmsAStatus',r.status);set('cbmsASerial',r.serial_or_bill_no);set('cbmsANotes',r.notes);
+  cbmsRegEl('cbmsASave').textContent='Update Office Item';
+  cbmsRegEl('cbmsAName').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cbmsPayrollModeChanged(){
+  const ref=cbmsRegEl('cbmsPRef');const m=cbmsVal('cbmsPMode');
+  ref.placeholder=m==='Cash'?'Cash receipt ref (optional)':m==='Cheque'?'Cheque number required':m==='UPI'?'UPI UTR required':'Bank transaction ID required';
+}
+function cbmsClearPayroll(){
+  for(const id of ['cbmsPName','cbmsPStaffId','cbmsPAmount','cbmsPRef','cbmsPBusiness','cbmsPNotes','cbmsPPeriod'])cbmsRegEl(id).value='';
+  cbmsRegEl('cbmsPDate').value=cbmsRegToday();cbmsRegEl('cbmsPType').value='SALARY';cbmsRegEl('cbmsPMode').value='Cash';cbmsRegEl('cbmsPBlock').value='';cbmsPayrollModeChanged();
+}
+async function cbmsSavePayroll(){
+  const btn=cbmsRegEl('cbmsPSave');
+  try{
+    const amount=Number(cbmsVal('cbmsPAmount'));
+    if(!cbmsVal('cbmsPName')||!Number.isFinite(amount)||amount<=0)throw Error('Name aur sahi Amount bharein.');
+    if(cbmsVal('cbmsPMode')!=='Cash'&&!cbmsVal('cbmsPRef'))throw Error('Non-cash payment ka UTR / Cheque Number zaroori hai.');
+    if(!confirm('Kya payment sach me diya ja chuka hai?\n'+cbmsVal('cbmsPName')+' | '+cbmsVal('cbmsPType')+' | '+cbmsRegMoney(amount)+'\nCash/Bank Book me ek payment voucher create hoga.'))return;
+    btn.disabled=true;
+    const {data,error}=await authDb.rpc('cbms_save_staff_payment',{
+      p_payment_date:cbmsVal('cbmsPDate'),p_person_name:cbmsVal('cbmsPName'),p_staff_id:cbmsVal('cbmsPStaffId'),
+      p_payment_type:cbmsVal('cbmsPType'),p_pay_period:cbmsVal('cbmsPPeriod'),p_amount:amount,
+      p_mode:cbmsVal('cbmsPMode'),p_reference_no:cbmsVal('cbmsPRef'),p_block:cbmsVal('cbmsPBlock'),
+      p_business_name:cbmsVal('cbmsPBusiness'),p_notes:cbmsVal('cbmsPNotes')
+    });
+    if(error)throw error;
+    cbmsClearPayroll();await cbmsLoadPayroll();await cbmsRegRefreshAccounting();
+    showMessage('Staff Payment saved. '+(data?.payment_no||'')+' | Voucher '+(data?.voucher_no||''));
+  }catch(e){showMessage(cbmsRegError(e),'error');}finally{btn.disabled=false;}
+}
+async function cbmsLoadPayroll(){
+  try{const {data,error}=await authDb.rpc('cbms_list_staff_payments');if(error)throw error;
+    cbmsRegisterCache.payroll=data||[];cbmsRenderPayroll();
+  }catch(e){showMessage('Salary Register: '+cbmsRegError(e),'error');}
+}
+function cbmsRenderPayroll(){
+  const q=cbmsVal('cbmsPSearch').toLowerCase();
+  const records=cbmsRegisterCache.payroll.filter(r=>[r.person_name,r.payment_date,r.staff_id,r.payment_no].some(x=>String(x||'').toLowerCase().includes(q)));
+  const salary=cbmsRegisterCache.payroll.filter(r=>r.payment_type==='SALARY').reduce((n,r)=>n+Number(r.amount||0),0);
+  const commission=cbmsRegisterCache.payroll.filter(r=>r.payment_type==='COMMISSION').reduce((n,r)=>n+Number(r.amount||0),0);
+  cbmsRegEl('cbmsPSummary').textContent='Total Salary: '+cbmsRegMoney(salary)+' | Total Commission: '+cbmsRegMoney(commission)+' | '+cbmsRegisterCache.payroll.length+' paid entries';
+  cbmsRegEl('cbmsPBody').innerHTML=records.length?records.map(r=>`<tr>
+    <td>${cbmsRegEsc(r.payment_date)}</td><td>${cbmsRegEsc(r.payment_no)}</td><td>${cbmsRegEsc(r.payment_type)}</td>
+    <td>${cbmsRegEsc(r.person_name)}<br><small>${cbmsRegEsc(r.staff_id||'-')}</small></td>
+    <td>${cbmsRegEsc(r.pay_period||'-')}</td><td>${cbmsRegMoney(r.amount)}</td>
+    <td>${cbmsRegEsc(r.mode)}<br><small>${cbmsRegEsc(r.reference_no||'-')}</small></td><td>${cbmsRegEsc(r.block||'Common')}</td>
+    <td>${r.voucher_id?'Linked':'-'}</td>
+  </tr>`).join(''):'<tr><td colspan="9">No payments found.</td></tr>';
+}
+async function cbmsRegRefreshAccounting(){
+  try{
+    const actions=['loadCashBook','loadBankBook','loadDashboardSummary'];
+    for(const name of actions){if(typeof window[name]==='function')await window[name]();}
+  }catch(err){console.warn('Refresh books:',err);}
+}
+function cbmsExportRegister(type){
+  const fields={
+    transfer:['txn_date','entry_no','method','beneficiary_name','purpose','amount','reference_no','bank_name','bank_account_last4','block','business_name','status','completed_on','notes'],
+    asset:['asset_code','item_name','category','quantity','unit','unit_cost','acquired_on','location','assigned_to','item_condition','status','serial_or_bill_no','notes'],
+    payroll:['payment_no','payment_date','person_name','staff_id','payment_type','pay_period','amount','mode','reference_no','block','business_name','notes']
+  }[type];
+  const items=cbmsRegisterCache[type]||[];if(!items.length){showMessage('Export ke liye koi data nahi hai.','error');return;}
+  const csvCell=x=>{let s=String(x??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
+  const csv='\ufeff'+[fields.join(','),...items.map(row=>fields.map(k=>csvCell(row[k])).join(','))].join('\r\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');a.href=url;a.download='CBMS_'+type+'_register_'+cbmsRegToday()+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  cbmsClearTransfer();cbmsRegEl('cbmsTClearDate').value=cbmsRegToday();
+  cbmsResetAsset();cbmsClearPayroll();
+});
 </script>
 
 </body>
