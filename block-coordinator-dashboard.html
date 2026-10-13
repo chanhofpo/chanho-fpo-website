@@ -45,7 +45,6 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   <div class="nav">
     <button class="active" onclick="showPanel('homePanel',this,'Dashboard')">🏠 Dashboard</button>
     <button onclick="showPanel('adminRegPanel',this,'Admin Registration')">👤 Admin Registration</button>
-    <button onclick="showPanel('farmerRegPanel',this,'Farmer Registration')">🌾 Farmer Registration</button>
     <button onclick="showPanel('farmerVerifyPanel',this,'Farmer Edit & Verification');loadFarmers()">✅ Farmer Edit & Verification</button>
     <button onclick="showPanel('assignPanel',this,'Admin Assignment');loadAdmins();loadAssignments()">📍 Admin Assignment</button>
     <button onclick="showPanel('dataPanel',this,'Data List');loadAllDataLists()">📋 Data List</button>
@@ -78,7 +77,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   <div class="stats">
     <div class="stat"><h3>Total Admins</h3><p id="sumAdmins">0</p></div>
     <div class="stat"><h3>Total Farmers</h3><p id="sumFarmers">0</p></div>
-    <div class="stat"><h3>Pending Coordinator Verification</h3><p id="sumPending">0</p></div>
+    <div class="stat"><h3>Pending Verification</h3><p id="sumPending">0</p></div>
     <div class="stat"><h3>Pending Officer Approval</h3><p id="sumOfficer">0</p></div>
   </div>
 </section>
@@ -97,47 +96,36 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <div><label>Panchayat</label><input id="arPanchayat"></div>
 <div><label>Village</label><input id="arVillage"></div>
 <div class="span-3"><label>Full Address</label><textarea id="arAddress"></textarea></div>
-</div><br><button class="primary" onclick="registerAdmin()">Register Admin</button>
-<div id="adminRegResult" style="margin-top:12px"></div>
-</div></section>
-
-<section id="farmerRegPanel" class="panel">
-<div class="section"><h2>Farmer Registration</h2>
-<div class="note">Block auto-fixed rahega. Panchayat/Village ke liye Active Admin assignment hona chahiye.</div><br>
-<div class="grid">
-<div><label>Farmer Name *</label><input id="frName"></div>
-<div><label>Father/Husband Name *</label><input id="frFather"></div>
-<div><label>DOB</label><input id="frDob" type="date"></div>
-<div><label>Gender</label><select id="frGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
-<div><label>Aadhaar *</label><input id="frAadhaar" maxlength="12"></div>
-<div><label>Mobile *</label><input id="frMobile" maxlength="10"></div>
-<div><label>Block</label><input id="frBlock" readonly></div>
-<div><label>Panchayat *</label><input id="frPanchayat"></div>
-<div><label>Village *</label><input id="frVillage"></div>
-<div><label>Crop</label><input id="frCrop"></div>
-<div><label>Land</label><input id="frLand" placeholder="Acre / Dismil"></div>
-<div><label>Category</label><select id="frCategory"><option value="">Select</option><option>Gen</option><option>OBC</option><option>SC</option><option>ST</option><option>Other</option></select></div>
-<div><label>Bank Name</label><input id="frBank"></div>
-<div><label>Branch</label><input id="frBranch"></div>
-<div><label>Account Number</label><input id="frAccount"></div>
-<div><label>IFSC</label><input id="frIfsc"></div>
-<div><label>Payment Mode</label><select id="frPayment"><option>Cash</option><option>UPI</option></select></div>
-<div class="span-3"><label>Address</label><textarea id="frAddress"></textarea></div>
 </div>
-<h3 style="color:#075e88">Required Documents</h3>
+<h3 style="color:#075e88;margin:22px 0 10px">Bank Details</h3>
 <div class="grid">
-<div><label>Photo *</label><input id="frPhoto" type="file" accept="image/*"></div>
-<div><label>Signature *</label><input id="frSignature" type="file" accept="image/*"></div>
-<div><label>Aadhaar Copy *</label><input id="frAadhaarFile" type="file" accept="image/*,.pdf"></div>
-<div><label>Form *</label><input id="frFormFile" type="file" accept="image/*,.pdf"></div>
-<div><label>Land Record *</label><input id="frLandFile" type="file" accept="image/*,.pdf"></div>
-</div><br><button id="frSaveBtn" class="primary" onclick="registerFarmer()">Register Farmer</button>
-<div id="farmerRegResult" style="margin-top:12px"></div>
+  <div><label>Bank Name *</label><input id="arBankName" required></div>
+  <div><label>Bank Branch *</label><input id="arBankBranch" required></div>
+  <div><label>Account Number *</label><input id="arAccountNumber" inputmode="numeric" maxlength="25" required></div>
+  <div><label>IFSC Code *</label><input id="arIfscCode" maxlength="11" style="text-transform:uppercase" required></div>
+  <div><label>Payment Mode</label><select id="arPaymentMode"><option value="">Select</option><option>Bank Transfer</option><option>UPI</option><option>Cash</option></select></div>
+  <div><label>Joining Date</label><input id="arJoiningDate" type="date"></div>
+  <div><label>Qualification</label><input id="arQualification"></div>
+  <div><label>Experience</label><input id="arExperience" placeholder="e.g. 2 years"></div>
+</div>
+<h3 style="color:#075e88;margin:22px 0 10px">Admin Documents Upload</h3>
+<div class="note">Aadhaar, Address Proof, Bank Passbook, Photo aur Signature zaroori hain. Har file max 5 MB (JPG, PNG, WEBP ya PDF). Qualification aur Experience documents optional hain. Documents private storage me save honge.</div><br>
+<div class="grid">
+  <div><label>Aadhaar Card *</label><input id="arAadhaarFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
+  <div><label>Address Proof *</label><input id="arAddressFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
+  <div><label>Bank Passbook *</label><input id="arBankFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required></div>
+  <div><label>Admin Photo *</label><input id="arPhotoFile" type="file" accept="image/jpeg,image/png,image/webp" required></div>
+  <div><label>Signature *</label><input id="arSignatureFile" type="file" accept="image/jpeg,image/png,image/webp" required></div>
+  <div><label>Qualification Document (optional)</label><input id="arQualificationFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+  <div><label>Experience Document (optional)</label><input id="arExperienceFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+</div><br>
+<button id="registerAdminBtn" class="primary" onclick="registerAdmin()">Register Admin</button>
+<div id="adminRegResult" style="margin-top:12px" aria-live="polite"></div>
 </div></section>
 
 <section id="farmerVerifyPanel" class="panel">
-<div class="section"><div class="note"><b>Verification Flow:</b> Admin Verified → Block Coordinator Verification → Officer Final Approval.</div></div>
 <div class="section"><h2>Farmer Data Edit & Verification</h2>
+<div class="note" style="margin-bottom:12px">Is section me registered Farmer ki details Edit aur eligible Farmer ko Verify karke Officer Approval ke liye bhej sakte hain. Naya Farmer Registration yahan available nahi hai.</div>
 <div class="filters"><input id="fvSearch" placeholder="Name, Reg No, Mobile, Village..." oninput="renderFarmers()"><select id="fvStatus" onchange="renderFarmers()"><option value="">All Status</option><option>Pending Admin Verification</option><option>Pending Block Coordinator Verification</option><option>Pending Officer Approval</option><option>Approved</option><option>Rejected</option></select><button class="secondary" onclick="loadFarmers()">Refresh</button></div>
 <div class="table-wrap"><table><thead><tr><th>Reg No</th><th>Name</th><th>Mobile</th><th>Panchayat</th><th>Village</th><th>Admin</th><th>Status</th><th>Action</th></tr></thead><tbody id="farmerBody"></tbody></table></div>
 </div></section>
@@ -190,9 +178,9 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let coordinator=null, activeBlock="", farmers=[], admins=[], assignments=[], performance=[];
 
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
-function msg(t,type="success"){const b=document.getElementById("message");b.textContent=t;b.className="message "+type;setTimeout(()=>{b.style.display="none"},5000)}
+let messageTimer;function msg(t,type="success"){const b=document.getElementById("message");clearTimeout(messageTimer);b.textContent=t;b.className="message "+type;b.style.display="block";messageTimer=setTimeout(()=>{b.style.display="none"},5000)}
 function showPanel(id,btn,title){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");document.getElementById("pageTitle").textContent=title}
-function statusBadge(s){const x=String(s||"").toLowerCase();return x==="approved"?"green":x.includes("reject")?"red":x.includes("officer")?"blue":x.includes("block coordinator")?"yellow":"yellow"}
+function statusBadge(s){const x=String(s||"").toLowerCase();return x==="approved"?"green":x.includes("reject")?"red":x.includes("officer")?"blue":"yellow"}
 function arr(data){return Array.isArray(data)?data:(data&&Array.isArray(data.data)?data.data:[])}
 
 async function logout(){await db.auth.signOut();location.href="block-coordinator-login.html"}
@@ -229,7 +217,7 @@ async function rpc(name,args={}){
 function applyActiveBlockToForms(){
   document.getElementById("sideBlock").textContent=activeBlock+" / Coordinator";
   document.getElementById("welcomeTitle").textContent=activeBlock+" Block Coordinator Dashboard";
-  ["arBlock","frBlock","asBlock"].forEach(id=>{
+  ["arBlock","asBlock"].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.value=activeBlock;
   });
@@ -261,76 +249,86 @@ async function loadAdmins(){
   }catch(e){msg(e.message,"error")}
 }
 
-async function registerAdmin(){
-  try{
-    const data=await rpc("cbms_block_register_admin",{
-      p_block:activeBlock,
-      p_name:document.getElementById("arName").value.trim(),
-      p_father_name:document.getElementById("arFather").value.trim(),
-      p_dob:document.getElementById("arDob").value||null,
-      p_gender:document.getElementById("arGender").value,
-      p_mobile:document.getElementById("arMobile").value.trim(),
-      p_email:document.getElementById("arEmail").value.trim(),
-      p_aadhar_number:document.getElementById("arAadhaar").value.trim(),
-      p_village:document.getElementById("arVillage").value.trim(),
-      p_panchayat:document.getElementById("arPanchayat").value.trim(),
-      p_full_address:document.getElementById("arAddress").value.trim()
-    });
-    document.getElementById("adminRegResult").innerHTML=`<div class="note"><b>Admin Registered:</b> ${esc(data.admin_id)} — ${esc(data.name)}</div>`;
-    msg("Admin registration successful: "+data.admin_id);await loadAdmins();await loadSummary();
-  }catch(e){msg("Admin registration failed: "+e.message,"error")}
-}
-
-async function uploadDoc(file,folder){
-  const ext=(file.name.split(".").pop()||"bin").replace(/[^A-Za-z0-9]/g,"");
-  const path=`${folder}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-  const {error}=await db.storage.from("farmer-documents").upload(path,file,{upsert:false});
-  if(error) throw error;
+async function uploadCoordinatorAdminDocument(file, kind, userId) {
+  if (!file) return null;
+  const ext = String(file.name || "").split(".").pop().toLowerCase();
+  const allowed = ["jpg", "jpeg", "png", "webp", "pdf"];
+  if (!allowed.includes(ext)) throw new Error(kind + ": Only JPG, PNG, WEBP or PDF allowed.");
+  if ((kind === "photo" || kind === "signature") && ext === "pdf") {
+    throw new Error(kind + ": Image file required.");
+  }
+  if (file.size <= 0 || file.size > 5 * 1024 * 1024) {
+    throw new Error(kind + ": File size 5 MB se kam honi chahiye.");
+  }
+  const path = `coordinator-admin-docs/${userId}/${kind}/${crypto.randomUUID()}.${ext}`;
+  const {error} = await db.storage.from("farmer-documents").upload(path, file, {
+    cacheControl: "3600", upsert: false, contentType: file.type || undefined
+  });
+  if (error) throw new Error(kind + " upload failed: " + error.message);
   return path;
 }
 
-async function registerFarmer(){
-  const btn=document.getElementById("frSaveBtn");
-  try{
-    const files={
-      photo:document.getElementById("frPhoto").files[0],
-      signature:document.getElementById("frSignature").files[0],
-      aadhar:document.getElementById("frAadhaarFile").files[0],
-      form:document.getElementById("frFormFile").files[0],
-      land:document.getElementById("frLandFile").files[0]
+async function registerAdmin(){
+  const btn = document.getElementById("registerAdminBtn");
+  const result = document.getElementById("adminRegResult");
+  const val = id => (document.getElementById(id)?.value || "").trim();
+  if (!activeBlock || !coordinator) { msg("Coordinator session load nahi hua.", "error"); return; }
+  if (!val("arName")) { msg("Admin Name required hai.", "error"); return; }
+  if (!/^\d{10}$/.test(val("arMobile"))) { msg("Mobile 10 digits ka hona chahiye.", "error"); return; }
+  if (!/^\d{12}$/.test(val("arAadhaar"))) { msg("Aadhaar 12 digits ka hona chahiye.", "error"); return; }
+  const account = val("arAccountNumber").replace(/\s/g, "");
+  const ifsc = val("arIfscCode").toUpperCase();
+  if (!val("arBankName") || !val("arBankBranch") || !account || !ifsc) {
+    msg("Bank Name, Branch, Account Number aur IFSC bharna zaroori hai.", "error"); return;
+  }
+  if (!/^\d{6,25}$/.test(account)) { msg("Valid Bank Account Number bhariye.", "error"); return; }
+  if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) { msg("Valid 11-character IFSC Code bhariye.", "error"); return; }
+  const inputs = {
+    aadhaar_url:"arAadhaarFile", address_proof_url:"arAddressFile", bank_passbook_url:"arBankFile",
+    photo_url:"arPhotoFile", signature_url:"arSignatureFile", qualification_url:"arQualificationFile",
+    experience_url:"arExperienceFile"
+  };
+  const required = ["aadhaar_url","address_proof_url","bank_passbook_url","photo_url","signature_url"];
+  for(const key of required){
+    if(!document.getElementById(inputs[key]).files[0]){
+      msg("Aadhaar, Address Proof, Bank Passbook, Photo aur Signature upload karein.", "error");return;
+    }
+  }
+  btn.disabled=true; btn.textContent="Uploading Documents...";
+  result.textContent="Admin documents upload ho rahe hain...";
+  try {
+    const {data:{user},error:userError}=await db.auth.getUser();
+    if(userError || !user) throw new Error("Coordinator login session expired. Dobara login karein.");
+    const payload = {
+      block:activeBlock,
+      name:val("arName"), father_name:val("arFather"), dob:val("arDob") || null,
+      gender:val("arGender"), mobile:val("arMobile"), email:val("arEmail").toLowerCase(),
+      aadhar_number:val("arAadhaar"), village:val("arVillage"), panchayat:val("arPanchayat"),
+      full_address:val("arAddress"), bank_name:val("arBankName"), bank_branch:val("arBankBranch"),
+      account_number:account, ifsc_code:ifsc, payment_mode:val("arPaymentMode"),
+      joining_date:val("arJoiningDate") || null, qualification:val("arQualification"),
+      experience:val("arExperience")
     };
-    if(Object.values(files).some(x=>!x)) throw new Error("सभी 5 documents upload करना जरूरी है।");
-    btn.disabled=true;btn.textContent="Uploading...";
-    const [photo,signature,aadhar,form,land]=await Promise.all([
-      uploadDoc(files.photo,"photo"),uploadDoc(files.signature,"signature"),uploadDoc(files.aadhar,"aadhar"),uploadDoc(files.form,"form"),uploadDoc(files.land,"land-record")
-    ]);
-    btn.textContent="Registering...";
-    const d=await rpc("cbms_block_register_farmer",{
-      p_name:document.getElementById("frName").value.trim(),
-      p_father_name:document.getElementById("frFather").value.trim(),
-      p_date_of_birth:document.getElementById("frDob").value||null,
-      p_aadhar_number:document.getElementById("frAadhaar").value.trim(),
-      p_mobile:document.getElementById("frMobile").value.trim(),
-      p_gender:document.getElementById("frGender").value,
-      p_village:document.getElementById("frVillage").value.trim(),
-      p_panchayat:document.getElementById("frPanchayat").value.trim(),
-      p_block:activeBlock,
-      p_crop:document.getElementById("frCrop").value.trim(),
-      p_land:document.getElementById("frLand").value.trim(),
-      p_category:document.getElementById("frCategory").value,
-      p_address:document.getElementById("frAddress").value.trim(),
-      p_bank_name:document.getElementById("frBank").value.trim(),
-      p_bank_branch:document.getElementById("frBranch").value.trim(),
-      p_account_number:document.getElementById("frAccount").value.trim(),
-      p_ifsc_code:document.getElementById("frIfsc").value.trim().toUpperCase(),
-      p_payment_mode:document.getElementById("frPayment").value,
-      p_photo_url:photo,p_signature_url:signature,p_aadhar_url:aadhar,p_form_url:form,p_land_record_url:land
-    });
-    let reg=(typeof d==="string"?d:(d?.registration_number||d?.registration_no||d?.reg_no||d?.id||JSON.stringify(d)));
-    document.getElementById("farmerRegResult").innerHTML=`<div class="note"><b>Registration Successful:</b> ${esc(reg)}</div>`;
-    msg("Farmer registration successful.");await loadSummary();await loadFarmers();
-  }catch(e){msg("Farmer registration failed: "+e.message,"error")}
-  finally{btn.disabled=false;btn.textContent="Register Farmer"}
+    for(const [key,id] of Object.entries(inputs)){
+      const file=document.getElementById(id).files[0];
+      payload[key]=file ? await uploadCoordinatorAdminDocument(file,key.replace(/_url$/,""),user.id) : null;
+    }
+    btn.textContent="Registering Admin...";
+    const data=await rpc("cbms_block_register_admin_full",{p_payload:payload});
+    if(!data || !data.admin_id) throw new Error("Registration ka response nahi mila.");
+    result.innerHTML=`<div class="note"><b>Admin Registration Successful</b><br>Admin ID: ${esc(data.admin_id)}<br>Name: ${esc(data.name)}<br>Block: ${esc(data.block)}<br>Bank details &amp; document paths saved.</div>`;
+    ["arName","arFather","arDob","arGender","arMobile","arEmail","arAadhaar",
+     "arPanchayat","arVillage","arAddress","arBankName","arBankBranch",
+     "arAccountNumber","arIfscCode","arPaymentMode","arJoiningDate","arQualification","arExperience",
+     ...Object.values(inputs)].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
+    applyActiveBlockToForms();
+    msg("Admin registered: " + data.admin_id);
+    await loadAdmins(); await loadSummary();
+  }catch(e){
+    console.error("Admin Registration:",e);
+    result.textContent="Registration failed: " + (e.message || String(e)) + ". Koi duplicate Admin record banane se pehle data check karein.";
+    msg("Admin registration failed: " + (e.message || String(e)),"error");
+  }finally{btn.disabled=false;btn.textContent="Register Admin"}
 }
 
 async function loadFarmers(){
@@ -350,7 +348,7 @@ function renderFarmers(){
     <td>${esc(f.panchayat)}</td><td>${esc(f.village)}</td><td>${esc(f.admin_id||"-")}</td>
     <td><span class="badge ${statusBadge(f.status)}">${esc(f.status||"-")}</span></td>
     <td><button class="small edit" onclick="openEdit('${f.id}')">Edit</button>
-    ${String(f.status||"").trim().toLowerCase()==="pending block coordinator verification"?`<button class="small verify" onclick="verifyFarmer('${f.id}','${esc(f.registration_no)}')">Verify & Send to Officer</button>`:""}</td>
+    ${!["approved","rejected","pending officer approval","verified"].includes(String(f.status||"").trim().toLowerCase())?`<button class="small verify" onclick="verifyFarmer('${f.id}')">Verify</button>`:""}</td>
   </tr>`).join(""):'<tr><td colspan="8">No farmer found.</td></tr>';
 }
 
@@ -389,10 +387,20 @@ async function saveFarmerEdit(){
   }catch(e){msg("Update failed: "+e.message,"error")}
 }
 
-async function verifyFarmer(id,reg){
-  if(!confirm((reg||"Farmer")+" ko Block Coordinator level par verify karke Officer Final Approval ke liye bhejna hai?")) return;
-  try{await rpc("cbms_block_verify_farmer",{p_block:activeBlock,p_farmer_id:id});msg("Farmer Block Coordinator se verified. Officer Final Approval ke liye bhej diya.");await loadFarmers();await loadSummary();await loadPerformance()}
-  catch(e){msg("Verification failed: "+e.message,"error")}
+
+async function verifyFarmer(id){
+  const farmer=farmers.find(f=>String(f.id)===String(id));
+  if(!farmer){msg("Farmer record nahi mila.","error");return}
+  const status=String(farmer.status||"").trim().toLowerCase();
+  if(["approved","rejected","pending officer approval","verified"].includes(status)){
+    msg("Is Farmer ko dobara verify nahi kar sakte.","error");return;
+  }
+  if(!confirm((farmer.registration_no||"Farmer")+" ko verify karke Officer approval me bhejna hai?")) return;
+  try{
+    await rpc("cbms_block_verify_farmer",{p_block:activeBlock,p_farmer_id:id});
+    msg("Farmer verified. Officer approval ke liye bhej diya.");
+    await loadFarmers();await loadSummary();await loadPerformance();
+  }catch(e){msg("Verification failed: "+(e.message||String(e)),"error")}
 }
 
 async function assignAdmin(){
