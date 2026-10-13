@@ -140,6 +140,7 @@ tr:nth-child(even) td{background:#fafcfd}
     <button class="sidebar-link" data-title="Officer Profile" onclick="showOfficerPanel('profilePanel',this)"><span class="ico">👤</span>Manage Profile</button>
     <button class="sidebar-link" data-title="Register Accountant" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">💼</span>Register Accountant</button>
     <button class="sidebar-link" data-title="Register Block Coordinator" onclick="showOfficerPanel('blockCoordinatorPanel',this)"><span class="ico">➕</span>Register Block Coordinator</button>
+    <button class="sidebar-link" id="coordinatorInviteNav" data-title="Coordinator Login Invite" onclick="showOfficerPanel('coordinatorInvitePanel',this)"><span class="ico">✉</span>Coordinator Login Invite</button>
     <button class="sidebar-link" data-title="Block Coordinator Performance" onclick="showOfficerPanel('performancePanel',this);loadPerformance()"><span class="ico">📊</span>Coordinator Performance</button>
     <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
     <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
@@ -463,6 +464,22 @@ tr:nth-child(even) td{background:#fafcfd}
     </div>
   </section>
 
+  <section id="coordinatorInvitePanel" class="portal-panel">
+    <div class="section">
+      <h2>Block Coordinator - Send Login Invite</h2>
+      <p class="section-note">Jo Block Coordinator pehle se registered hai, uska record dobara banaye bina yahan se login invite bhejein. Coordinator ID aur uska registered email bilkul match hona chahiye.</p>
+      <form id="coordinatorInviteForm" onsubmit="event.preventDefault();sendCoordinatorLoginInvite();">
+        <div class="form-grid">
+          <div><label for="bcInviteCoordinatorId">Coordinator ID *</label><input id="bcInviteCoordinatorId" placeholder="CBMS/BC/CHN/2026/01" required autocomplete="off"></div>
+          <div><label for="bcInviteEmail">Registered Email *</label><input id="bcInviteEmail" type="email" placeholder="coordinator@example.com" required autocomplete="email"></div>
+          <div style="display:flex;align-items:end"><button type="submit" class="primary-btn" id="sendCoordinatorInviteBtn" style="width:100%">Send Login Invite</button></div>
+        </div>
+      </form>
+      <div id="coordinatorInviteResult" role="status" aria-live="polite" style="margin-top:14px"></div>
+      <p class="profile-help">Sirf active Officer login se invite bheja ja sakta hai. Email par aane wala link password set karne ke liye website ke reset-password.html page par redirect hoga. Agar Auth pehle se linked hai to Edge Function naya invite nahi bhejega.</p>
+    </div>
+  </section>
+
   <section id="performancePanel" class="portal-panel">
     <div class="section">
       <h2>Block Coordinator Performance</h2>
@@ -748,6 +765,91 @@ async function loadOfficer(){
     return true;
 }
 
+
+/* =========================
+   RETRY LOGIN INVITE FOR EXISTING COORDINATOR
+========================= */
+
+function openCoordinatorInvite(coordinatorId, email){
+    const idInput = document.getElementById("bcInviteCoordinatorId");
+    const emailInput = document.getElementById("bcInviteEmail");
+    if(idInput && coordinatorId) idInput.value = String(coordinatorId).trim();
+    if(emailInput && email) emailInput.value = String(email).trim().toLowerCase();
+    showOfficerPanel("coordinatorInvitePanel", document.getElementById("coordinatorInviteNav"));
+}
+
+async function sendCoordinatorLoginInvite(){
+    const btn = document.getElementById("sendCoordinatorInviteBtn");
+    const resultBox = document.getElementById("coordinatorInviteResult");
+    const coordinatorId = document.getElementById("bcInviteCoordinatorId").value.trim();
+    const email = document.getElementById("bcInviteEmail").value.trim().toLowerCase();
+
+    resultBox.replaceChildren();
+    if(!coordinatorId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        showError("Sahi Coordinator ID aur registered email dalein.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Sending Invite...";
+
+    try{
+        // Do not use publishable/service-role keys as the Officer's identity.
+        const { data:sessionData, error:sessionError } = await db.auth.getSession();
+        if(sessionError) throw sessionError;
+        const token = sessionData?.session?.access_token;
+        if(!token) throw new Error("Officer session nahi mila. Officer Login dobara karein.");
+        if(!currentOfficer || String(currentOfficer.status || "").trim().toLowerCase() !== "active"){
+            throw new Error("Sirf active Officer ye invite bhej sakta hai.");
+        }
+
+        const { data, error } = await db.functions.invoke("create-block-coordinator-auth", {
+            body: { coordinator_id: coordinatorId, email: email },
+            headers: { Authorization: "Bearer " + token }
+        });
+
+        if(error){
+            let message = error.message || "Edge Function request failed";
+            const response = error.context;
+            if(response && typeof response.json === "function"){
+                try{
+                    const details = await response.clone().json();
+                    message = details?.error || details?.message || message;
+                }catch(_){ /* Keep original error message. */ }
+            }
+            const status = response && response.status ? "HTTP " + response.status + ": " : "";
+            throw new Error(status + message);
+        }
+        if(!data || data.success !== true){
+            throw new Error(data?.error || "Invite ka success confirmation nahi mila.");
+        }
+
+        const alreadyLinked = /already linked/i.test(String(data.message || ""));
+        const message = data.message || "Block Coordinator login invite email sent.";
+        const panel = document.createElement("div");
+        panel.className = "registration-success";
+        const title = document.createElement("strong");
+        title.textContent = alreadyLinked ? "Coordinator Auth Already Linked" : "Login Invite Request Successful";
+        const detail = document.createElement("span");
+        detail.textContent = message;
+        const identifier = document.createElement("span");
+        identifier.textContent = "Coordinator ID: " + coordinatorId;
+        panel.append(title, identifier, detail);
+        resultBox.appendChild(panel);
+        showSuccess(alreadyLinked ? "Coordinator Auth pehle se linked hai." : "Invite request successful: " + coordinatorId);
+    }catch(error){
+        console.error("Block Coordinator invite error:", error);
+        const panel = document.createElement("div");
+        panel.className = "message error";
+        panel.style.display = "block";
+        panel.textContent = "Invite failed: " + (error.message || String(error)) + ". Coordinator record dobara register na karein.";
+        resultBox.appendChild(panel);
+        showError("Coordinator invite failed. Niche error dekhein.");
+    }finally{
+        btn.disabled = false;
+        btn.textContent = "Send Login Invite";
+    }
+}
 
 /* =========================
    LOAD BLOCK COORDINATOR PERFORMANCE
@@ -2726,6 +2828,11 @@ async function registerBlockCoordinator(){
             authMessage = "Coordinator record ban gaya hai, lekin login invite automatic nahi ho paya. create-block-coordinator-auth Edge Function check karein.";
         }
 
+        const retryId = document.getElementById("bcInviteCoordinatorId");
+        const retryEmail = document.getElementById("bcInviteEmail");
+        if(retryId) retryId.value = coordinatorId;
+        if(retryEmail) retryEmail.value = email;
+
         const accessText = [
             accessChanho ? "Chanho" : null,
             accessMandar ? "Mandar" : null
@@ -2743,6 +2850,7 @@ async function registerBlockCoordinator(){
                     <span>Name: ${escapeHtml(name)}</span>
                     <span>Email: ${escapeHtml(email)}</span>
                     <span>Login: ${escapeHtml(authMessage)}</span>
+                    <button type="button" class="primary-btn" style="justify-self:start" onclick="openCoordinatorInvite()">Open Login Invite Panel</button>
                 </div>
             `;
         }
