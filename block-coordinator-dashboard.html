@@ -104,7 +104,6 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   <div><label>Bank Branch *</label><input id="arBankBranch" required></div>
   <div><label>Account Number *</label><input id="arAccountNumber" inputmode="numeric" maxlength="25" required></div>
   <div><label>IFSC Code *</label><input id="arIfscCode" maxlength="11" style="text-transform:uppercase" required></div>
-  <div><label>Payment Mode</label><select id="arPaymentMode"><option value="">Select</option><option>Bank Transfer</option><option>UPI</option><option>Cash</option></select></div>
   <div><label>Joining Date</label><input id="arJoiningDate" type="date"></div>
   <div><label>Qualification</label><input id="arQualification"></div>
   <div><label>Experience</label><input id="arExperience" placeholder="e.g. 2 years"></div>
@@ -319,7 +318,7 @@ async function registerAdmin(){
       gender:val("arGender"), mobile:val("arMobile"), email:val("arEmail").toLowerCase(),
       pan_number:pan, aadhar_number:val("arAadhaar"), village:val("arVillage"), panchayat:val("arPanchayat"),
       full_address:val("arAddress"), bank_name:val("arBankName"), bank_branch:val("arBankBranch"),
-      account_number:account, ifsc_code:ifsc, payment_mode:val("arPaymentMode"),
+      account_number:account, ifsc_code:ifsc,
       joining_date:val("arJoiningDate") || null, qualification:val("arQualification"),
       experience:val("arExperience")
     };
@@ -342,7 +341,7 @@ async function registerAdmin(){
     }, document.getElementById("arPhotoFile").files[0]);
     ["arName","arFather","arDob","arGender","arMobile","arEmail","arAadhaar","arPan",
      "arPanchayat","arVillage","arAddress","arBankName","arBankBranch",
-     "arAccountNumber","arIfscCode","arPaymentMode","arJoiningDate","arQualification","arExperience",
+     "arAccountNumber","arIfscCode","arJoiningDate","arQualification","arExperience",
      ...Object.values(inputs)].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
     applyActiveBlockToForms();
     msg("Admin registered: " + data.admin_id);
