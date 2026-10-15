@@ -121,6 +121,23 @@ tr:nth-child(even) td{background:#fafcfd}
 @media(max-width:1000px){.account-grid{grid-template-columns:repeat(2,1fr)}.account-filter{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:720px){.account-grid,.account-filter,.block-record-grid{grid-template-columns:1fr}}
 
+
+/* OFFICER-ONLY ADMIN AREA DIRECTORY */
+.cbms-dir-filters{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px}
+.cbms-dir-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.cbms-dir-card{background:#f8fbfd;border:1px solid #dce7ed;border-radius:7px;padding:11px}
+.cbms-dir-card small{display:block;color:#65758a;font-size:11px;font-weight:700}
+.cbms-dir-card strong{display:block;font-size:23px;color:#075e88;margin-top:6px}
+.cbms-dir-tag{display:inline-block;background:#eef4fb;border:1px solid #d9e8f5;color:#245b7e;border-radius:5px;padding:3px 6px;margin:2px;font-size:11px}
+.cbms-dir-details summary{cursor:pointer;color:#075e88;font-weight:700;white-space:normal}
+.cbms-dir-details{min-width:170px;max-width:325px}
+.cbms-dir-details ol{margin:7px 0 0;padding-left:18px;white-space:normal}
+.cbms-dir-details li{padding:4px 0;border-top:1px solid #edf1f5}
+.cbms-dir-table td{white-space:normal;min-width:85px}
+.cbms-dir-status{font-size:11px;font-weight:700}
+.cbms-dir-status.active{color:#166534}.cbms-dir-status.inactive{color:#a16207}
+@media(max-width:1100px){.cbms-dir-filters{grid-template-columns:repeat(2,1fr)}.cbms-dir-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.cbms-dir-filters,.cbms-dir-cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -141,6 +158,7 @@ tr:nth-child(even) td{background:#fafcfd}
     <button class="sidebar-link" data-title="Register Accountant" onclick="showOfficerPanel('adminRegistrationPanel',this)"><span class="ico">💼</span>Register Accountant</button>
     <button class="sidebar-link" data-title="Register Block Coordinator" onclick="showOfficerPanel('blockCoordinatorPanel',this)"><span class="ico">➕</span>Register Block Coordinator</button>
     <button class="sidebar-link" id="coordinatorInviteNav" data-title="Staff Login Invites" onclick="showOfficerPanel('coordinatorInvitePanel',this)"><span class="ico">✉</span>Staff Login Invites</button>
+    <button class="sidebar-link" data-title="Admin Area Directory" onclick="showOfficerPanel('adminDirectoryPanel',this);cbmsLoadOfficerAdminDirectory()"><span class="ico">▤</span>Admin Area Directory</button>
     <button class="sidebar-link" data-title="Block Coordinator Performance" onclick="showOfficerPanel('performancePanel',this);loadPerformance()"><span class="ico">📊</span>Coordinator Performance</button>
     <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
     <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
@@ -510,6 +528,42 @@ tr:nth-child(even) td{background:#fafcfd}
       </form>
       <div id="accountantOfficerInviteResult" role="status" aria-live="polite" style="margin-top:14px"></div>
       <p class="profile-help">Agar email pehle se Supabase Auth se linked hai, Function naya invitation nahi bhej sakta. Aise mein Staff Login ke Forgot Password se access set kiya ja sakta hai. Invite message Inbox/Spam me dekhein.</p>
+    </div>
+  </section>
+
+
+  <section id="adminDirectoryPanel" class="portal-panel">
+    <div class="section">
+      <h2>Admin Area Directory</h2>
+      <p class="section-note">Officer overview of registered Admins and their <b>assigned working areas</b>. Panchayat and Village coverage comes from the Block Coordinator's area assignments, not from the Admin's registration address. Staff PAN, Aadhaar, bank details and documents are not displayed.</p>
+      <div class="cbms-dir-filters">
+        <div><label for="cbmsAdminDirSearch">Find Admin / ID / Mobile / Village</label><input id="cbmsAdminDirSearch" type="search" placeholder="Search Admin or Panchayat..." oninput="cbmsRenderOfficerAdminDirectory()"></div>
+        <div><label for="cbmsAdminDirBlock">Block</label><select id="cbmsAdminDirBlock" onchange="cbmsAdminDirOnBlockChange()"><option value="">All Blocks</option><option value="Chanho">Chanho</option><option value="Mandar">Mandar</option></select></div>
+        <div><label for="cbmsAdminDirPanchayat">Panchayat (Assigned)</label><select id="cbmsAdminDirPanchayat" onchange="cbmsRenderOfficerAdminDirectory()"><option value="">All Panchayats</option></select></div>
+        <div><label for="cbmsAdminDirStatus">Admin Status</label><select id="cbmsAdminDirStatus" onchange="cbmsRenderOfficerAdminDirectory()"><option value="">All Status</option><option value="Active">Active</option><option value="Inactive">Inactive</option></select></div>
+        <div><button type="button" class="primary-btn" onclick="cbmsLoadOfficerAdminDirectory()">Refresh</button></div>
+      </div>
+      <div class="cbms-dir-cards">
+        <div class="cbms-dir-card"><small>Admins Shown</small><strong id="cbmsAdminDirTotal">0</strong></div>
+        <div class="cbms-dir-card"><small>Active Admins Shown</small><strong id="cbmsAdminDirActive">0</strong></div>
+        <div class="cbms-dir-card"><small>Active Panchayats Covered</small><strong id="cbmsAdminDirPanchayats">0</strong></div>
+        <div class="cbms-dir-card"><small>Active Villages Assigned</small><strong id="cbmsAdminDirVillages">0</strong></div>
+      </div>
+      <div id="cbmsAdminDirMessage" class="section-note" role="status" aria-live="polite">Click Refresh to load Admin assignments.</div>
+      <h3 style="color:#075e88;margin:16px 0 10px">Admin Directory (Staff &amp; Working Area)</h3>
+      <div class="table-wrap"><table class="cbms-dir-table">
+        <thead><tr><th>Admin ID</th><th>Admin Name</th><th>Mobile / Email</th><th>Registration Block</th><th>Active Assigned Panchayat(s)</th><th>Assigned Villages</th><th>Coordinator (Registered By)</th><th>Linked Farmers</th><th>Approved Farmers</th><th>Admin Status</th></tr></thead>
+        <tbody id="cbmsAdminDirTable"><tr><td colspan="10">No directory loaded yet.</td></tr></tbody>
+      </table></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:19px 0 10px">
+        <h3 style="color:#075e88;margin:0;flex:1">Panchayat &amp; Village Assignment Details</h3>
+        <button type="button" class="primary-btn" onclick="cbmsExportOfficerAdminAreaCSV()">Export Filtered CSV</button>
+      </div>
+      <div class="table-wrap"><table class="cbms-dir-table">
+        <thead><tr><th>Block</th><th>Panchayat</th><th>Village</th><th>Admin ID</th><th>Admin Name</th><th>Mobile</th><th>Assigned By Coordinator</th><th>Farmer Target</th><th>Assignment Status</th></tr></thead>
+        <tbody id="cbmsAdminDirAssignments"><tr><td colspan="9">No directory loaded yet.</td></tr></tbody>
+      </table></div>
+      <p class="profile-help">An Admin with no active assigned villages appears as <b>Not assigned</b>, even if a Panchayat was entered when registering. Refresh after your Block Coordinator assigns a village.</p>
     </div>
   </section>
 
@@ -3499,6 +3553,168 @@ async function loadOfficerAccountUpdate(){
     }
 }
 
+
+
+/* =========================
+   OFFICER ADMIN AREA DIRECTORY
+   Authorized read-only RPC; no direct table bypass, no writes.
+========================= */
+let cbmsOfficerAdminDirectoryData = [];
+
+function cbmsDirIsActive(value){
+    return String(value || "").trim().toLowerCase() === "active";
+}
+function cbmsDirText(value){
+    return String(value ?? "").trim();
+}
+function cbmsDirAreas(admin, activeOnly=false){
+    const rows = Array.isArray(admin.area_assignments) ? admin.area_assignments : [];
+    return activeOnly ? rows.filter(area=>cbmsDirIsActive(area.status)) : rows;
+}
+function cbmsDirFilters(){
+    return {
+        block:cbmsDirText(document.getElementById("cbmsAdminDirBlock")?.value).toLowerCase(),
+        panchayat:cbmsDirText(document.getElementById("cbmsAdminDirPanchayat")?.value).toLowerCase(),
+        status:cbmsDirText(document.getElementById("cbmsAdminDirStatus")?.value).toLowerCase(),
+        q:cbmsDirText(document.getElementById("cbmsAdminDirSearch")?.value).toLowerCase()
+    };
+}
+function cbmsDirMatchingRows(){
+    const filters = cbmsDirFilters();
+    return cbmsOfficerAdminDirectoryData.filter(admin=>{
+        const areas=cbmsDirAreas(admin,true);
+        if(filters.status && cbmsDirText(admin.status).toLowerCase()!==filters.status) return false;
+        if(filters.block &&
+            !areas.some(area=>cbmsDirText(area.block).toLowerCase()===filters.block) &&
+            !(areas.length===0 && cbmsDirText(admin.registered_block).toLowerCase()===filters.block)) return false;
+        if(filters.panchayat && !areas.some(area=>
+            (!filters.block || cbmsDirText(area.block).toLowerCase()===filters.block) &&
+            cbmsDirText(area.panchayat).toLowerCase()===filters.panchayat)) return false;
+        if(filters.q){
+            const hay=[admin.admin_id,admin.name,admin.mobile,admin.email,admin.registered_block,
+                ...cbmsDirAreas(admin).flatMap(area=>[area.block,area.panchayat,area.village,area.assigned_by_coordinator])]
+                .map(cbmsDirText).join(" ").toLowerCase();
+            if(!hay.includes(filters.q)) return false;
+        }
+        return true;
+    });
+}
+function cbmsDirAreaMatchesFilter(area, filters){
+    if(filters.block && cbmsDirText(area.block).toLowerCase()!==filters.block) return false;
+    if(filters.panchayat && cbmsDirText(area.panchayat).toLowerCase()!==filters.panchayat) return false;
+    return true;
+}
+function cbmsAdminDirOnBlockChange(){
+    const select=document.getElementById("cbmsAdminDirPanchayat");
+    if(!select) return;
+    const previous=select.value;
+    const block=cbmsDirText(document.getElementById("cbmsAdminDirBlock")?.value).toLowerCase();
+    const names=new Set();
+    cbmsOfficerAdminDirectoryData.forEach(admin=>cbmsDirAreas(admin,true).forEach(area=>{
+        if((!block || cbmsDirText(area.block).toLowerCase()===block) && cbmsDirText(area.panchayat)){
+            names.add(cbmsDirText(area.panchayat));
+        }
+    }));
+    const list=Array.from(names).sort((a,b)=>a.localeCompare(b,"en"));
+    select.replaceChildren(new Option("All Panchayats",""),...list.map(name=>new Option(name,name)));
+    if(list.includes(previous)) select.value=previous;
+    cbmsRenderOfficerAdminDirectory();
+}
+async function cbmsLoadOfficerAdminDirectory(){
+    const status=document.getElementById("cbmsAdminDirMessage");
+    if(status) status.textContent="Loading authorized Admin area records...";
+    try{
+        const {data,error}=await db.rpc("cbms_officer_admin_area_directory");
+        if(error) throw error;
+        cbmsOfficerAdminDirectoryData=Array.isArray(data?.admins) ? data.admins : [];
+        cbmsAdminDirOnBlockChange();
+        if(status) status.textContent=cbmsOfficerAdminDirectoryData.length
+            ? "Directory loaded. Areas marked Active are current work assignments."
+            : "No Admin has been registered yet. Once the Coordinator registers Admins, their details will appear here.";
+    }catch(err){
+        console.error("Officer Admin Area Directory:",err);
+        cbmsOfficerAdminDirectoryData=[];
+        cbmsAdminDirOnBlockChange();
+        if(status) status.textContent="Directory could not load: "+(err?.message || String(err))+". Run the accompanying read-only SQL setup and sign in as an Active Officer.";
+    }
+}
+function cbmsRenderOfficerAdminDirectory(){
+    const admins=cbmsDirMatchingRows();
+    const filters=cbmsDirFilters();
+    const tbody=document.getElementById("cbmsAdminDirTable");
+    const areaBody=document.getElementById("cbmsAdminDirAssignments");
+    if(!tbody || !areaBody) return;
+    const allActiveAreas=admins.flatMap(admin=>cbmsDirAreas(admin,true).filter(area=>cbmsDirAreaMatchesFilter(area,filters)));
+    const panchayats=new Set(allActiveAreas.map(area=>[cbmsDirText(area.block),cbmsDirText(area.panchayat)].join("|")).filter(s=>!s.endsWith("|")));
+    const villages=new Set(allActiveAreas.map(area=>[cbmsDirText(area.block),cbmsDirText(area.panchayat),cbmsDirText(area.village)].join("|")).filter(s=>!s.endsWith("|")));
+    for(const [id,value] of Object.entries({
+        cbmsAdminDirTotal:admins.length,
+        cbmsAdminDirActive:admins.filter(a=>cbmsDirIsActive(a.status)).length,
+        cbmsAdminDirPanchayats:panchayats.size,
+        cbmsAdminDirVillages:villages.size
+    })){
+        const el=document.getElementById(id);if(el)el.textContent=String(value);
+    }
+    tbody.innerHTML=admins.length ? admins.map(admin=>{
+        const active=cbmsDirAreas(admin,true).filter(area=>cbmsDirAreaMatchesFilter(area,filters));
+        const grouped=[...new Set(active.map(area=>[cbmsDirText(area.block),cbmsDirText(area.panchayat)].join(" / ")))];
+        const known=active.length>0;
+        const villageList=active.map(area=>`<li>${escapeHtml(area.village||"-")} <small>(${escapeHtml(area.panchayat||"-")}, ${escapeHtml(area.block||"-")})</small></li>`).join("");
+        const badge=cbmsDirIsActive(admin.status)?"active":"inactive";
+        return `<tr>
+          <td><b>${escapeHtml(admin.admin_id||"-")}</b></td>
+          <td>${escapeHtml(admin.name||"-")}</td>
+          <td>${escapeHtml(admin.mobile||"-")}<br><small>${escapeHtml(admin.email||"-")}</small></td>
+          <td>${escapeHtml(admin.registered_block||"-")}</td>
+          <td>${known ? grouped.map(value=>`<span class="cbms-dir-tag">${escapeHtml(value)}</span>`).join("") : '<em>Not assigned</em>'}</td>
+          <td>${known ? `<details class="cbms-dir-details"><summary>${active.length} assigned village(s)</summary><ol>${villageList}</ol></details>` : "-"}</td>
+          <td>${escapeHtml(admin.registered_by_coordinator||"-")}</td>
+          <td>${escapeHtml(admin.linked_farmers??0)}</td>
+          <td>${escapeHtml(admin.approved_farmers??0)}</td>
+          <td><span class="cbms-dir-status ${badge}">${escapeHtml(admin.status||"-")}</span></td>
+        </tr>`;
+    }).join("") : '<tr><td colspan="10">No Admin matches the selected filters, or no Admin is registered.</td></tr>';
+    const rowList=[];
+    for(const admin of admins){
+        const areas=cbmsDirAreas(admin).filter(area=>cbmsDirAreaMatchesFilter(area,filters));
+        for(const area of areas){
+            const active=cbmsDirIsActive(area.status);
+            rowList.push(`<tr>
+              <td>${escapeHtml(area.block||"-")}</td><td>${escapeHtml(area.panchayat||"-")}</td>
+              <td>${escapeHtml(area.village||"-")}</td><td>${escapeHtml(admin.admin_id||"-")}</td>
+              <td>${escapeHtml(admin.name||"-")}</td><td>${escapeHtml(admin.mobile||"-")}</td>
+              <td>${escapeHtml(area.assigned_by_coordinator||"-")}</td><td>${escapeHtml(area.target_count??0)}</td>
+              <td><span class="cbms-dir-status ${active?"active":"inactive"}">${escapeHtml(area.status||"-")}</span></td>
+            </tr>`);
+        }
+    }
+    areaBody.innerHTML=rowList.length?rowList.join(""):'<tr><td colspan="9">No Panchayat / Village area assignments match this filter.</td></tr>';
+}
+function cbmsExportOfficerAdminAreaCSV(){
+    const filters=cbmsDirFilters();
+    const matched=cbmsDirMatchingRows();
+    const headers=["Admin ID","Admin Name","Mobile","Email","Registered Block","Assigned Block","Panchayat","Village","Assigned By Coordinator","Farmer Target","Area Status","Admin Status","Linked Farmers","Approved Farmers"];
+    const rows=[];
+    for(const a of matched){
+        const areas=cbmsDirAreas(a).filter(area=>cbmsDirAreaMatchesFilter(area,filters));
+        if(!areas.length && !filters.panchayat){
+            rows.push([a.admin_id,a.name,a.mobile,a.email,a.registered_block,"Not assigned","","","","","",a.status,a.linked_farmers,a.approved_farmers]);
+        }
+        for(const ar of areas){
+            rows.push([a.admin_id,a.name,a.mobile,a.email,a.registered_block,ar.block,ar.panchayat,ar.village,ar.assigned_by_coordinator,ar.target_count,ar.status,a.status,a.linked_farmers,a.approved_farmers]);
+        }
+    }
+    if(!rows.length){alert("No matching Admin records to export.");return;}
+    const safeCell=value=>{
+        let s=String(value??"");
+        if(/^\s*[=+@\-\t\r]/.test(s)) s="'"+s; // prevent spreadsheet formula execution
+        return '"'+s.replace(/"/g,'""')+'"';
+    };
+    const csv="\ufeff"+[headers,...rows].map(row=>row.map(safeCell).join(",")).join("\r\n");
+    const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    const link=document.createElement("a");link.href=url;link.download="CBMS_Officer_Admin_Area_Directory_"+new Date().toISOString().slice(0,10)+".csv";
+    document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),300);
+}
 
 /* =========================
    CHANHO / MANDAR RECORDS
