@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Block Coordinator Dashboard - Chanho FPO</title>
+<!-- CBMS Admin Registration: Bank Name dropdown + IFSC auto Branch; no payment mode in Admin Registration. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
@@ -100,10 +101,37 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 </div>
 <h3 style="color:#075e88;margin:22px 0 10px">Bank Details</h3>
 <div class="grid">
-  <div><label>Bank Name *</label><input id="arBankName" required></div>
-  <div><label>Bank Branch *</label><input id="arBankBranch" required></div>
-  <div><label>Account Number *</label><input id="arAccountNumber" inputmode="numeric" maxlength="25" required></div>
-  <div><label>IFSC Code *</label><input id="arIfscCode" maxlength="11" style="text-transform:uppercase" required></div>
+  <div><label for="arBankName">Bank Name *</label><select id="arBankName" onchange="cbmsAdminBankChoiceChanged()">
+              <option value="">Select Bank</option>
+              <option value="State Bank of India">State Bank of India (SBI)</option>
+              <option value="Bank of India">Bank of India (BOI)</option>
+              <option value="Punjab National Bank">Punjab National Bank (PNB)</option>
+              <option value="Canara Bank">Canara Bank</option>
+              <option value="Bank of Baroda">Bank of Baroda</option>
+              <option value="Union Bank of India">Union Bank of India</option>
+              <option value="Central Bank of India">Central Bank of India</option>
+              <option value="UCO Bank">UCO Bank</option>
+              <option value="Indian Bank">Indian Bank</option>
+              <option value="Indian Overseas Bank">Indian Overseas Bank</option>
+              <option value="Bank of Maharashtra">Bank of Maharashtra</option>
+              <option value="Punjab &amp; Sind Bank">Punjab &amp; Sind Bank</option>
+              <option value="Jharkhand Gramin Bank">Jharkhand Gramin Bank</option>
+              <option value="HDFC Bank">HDFC Bank</option>
+              <option value="ICICI Bank">ICICI Bank</option>
+              <option value="Axis Bank">Axis Bank</option>
+              <option value="IDBI Bank">IDBI Bank</option>
+              <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+              <option value="Bandhan Bank">Bandhan Bank</option>
+              <option value="IndusInd Bank">IndusInd Bank</option>
+              <option value="Federal Bank">Federal Bank</option>
+              <option value="YES Bank">YES Bank</option>
+              <option value="__other__">Other Bank (specify)</option>
+            </select>
+    <input id="arBankNameOther" placeholder="Enter full bank name" hidden style="display:none;margin-top:8px" autocomplete="off"></div>
+  <div><label for="arBankBranch">Bank Branch *</label><input id="arBankBranch" placeholder="IFSC se automatic branch aayegi" required></div>
+  <div><label for="arAccountNumber">Account Number *</label><input id="arAccountNumber" inputmode="numeric" maxlength="25" required></div>
+  <div><label for="arIfscCode">IFSC Code *</label><input id="arIfscCode" maxlength="11" placeholder="SBIN0000001" style="text-transform:uppercase" oninput="cbmsAdminIfscChanged()" onblur="cbmsAdminIfscBlur()" autocapitalize="characters" spellcheck="false" autocomplete="off" required></div>
+  <div class="span-3"><small id="arIfscLookupStatus" aria-live="polite" style="color:#496578">11-character IFSC bharte hi Bank Name aur Branch auto-fill honge. Internet zaroori hai.</small></div>
   <div><label>Joining Date</label><input id="arJoiningDate" type="date"></div>
   <div><label>Qualification</label><input id="arQualification"></div>
   <div><label>Experience</label><input id="arExperience" placeholder="e.g. 2 years"></div>
@@ -277,6 +305,158 @@ async function uploadCoordinatorAdminDocument(file, kind, userId) {
   return path;
 }
 
+
+// CBMS Admin Registration: bank dropdown + IFSC lookup, matching Officer Dashboard.
+// Only the IFSC is sent to the lookup service; no personal/bank account data is sent.
+const cbmsAdminIfscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+let cbmsAdminIfscVersion = 0;
+let cbmsAdminIfscTimer = null;
+let cbmsAdminIfscState = {code:"", status:"empty", bank:"", branch:""};
+
+function cbmsAdminSetIfscStatus(message,kind="info"){
+  const el=document.getElementById("arIfscLookupStatus");
+  if(!el) return;
+  el.textContent=message;
+  el.style.color=kind==="success"?"#176735":kind==="error"?"#b42318":"#496578";
+}
+function cbmsAdminBankChoiceChanged(){
+  const select=document.getElementById("arBankName");
+  const other=document.getElementById("arBankNameOther");
+  const isOther=select.value==="__other__";
+  other.hidden=!isOther;
+  other.style.display=isOther?"block":"none";
+  other.required=isOther;
+  if(!isOther) other.value="";
+}
+function cbmsAdminBankValue(){
+  const select=document.getElementById("arBankName");
+  return (select.value==="__other__"?document.getElementById("arBankNameOther").value:select.value).trim();
+}
+function cbmsAdminSetBank(bank){
+  const select=document.getElementById("arBankName");
+  if(!bank || !select) return;
+  const normalize=x=>String(x||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+  let option=Array.from(select.options).find(o=>o.value && o.value!=="__other__" && normalize(o.value)===normalize(bank));
+  if(!option){
+    option=document.createElement("option");
+    option.value=String(bank).trim();
+    option.textContent=String(bank).trim();
+    select.add(option,select.querySelector('option[value="__other__"]'));
+  }
+  select.value=option.value;
+  cbmsAdminBankChoiceChanged();
+}
+async function cbmsAdminFetchIfsc(code,version){
+  if(!cbmsAdminIfscPattern.test(code)){
+    cbmsAdminIfscState={code,status:"invalid",bank:"",branch:""};
+    cbmsAdminSetIfscStatus("IFSC format galat hai: 4 letters, 0, phir 6 characters.","error");
+    return false;
+  }
+  cbmsAdminIfscState={code,status:"loading",bank:"",branch:""};
+  cbmsAdminSetIfscStatus("IFSC verify ho raha hai...");
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),9000);
+  try{
+    const response=await fetch("https://ifsc.razorpay.com/"+encodeURIComponent(code),{
+      method:"GET",headers:{Accept:"application/json"},signal:controller.signal
+    });
+    if(version!==cbmsAdminIfscVersion) return false;
+    if(response.status===404){
+      cbmsAdminIfscState={code,status:"invalid",bank:"",branch:""};
+      cbmsAdminSetIfscStatus("IFSC nahi mila. Code check karein.","error");
+      return false;
+    }
+    if(!response.ok) throw new Error("IFSC lookup unavailable");
+    const data=await response.json();
+    if(version!==cbmsAdminIfscVersion) return false;
+    if(!data || String(data.IFSC||"").toUpperCase()!==code || !data.BANK || !data.BRANCH){
+      throw new Error("Incomplete IFSC response");
+    }
+    cbmsAdminSetBank(data.BANK);
+    document.getElementById("arBankBranch").value=String(data.BRANCH).trim();
+    cbmsAdminIfscState={code,status:"valid",bank:String(data.BANK).trim(),branch:String(data.BRANCH).trim()};
+    cbmsAdminSetIfscStatus("✓ IFSC verified: Bank aur Branch automatic fill ho gaye.","success");
+    return true;
+  }catch(e){
+    if(version!==cbmsAdminIfscVersion) return false;
+    cbmsAdminIfscState={code,status:"offline",bank:"",branch:""};
+    cbmsAdminSetIfscStatus("IFSC service nahi chal rahi. Passbook se verify karke Bank aur Branch manually bhar sakte hain.","error");
+    return false;
+  }finally{clearTimeout(timeout)}
+}
+function cbmsAdminIfscChanged(){
+  const input=document.getElementById("arIfscCode");
+  const code=input.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,11);
+  input.value=code;
+  const old=cbmsAdminIfscState.code;
+  const oldStatus=cbmsAdminIfscState.status;
+  ++cbmsAdminIfscVersion;
+  clearTimeout(cbmsAdminIfscTimer);
+  if(old && old!==code && oldStatus==="valid"){
+    document.getElementById("arBankBranch").value="";
+    document.getElementById("arBankName").value="";
+    cbmsAdminBankChoiceChanged();
+  }
+  cbmsAdminIfscState={code,status:"pending",bank:"",branch:""};
+  if(!code){
+    cbmsAdminIfscState.status="empty";
+    cbmsAdminSetIfscStatus("IFSC ke 11 characters bharne par Bank aur Branch search honge.");
+  }else if(code.length<11){
+    cbmsAdminSetIfscStatus("IFSC: "+code.length+"/11 characters");
+  }else if(!cbmsAdminIfscPattern.test(code)){
+    cbmsAdminIfscState.status="invalid";
+    cbmsAdminSetIfscStatus("IFSC format galat hai.","error");
+  }else{
+    const version=cbmsAdminIfscVersion;
+    cbmsAdminIfscTimer=setTimeout(()=>cbmsAdminFetchIfsc(code,version),350);
+  }
+}
+function cbmsAdminIfscBlur(){
+  const input=document.getElementById("arIfscCode");
+  if(input.value.length===11 && cbmsAdminIfscState.status==="pending"){
+    clearTimeout(cbmsAdminIfscTimer);
+    cbmsAdminFetchIfsc(input.value,cbmsAdminIfscVersion);
+  }
+}
+async function cbmsAdminValidateBankBeforeSubmit(){
+  const code=document.getElementById("arIfscCode").value.trim().toUpperCase();
+  if(!cbmsAdminIfscPattern.test(code)){
+    msg("Valid 11-character IFSC Code bhariye.","error");return false;
+  }
+  if(cbmsAdminIfscState.code!==code || ["pending","loading","empty"].includes(cbmsAdminIfscState.status)){
+    clearTimeout(cbmsAdminIfscTimer);
+    ++cbmsAdminIfscVersion;
+    await cbmsAdminFetchIfsc(code,cbmsAdminIfscVersion);
+  }
+  if(cbmsAdminIfscState.code!==code || cbmsAdminIfscState.status==="invalid"){
+    msg("IFSC verify nahi hua. Sahi IFSC dalein.","error");return false;
+  }
+  const bank=cbmsAdminBankValue();
+  const branch=document.getElementById("arBankBranch").value.trim();
+  if(!bank || !branch){
+    msg("Bank Name aur Branch bharna zaroori hai.","error");return false;
+  }
+  if(cbmsAdminIfscState.status==="valid"){
+    const normalize=x=>String(x||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+    if(normalize(bank)!==normalize(cbmsAdminIfscState.bank)){
+      msg("Selected Bank IFSC ke bank se match nahi karta. IFSC check karein.","error");return false;
+    }
+  }
+  if(cbmsAdminIfscState.status==="offline"){
+    // Internet failure is not proof of a valid IFSC; require manual review.
+    cbmsAdminSetIfscStatus("IFSC online verify nahi hua: Save se pehle Bank/Branch passbook se check karein.","error");
+  }
+  return true;
+}
+function cbmsAdminResetBankLookup(){
+  ++cbmsAdminIfscVersion;
+  clearTimeout(cbmsAdminIfscTimer);
+  cbmsAdminIfscState={code:"",status:"empty",bank:"",branch:""};
+  document.getElementById("arBankNameOther").value="";
+  cbmsAdminBankChoiceChanged();
+  cbmsAdminSetIfscStatus("IFSC ke 11 characters bharne par Bank aur Branch search honge.");
+}
+
 async function registerAdmin(){
   const btn = document.getElementById("registerAdminBtn");
   const result = document.getElementById("adminRegResult");
@@ -291,7 +471,7 @@ async function registerAdmin(){
   }
   const account = val("arAccountNumber").replace(/\s/g, "");
   const ifsc = val("arIfscCode").toUpperCase();
-  if (!val("arBankName") || !val("arBankBranch") || !account || !ifsc) {
+  if (!cbmsAdminBankValue() || !val("arBankBranch") || !account || !ifsc) {
     msg("Bank Name, Branch, Account Number aur IFSC bharna zaroori hai.", "error"); return;
   }
   if (!/^\d{6,25}$/.test(account)) { msg("Valid Bank Account Number bhariye.", "error"); return; }
@@ -307,6 +487,7 @@ async function registerAdmin(){
       msg("Aadhaar, Address Proof, Bank Passbook, Photo aur Signature upload karein.", "error");return;
     }
   }
+  if(!await cbmsAdminValidateBankBeforeSubmit()) return;
   btn.disabled=true; btn.textContent="Uploading Documents...";
   result.textContent="Admin documents upload ho rahe hain...";
   try {
@@ -317,7 +498,7 @@ async function registerAdmin(){
       name:val("arName"), father_name:val("arFather"), dob:val("arDob") || null,
       gender:val("arGender"), mobile:val("arMobile"), email:val("arEmail").toLowerCase(),
       pan_number:pan, aadhar_number:val("arAadhaar"), village:val("arVillage"), panchayat:val("arPanchayat"),
-      full_address:val("arAddress"), bank_name:val("arBankName"), bank_branch:val("arBankBranch"),
+      full_address:val("arAddress"), bank_name:cbmsAdminBankValue(), bank_branch:val("arBankBranch"),
       account_number:account, ifsc_code:ifsc,
       joining_date:val("arJoiningDate") || null, qualification:val("arQualification"),
       experience:val("arExperience")
@@ -336,13 +517,14 @@ async function registerAdmin(){
       dob:val("arDob"),gender:val("arGender"),joinDate:val("arJoiningDate"),
       address:val("arAddress"),block:activeBlock,
       panchayat:val("arPanchayat"),village:val("arVillage"),
-      bank:val("arBankName"),account:val("arAccountNumber"),
+      bank:cbmsAdminBankValue(),account:val("arAccountNumber"),
       ifsc:val("arIfscCode"),aadhaar:val("arAadhaar")
     }, document.getElementById("arPhotoFile").files[0]);
     ["arName","arFather","arDob","arGender","arMobile","arEmail","arAadhaar","arPan",
      "arPanchayat","arVillage","arAddress","arBankName","arBankBranch",
      "arAccountNumber","arIfscCode","arJoiningDate","arQualification","arExperience",
      ...Object.values(inputs)].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
+    cbmsAdminResetBankLookup();
     applyActiveBlockToForms();
     msg("Admin registered: " + data.admin_id);
     await loadAdmins(); await loadSummary();
