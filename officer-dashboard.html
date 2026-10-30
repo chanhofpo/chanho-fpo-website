@@ -372,11 +372,40 @@ tr:nth-child(even) td{background:#fafcfd}
 
         <h3 style="color:var(--blue3);margin:20px 0 10px">Bank Details</h3>
         <div class="form-grid">
-          <div><label>Bank Name</label><input id="adminBankName"></div>
-          <div><label>Bank Branch</label><input id="adminBankBranch"></div>
-          <div><label>Account Number</label><input id="adminAccountNumber"></div>
-          <div><label>IFSC Code</label><input id="adminIfsc" style="text-transform:uppercase"></div>
-          <div><label>Payment Mode</label><select id="adminPaymentMode"><option value="">Select</option><option>Bank Transfer</option><option>UPI</option><option>Cash</option></select></div>
+          <div>
+            <label for="adminBankName">Bank Name</label>
+            <select id="adminBankName" onchange="cbmsAccountantBankChoiceChanged()">
+              <option value="">Select Bank</option>
+              <option value="State Bank of India">State Bank of India (SBI)</option>
+              <option value="Bank of India">Bank of India (BOI)</option>
+              <option value="Punjab National Bank">Punjab National Bank (PNB)</option>
+              <option value="Canara Bank">Canara Bank</option>
+              <option value="Bank of Baroda">Bank of Baroda</option>
+              <option value="Union Bank of India">Union Bank of India</option>
+              <option value="Central Bank of India">Central Bank of India</option>
+              <option value="UCO Bank">UCO Bank</option>
+              <option value="Indian Bank">Indian Bank</option>
+              <option value="Indian Overseas Bank">Indian Overseas Bank</option>
+              <option value="Bank of Maharashtra">Bank of Maharashtra</option>
+              <option value="Punjab &amp; Sind Bank">Punjab &amp; Sind Bank</option>
+              <option value="Jharkhand Gramin Bank">Jharkhand Gramin Bank</option>
+              <option value="HDFC Bank">HDFC Bank</option>
+              <option value="ICICI Bank">ICICI Bank</option>
+              <option value="Axis Bank">Axis Bank</option>
+              <option value="IDBI Bank">IDBI Bank</option>
+              <option value="Kotak Mahindra Bank">Kotak Mahindra Bank</option>
+              <option value="Bandhan Bank">Bandhan Bank</option>
+              <option value="IndusInd Bank">IndusInd Bank</option>
+              <option value="Federal Bank">Federal Bank</option>
+              <option value="YES Bank">YES Bank</option>
+              <option value="__other__">Other Bank (specify)</option>
+            </select>
+            <input id="adminBankNameOther" placeholder="Enter full bank name" hidden style="margin-top:8px;display:none" autocomplete="off">
+          </div>
+          <div><label for="adminBankBranch">Bank Branch</label><input id="adminBankBranch" placeholder="IFSC enter karne par auto fill hoga"></div>
+          <div><label for="adminAccountNumber">Account Number</label><input id="adminAccountNumber"></div>
+          <div><label for="adminIfsc">IFSC Code</label><input id="adminIfsc" maxlength="11" placeholder="e.g. SBIN0000001" style="text-transform:uppercase" oninput="cbmsAccountantIfscChanged()" onblur="cbmsAccountantIfscBlur()" autocapitalize="characters" spellcheck="false" autocomplete="off"></div>
+          <div class="form-span-3"><small id="adminIfscLookupStatus" aria-live="polite" style="display:block;margin-top:-4px;color:#496578">IFSC ke 11 characters bharne par bank aur branch details search hongi. Internet ki zaroorat hai.</small></div>
         </div>
 
         <h3 style="color:var(--blue3);margin:20px 0 10px">Qualification & Experience</h3>
@@ -2780,6 +2809,161 @@ function updateStaffDesignationUI(){
     if(btn) btn.textContent = "Register Accountant";
 }
 
+
+// CBMS: Accountant registration bank dropdown and IFSC auto-lookup.
+// No Aadhaar, account number or other personal details are sent to the IFSC service.
+const cbmsAccountantIfscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+let cbmsAccountantIfscVersion = 0;
+let cbmsAccountantIfscTimer = null;
+let cbmsAccountantIfscState = { code:"", status:"empty" };
+
+function cbmsAccountantSetIfscStatus(message, kind){
+    const status = document.getElementById("adminIfscLookupStatus");
+    if(!status) return;
+    status.textContent = message;
+    status.style.color = kind === "success" ? "#176735" : kind === "error" ? "#b42318" : "#496578";
+}
+function cbmsAccountantBankChoiceChanged(){
+    const select = document.getElementById("adminBankName");
+    const other = document.getElementById("adminBankNameOther");
+    if(!select || !other) return;
+    const isOther = select.value === "__other__";
+    other.hidden = !isOther;
+    other.style.display = isOther ? "block" : "none";
+    other.required = isOther;
+    if(!isOther) other.value = "";
+}
+function cbmsAccountantBankValue(){
+    const select = document.getElementById("adminBankName");
+    if(!select) return "";
+    if(select.value === "__other__") return document.getElementById("adminBankNameOther").value.trim();
+    return select.value.trim();
+}
+function cbmsAccountantSetBank(bank){
+    const select = document.getElementById("adminBankName");
+    if(!select || !bank) return;
+    const normalized = val => String(val || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const matched = Array.from(select.options).find(o => o.value && o.value !== "__other__" && normalized(o.value) === normalized(bank));
+    if(matched){
+        select.value = matched.value;
+    }else{
+        // Handles regional, cooperative and other banks not in the standard dropdown.
+        const opt = document.createElement("option");
+        opt.value = String(bank).trim();
+        opt.textContent = String(bank).trim();
+        select.add(opt, select.querySelector('option[value="__other__"]'));
+        select.value = opt.value;
+    }
+    cbmsAccountantBankChoiceChanged();
+}
+async function cbmsAccountantFetchIfsc(code, version){
+    if(!cbmsAccountantIfscPattern.test(code)){
+        cbmsAccountantIfscState = {code, status:"invalid"};
+        cbmsAccountantSetIfscStatus("IFSC format galat hai. 4 letters + 0 + 6 characters hone chahiye.","error");
+        return false;
+    }
+    cbmsAccountantIfscState = {code, status:"loading"};
+    cbmsAccountantSetIfscStatus("IFSC verify ho raha hai...", "info");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000);
+    try{
+        const response = await fetch("https://ifsc.razorpay.com/" + encodeURIComponent(code), {
+            method:"GET", headers:{"Accept":"application/json"}, signal:controller.signal
+        });
+        if(version !== cbmsAccountantIfscVersion) return false;
+        if(response.status === 404){
+            cbmsAccountantIfscState = {code, status:"invalid"};
+            cbmsAccountantSetIfscStatus("IFSC nahi mila. Code check karein.","error");
+            return false;
+        }
+        if(!response.ok) throw new Error("IFSC service unavailable");
+        const details = await response.json();
+        if(version !== cbmsAccountantIfscVersion) return false;
+        if(!details || String(details.IFSC || "").toUpperCase() !== code || !details.BANK || !details.BRANCH){
+            throw new Error("Incomplete IFSC details");
+        }
+        cbmsAccountantSetBank(details.BANK);
+        document.getElementById("adminBankBranch").value = String(details.BRANCH).trim();
+        cbmsAccountantIfscState = {code, status:"valid"};
+        cbmsAccountantSetIfscStatus("✓ IFSC verified: Bank aur Branch automatically fill ho gaye.","success");
+        return true;
+    }catch(err){
+        if(version !== cbmsAccountantIfscVersion) return false;
+        cbmsAccountantIfscState = {code,status:"offline"};
+        cbmsAccountantSetIfscStatus("IFSC service abhi available nahi hai. Bank aur Branch manually verify karke bharein.","error");
+        return false;
+    }finally{
+        clearTimeout(timeout);
+    }
+}
+function cbmsAccountantIfscChanged(){
+    const el = document.getElementById("adminIfsc");
+    if(!el) return;
+    const code = el.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0,11);
+    el.value = code;
+    const oldCode = cbmsAccountantIfscState.code;
+    ++cbmsAccountantIfscVersion;
+    clearTimeout(cbmsAccountantIfscTimer);
+    if(oldCode && oldCode !== code && cbmsAccountantIfscState.status === "valid"){
+        document.getElementById("adminBankBranch").value = ""; // Do not retain a stale branch.
+    }
+    cbmsAccountantIfscState = {code, status:"pending"};
+    if(!code){
+        cbmsAccountantIfscState.status = "empty";
+        cbmsAccountantSetIfscStatus("IFSC ke 11 characters bharne par bank aur branch search hongi.","info");
+    }else if(code.length < 11){
+        cbmsAccountantSetIfscStatus("IFSC: " + code.length + "/11 characters", "info");
+    }else if(!cbmsAccountantIfscPattern.test(code)){
+        cbmsAccountantIfscState.status = "invalid";
+        cbmsAccountantSetIfscStatus("IFSC format galat hai.","error");
+    }else{
+        const version = cbmsAccountantIfscVersion;
+        cbmsAccountantIfscTimer = setTimeout(() => cbmsAccountantFetchIfsc(code,version), 350);
+    }
+}
+function cbmsAccountantIfscBlur(){
+    // Input handler starts lookup as soon as 11 characters have been entered.
+    const el=document.getElementById("adminIfsc");
+    if(el && el.value.length === 11 && cbmsAccountantIfscState.status === "pending"){
+        clearTimeout(cbmsAccountantIfscTimer);
+        cbmsAccountantFetchIfsc(el.value,cbmsAccountantIfscVersion);
+    }
+}
+async function cbmsAccountantValidateBankBeforeSubmit(){
+    const ifsc = document.getElementById("adminIfsc").value.trim().toUpperCase();
+    if(ifsc){
+        if(!cbmsAccountantIfscPattern.test(ifsc)){
+            showError("Accountant IFSC 11 characters ka valid code hona chahiye.");
+            return false;
+        }
+        if(cbmsAccountantIfscState.code !== ifsc || cbmsAccountantIfscState.status === "pending" || cbmsAccountantIfscState.status === "loading"){
+            clearTimeout(cbmsAccountantIfscTimer);
+            ++cbmsAccountantIfscVersion;
+            await cbmsAccountantFetchIfsc(ifsc,cbmsAccountantIfscVersion);
+        }
+        if(cbmsAccountantIfscState.code !== ifsc || cbmsAccountantIfscState.status === "invalid"){
+            showError("IFSC code verify nahi hua. Sahi IFSC daalein.");
+            return false;
+        }
+        if(cbmsAccountantIfscState.status === "offline" && (!cbmsAccountantBankValue() || !document.getElementById("adminBankBranch").value.trim())){
+            showError("IFSC lookup unavailable hai; bank aur branch manually bharein, passbook se verify karein.");
+            return false;
+        }
+    }
+    if(document.getElementById("adminBankName").value === "__other__" && !cbmsAccountantBankValue()){
+        showError("Other Bank ka poora naam bharein.");
+        return false;
+    }
+    return true;
+}
+function cbmsAccountantResetBankLookup(){
+    ++cbmsAccountantIfscVersion;
+    clearTimeout(cbmsAccountantIfscTimer);
+    cbmsAccountantIfscState = {code:"",status:"empty"};
+    cbmsAccountantBankChoiceChanged();
+    cbmsAccountantSetIfscStatus("IFSC ke 11 characters bharne par bank aur branch search hongi.","info");
+}
+
 async function registerStaff(){
     const btn = document.getElementById("registerAdminBtn");
     const form = document.getElementById("adminRegistrationForm");
@@ -2822,6 +3006,9 @@ async function registerStaff(){
         return;
     }
 
+    // Ensure the accountant's IFSC/branch details are consistent before uploading any files.
+    if(!await cbmsAccountantValidateBankBeforeSubmit()) return;
+
     btn.disabled = true;
     btn.textContent = "Registering...";
     if(resultBox) resultBox.innerHTML = "";
@@ -2853,11 +3040,10 @@ async function registerStaff(){
             block:document.getElementById("adminBlock").value || null,
             district:"Ranchi",
             state:"Jharkhand",
-            bank_name:document.getElementById("adminBankName").value.trim() || null,
+            bank_name:cbmsAccountantBankValue() || null,
             bank_branch:document.getElementById("adminBankBranch").value.trim() || null,
             account_number:document.getElementById("adminAccountNumber").value.trim() || null,
             ifsc_code:document.getElementById("adminIfsc").value.trim().toUpperCase() || null,
-            payment_mode:document.getElementById("adminPaymentMode").value || null,
             qualification:document.getElementById("adminQualification").value.trim() || null,
             other_qualification:document.getElementById("adminOtherQualification").value.trim() || null,
             experience:document.getElementById("adminExperience").value.trim() || null,
@@ -2924,13 +3110,14 @@ async function registerStaff(){
             block:document.getElementById("adminBlock").value,
             panchayat:document.getElementById("adminPanchayat").value,
             village:document.getElementById("adminVillage").value,
-            bank:document.getElementById("adminBankName").value,
+            bank:cbmsAccountantBankValue(),
             account:document.getElementById("adminAccountNumber").value,
             ifsc:document.getElementById("adminIfsc").value,
             aadhaar:aadhar
         }, photoFile);
 
         form.reset();
+        cbmsAccountantResetBankLookup();
         document.getElementById("adminDistrict").value = "Ranchi";
         document.getElementById("adminState").value = "Jharkhand";
         document.getElementById("adminDesignation").value = "Accountant";
