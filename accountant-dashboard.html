@@ -226,6 +226,22 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* CBMS Farmer Payment / Performance modules; prefixed to avoid old dashboard styles */
+.cbms-fp-action{border:0;background:#075e88;color:#fff;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:600}
+.cbms-fp-action:disabled{opacity:.5;cursor:not-allowed}
+.cbms-fp-mini{border:1px solid #cedbe5;border-radius:6px;background:#fff;color:#075e88;cursor:pointer;padding:6px 10px;white-space:nowrap}
+.cbms-fp-card{margin-top:18px;border:1px solid #dbe6ee;border-radius:12px;padding:18px;background:#f8fbff}
+.cbms-fp-card h3{margin-top:8px}
+.cbms-fp-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.cbms-fp-stat{border:1px solid #dbe6ee;border-radius:10px;background:#fff;padding:15px}
+.cbms-fp-stat small{display:block;color:#667085;margin-bottom:8px}
+.cbms-fp-stat strong{display:block;font-size:22px;color:#075e88}
+.cbms-fp-toolbar{display:flex;justify-content:flex-end;margin:15px 0}
+.cbms-fp-card .form-grid{margin-top:10px}
+@media(max-width:760px){.cbms-fp-metrics{grid-template-columns:1fr}}
+
+</style>
 </head>
 <body>
 
@@ -311,6 +327,19 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
     </div>
 
 
+    <!-- CBMS farmer modules (no loan features) -->
+    <div class="sidebar-group">
+      <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
+        <span class="group-left"><span class="ico">👨‍🌾</span>Farmer Accounts</span>
+        <span class="group-arrow">▾</span>
+      </button>
+      <div class="sidebar-group-menu">
+        <button class="sidebar-link" data-title="Approved Farmers & Payment"
+          onclick="showPanel('approvedFarmersPanel',this);cbmsLoadApprovedFarmers()"><span class="ico">💳</span>Approved Farmers &amp; Payment</button>
+        <button class="sidebar-link" data-title="Farmer Performance"
+          onclick="showPanel('farmerPerformancePanel',this)"><span class="ico">📈</span>Farmer Performance</button>
+      </div>
+    </div>
     <div class="sidebar-group">
       <button type="button" class="sidebar-group-btn" onclick="toggleSidebarGroup(this)">
         <span class="group-left"><span class="ico">🏢</span>Office &amp; Staff Registers</span>
@@ -1228,7 +1257,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
       <div class="form-grid" style="margin-top:14px">
         <div class="field"><label>Distribution Date *</label><input id="sdDate" type="date"></div>
         <div class="field"><label>Scheme / Program Name *</label><input id="sdScheme" placeholder="Scheme / Program"></div>
-        <div class="field"><label>Farmer Registration No.</label><input id="sdFarmerReg" placeholder="CBMS/2026/01"></div>
+        <div class="field"><label>Farmer Registration No.</label><input id="sdFarmerReg" onblur="cbmsAutofillFromReg('seed')" placeholder="CBMS/2026/01"></div>
 
         <div class="field"><label>Farmer Name *</label><input id="sdFarmerName" placeholder="Farmer name"></div>
         <div class="field"><label>Father / Husband Name *</label><input id="sdFatherHusband" placeholder="Father / Husband name"></div>
@@ -1317,7 +1346,7 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
 
         <div class="field"><label>Customer / Farmer Name *</label><input id="customerName" placeholder="Name"></div>
         <div class="field"><label>Mobile</label><input id="customerMobile" placeholder="Mobile"></div>
-        <div class="field"><label>Farmer Reg. No.</label><input id="customerFarmerReg" placeholder="Optional CBMS/2026/01"></div>
+        <div class="field"><label>Farmer Reg. No.</label><input id="customerFarmerReg" onblur="cbmsAutofillFromReg('billing')" placeholder="Optional CBMS/2026/01"></div>
 
         <div class="field"><label>Buyer GSTIN (optional)</label><input id="buyerGstin" placeholder="If the buyer is GST-registered"></div>
         <div class="field"><label>Place of Supply State</label><input id="placeOfSupply" value="Jharkhand" oninput="recalculateBill()"></div>
@@ -1936,6 +1965,78 @@ hr{border:0;border-top:1px solid var(--border);margin:16px 0}
           <thead><tr><th>Date/Time</th><th>User</th><th>Action</th><th>Voucher</th><th>Details</th></tr></thead>
           <tbody><tr><td colspan="5" class="muted">No accounting audit entries yet.</td></tr></tbody>
         </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CBMS 2026-10-28: Farmer Payments & Performance (NO LOAN CODE) -->
+<section id="approvedFarmersPanel" class="portal-panel">
+  <div class="section">
+    <h2>Approved Farmers — Membership Payment</h2>
+    <div class="section-body">
+      <div class="note">Only Officer-approved farmers appear here. Original Cash/UPI mode comes from registration. A printable payment receipt becomes available only after Accountant records verification. Do not record the same payment twice in Cash/Bank Book.</div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Search Farmer / Registration / Mobile / Village</label>
+          <input id="cbmsFPFind" placeholder="CBMS/CHN/2026/01" onkeydown="if(event.key==='Enter')cbmsLoadApprovedFarmers()"></div>
+        <div class="field"><label>&nbsp;</label><button type="button" class="cbms-fp-action" onclick="cbmsLoadApprovedFarmers()">🔎 Load Approved Farmers</button></div>
+      </div>
+      <p id="cbmsFPMessage" class="muted" aria-live="polite">Open this menu to load approved farmers.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Registration No.</th><th>Farmer / Village</th><th>Original Payment Mode</th><th>Accountant Status</th><th>Payment Slip</th><th>Performance</th></tr></thead>
+        <tbody id="cbmsFPFarmerBody"><tr><td colspan="6" class="muted">No records loaded.</td></tr></tbody>
+      </table></div>
+      <div id="cbmsFPDetail" class="cbms-fp-card" hidden>
+        <h3 id="cbmsFPSelectedName">Farmer Details</h3>
+        <div id="cbmsFPSelectedDetails"></div>
+        <div id="cbmsFPVerifySection">
+          <h3>Confirm Existing Membership Payment</h3>
+          <div class="note">Enter an amount ONLY after checking the existing receipt/bank/cash record. This marks verification; it does not collect money or create a second accounting voucher.</div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="field"><label>Actual Payment Mode</label><select id="cbmsFPMode"><option>Cash</option><option>UPI</option><option>Online</option><option>Bank Transfer</option></select></div>
+            <div class="field"><label>Received Amount (₹)</label><input id="cbmsFPAmount" type="number" min="1" step="0.01" value="1000"></div>
+            <div class="field"><label>Payment Date</label><input id="cbmsFPDate" type="date"></div>
+            <div class="field"><label>Receipt / UTR / Transaction Reference</label><input id="cbmsFPReference" placeholder="Required for online payments"></div>
+            <div class="field"><label>Note (required when mode differs)</label><input id="cbmsFPNote" placeholder="Verified against original entry"></div>
+            <div class="field"><label>&nbsp;</label><button id="cbmsFPVerifyButton" type="button" class="cbms-fp-action" onclick="cbmsVerifyMemberPayment()">✅ Verify Payment &amp; Issue Slip</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="farmerPerformancePanel" class="portal-panel">
+  <div class="section">
+    <h2>Farmer Performance — Purchase &amp; Seed Distribution</h2>
+    <div class="section-body">
+      <div class="note">Records are matched by the exact Farmer Registration Number. Old bills or seed entries without a Registration Number cannot be reliably attributed and will not appear.</div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="field"><label>Farmer Registration No.</label>
+          <input id="cbmsFPerfReg" placeholder="CBMS/MND/2026/01" onkeydown="if(event.key==='Enter')cbmsLoadPerformance()"></div>
+        <div class="field"><label>&nbsp;</label>
+          <button type="button" class="cbms-fp-action" onclick="cbmsLoadPerformance()">📊 View Farmer Performance</button></div>
+      </div>
+      <p id="cbmsFPerfMessage" class="muted" aria-live="polite">Enter a farmer's registration number.</p>
+      <div id="cbmsFPerfResult" hidden>
+        <h3 id="cbmsFPerfName"></h3>
+        <p id="cbmsFPerfLocation" class="muted"></p>
+        <div class="cbms-fp-metrics">
+          <div class="cbms-fp-stat"><small>Total Invoice Amount</small><strong id="cbmsFPerfSpend">₹0</strong></div>
+          <div class="cbms-fp-stat"><small>Sale Invoices</small><strong id="cbmsFPerfInvoices">0</strong></div>
+          <div class="cbms-fp-stat"><small>Seed Distribution Entries</small><strong id="cbmsFPerfSeedCount">0</strong></div>
+        </div>
+        <h3>Purchased Items — Item, Quantity &amp; Amount</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Invoice</th><th>Item / Variety</th><th>Quantity</th><th>Rate</th><th>Line Amount</th></tr></thead>
+          <tbody id="cbmsFPerfSalesBody"></tbody>
+        </table></div>
+        <h3 style="margin-top:20px">Seed Received — Scheme, Crop &amp; Quantity</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Date</th><th>Distribution No.</th><th>Scheme</th><th>Seed</th><th>Quantity</th></tr></thead>
+          <tbody id="cbmsFPerfSeedBody"></tbody>
+        </table></div>
+        <div class="cbms-fp-toolbar"><button type="button" class="cbms-fp-action" onclick="cbmsPrintFarmerPerformance()">🖨️ Print / Save as PDF</button></div>
       </div>
     </div>
   </div>
@@ -8136,5 +8237,171 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 </script>
 
+<script>
+/* CBMS Farmer Payment + Performance, 28 Oct 2026. NO LOANS. */
+(function(){
+'use strict';
+const moduleState={farmers:[],selected:null,report:null};
+const el=id=>document.getElementById(id);
+const safe=s=>escapeHtml(String(s??''));
+const rupee=n=>money(Number(n)||0);
+const fmtQty=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:3});
+const errText=e=>String(e?.message||e||'Unknown error');
+const asRows=x=>Array.isArray(x)?x:(x?.rows||[]);
+
+window.cbmsLoadApprovedFarmers=async function(){
+ const body=el('cbmsFPFarmerBody');if(!body)return;
+ body.innerHTML='<tr><td colspan="6">Loading approved farmers…</td></tr>';
+ el('cbmsFPMessage').textContent='Checking Officer-approved farmer applications…';
+ try{
+   const {data,error}=await authDb.rpc('cbms_accountant_approved_farmer_list',{
+     p_search:el('cbmsFPFind').value.trim(),p_limit:200
+   });
+   if(error)throw error;
+   moduleState.farmers=asRows(data);
+   const list=moduleState.farmers;
+   body.innerHTML=list.length?list.map(f=>{
+     const reg=safe(f.registration_no);const key=encodeURIComponent(f.registration_no||'').replace(/'/g,'%27');
+     const slip=f.receipt_no?
+       `<button class="cbms-fp-mini" onclick="cbmsPrintMembershipSlip(decodeURIComponent('${key}'))">View Slip</button>`:
+       '<span class="muted">Not verified</span>';
+     return `<tr><td><button class="cbms-fp-mini" onclick="cbmsShowFarmerPayment(decodeURIComponent('${key}'))">${reg}</button></td>
+       <td><b>${safe(f.name)}</b><br><small>${safe(f.village||'-')}, ${safe(f.block||'')}</small></td>
+       <td>${safe(f.registered_payment_mode||'Not recorded')}</td>
+       <td>${safe(f.payment_status)}</td><td>${slip}</td>
+       <td><button class="cbms-fp-mini" onclick="cbmsOpenFarmerPerformance(decodeURIComponent('${key}'))">View Report</button></td></tr>`;
+   }).join(''):'<tr><td colspan="6">No matching approved farmers.</td></tr>';
+   el('cbmsFPMessage').textContent=list.length+' approved farmer(s) shown. Search to find more (max 200 at a time).';
+   const newSelected=list.find(x=>x.registration_no===moduleState.selected?.registration_no);
+   if(newSelected)window.cbmsShowFarmerPayment(newSelected.registration_no);
+   else {moduleState.selected=null;el('cbmsFPDetail').hidden=true;}
+ }catch(e){
+   body.innerHTML=`<tr><td colspan="6">${safe(errText(e))}. Run the accompanying Supabase SQL first.</td></tr>`;
+   el('cbmsFPMessage').textContent='Could not load approved farmers.';
+ }
+};
+
+window.cbmsShowFarmerPayment=function(reg){
+ const f=moduleState.farmers.find(x=>x.registration_no===reg);if(!f)return;
+ moduleState.selected=f;el('cbmsFPDetail').hidden=false;
+ el('cbmsFPSelectedName').textContent=(f.name||'Farmer')+' — '+(f.registration_no||'');
+ el('cbmsFPSelectedDetails').innerHTML=`<p><b>Father / Husband:</b> ${safe(f.father_name||'-')} &nbsp; <b>Mobile:</b> ${safe(f.mobile||'-')}</p>
+  <p><b>Village:</b> ${safe(f.village||'-')} &nbsp; <b>Panchayat:</b> ${safe(f.panchayat||'-')} &nbsp; <b>Block:</b> ${safe(f.block||'-')}</p>
+  <p><b>Officer Approval:</b> ${safe(f.approved_at?String(f.approved_at).slice(0,10):'Approved')} &nbsp; <b>Application Payment Mode:</b> ${safe(f.registered_payment_mode||'-')}</p>
+  <p><b>Payment Verified:</b> ${safe(f.payment_status||'Pending')} ${f.receipt_no?`&nbsp; <b>Receipt:</b> ${safe(f.receipt_no)} &nbsp; <b>Amount:</b> ${rupee(f.amount)} &nbsp; <b>Mode:</b> ${safe(f.paid_mode)} &nbsp; <button class="cbms-fp-mini" onclick="cbmsPrintMembershipSlip(decodeURIComponent('${encodeURIComponent(reg).replace(/'/g,'%27')}'))">View Payment Slip</button>`:''}</p>`;
+ el('cbmsFPVerifySection').hidden=!!f.receipt_no;
+ const m=String(f.registered_payment_mode||'Cash').toLowerCase();
+ el('cbmsFPMode').value=m==='upi'?'UPI':m==='cash'?'Cash':'Online';
+ el('cbmsFPAmount').value='1000';
+ el('cbmsFPDate').value=today();
+ el('cbmsFPReference').value='';el('cbmsFPNote').value='';
+ el('cbmsFPDetail').scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+
+window.cbmsVerifyMemberPayment=async function(){
+ const f=moduleState.selected;if(!f)return;
+ const mode=el('cbmsFPMode').value,amount=Number(el('cbmsFPAmount').value);
+ const ref=el('cbmsFPReference').value.trim(),day=el('cbmsFPDate').value;
+ const note=el('cbmsFPNote').value.trim();
+ if(!Number.isFinite(amount)||amount<=0){showMessage('Please enter a valid received amount.','error');return;}
+ if(mode!=='Cash'&&!ref){showMessage('UPI / online payment reference is required.','error');return;}
+ if(!confirm('Have you checked that '+f.name+' already paid '+rupee(amount)+' via '+mode+'?\nThis creates ONE verified membership slip, not a new payment collection.'))return;
+ const btn=el('cbmsFPVerifyButton');btn.disabled=true;
+ try{
+   const {data,error}=await authDb.rpc('cbms_accountant_verify_membership_payment',{
+     p_registration_no:f.registration_no,p_payment_mode:mode,p_amount:amount,
+     p_reference_no:ref,p_payment_date:day,p_note:note
+   });
+   if(error)throw error;
+   showMessage('Payment verified. Membership slip: '+(data?.receipt_no||''));
+   await cbmsLoadApprovedFarmers();
+ }catch(e){showMessage('Verification failed: '+errText(e),'error');}
+ finally{btn.disabled=false;}
+};
+
+function openPrint(title,inner){
+ const w=window.open('','_blank','width=950,height=760');
+ if(!w){showMessage('Allow pop-ups for printing.','error');return;}
+ w.document.open();w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safe(title)}</title>
+ <style>body{font:14px Arial,sans-serif;margin:28px;color:#182230}.sheet{max-width:900px;margin:auto}.hd{border-bottom:2px solid #075e88;margin-bottom:14px;padding-bottom:10px}h1{font-size:20px;margin:0;color:#075e88}h2{font-size:17px}p{line-height:1.6}table{border-collapse:collapse;width:100%;margin:12px 0}td,th{border:1px solid #b8c2cc;padding:8px;text-align:left;font-size:12px}button{background:#075e88;color:#fff;padding:10px;border:0;border-radius:6px}.muted{color:#667085}@media print{.no-print{display:none}body{margin:12px}}</style></head><body><div class="sheet"><div class="hd"><h1>Chanho Birsa Munda Sanghathan Producer Company Limited</h1><small>Vill-Hutar, PO-Tangar, PS-Chanho, Ranchi, Jharkhand</small></div>${inner}<p class="no-print"><button onclick="window.print()">Print / Save PDF</button></p></div></body></html>`);
+ w.document.close();
+}
+window.cbmsPrintMembershipSlip=function(reg){
+ const f=moduleState.farmers.find(x=>x.registration_no===reg);
+ if(!f||!f.receipt_no){showMessage('Accountant verification required before printing a slip.','error');return;}
+ openPrint('Membership Payment Slip '+f.receipt_no,`<h2>Membership Payment Verification Receipt</h2>
+ <p><b>Receipt No.:</b> ${safe(f.receipt_no)} &nbsp; <b>Received On:</b> ${safe(f.payment_date||'')}<br>
+ <b>Farmer:</b> ${safe(f.name)} &nbsp; <b>Registration No.:</b> ${safe(f.registration_no)}<br>
+ <b>Village:</b> ${safe(f.village)} &nbsp; <b>Block:</b> ${safe(f.block)}</p>
+ <table><thead><tr><th>Payment For</th><th>Amount</th><th>Mode</th><th>Reference</th></tr></thead>
+ <tbody><tr><td>Membership / Shareholder Fee (Accountant verified)</td><td>${rupee(f.amount)}</td><td>${safe(f.paid_mode)}</td><td>${safe(f.reference_no||'-')}</td></tr></tbody></table>
+ <p class="muted">Generated from Accountant verification. For bank or UPI payments, reconcile the reference with the actual bank statement. This receipt does not itself confirm bank settlement.</p>
+ <p>Authorized Accountant Signature: _____________________</p>`);
+};
+// Optional helper for existing Sales Billing and Seed Distribution forms.
+// Lookup by exact registration number to avoid wrongly assigning another farmer's purchases.
+window.cbmsAutofillFromReg=async function(kind){
+ const isBill=kind==='billing',id=isBill?'customerFarmerReg':'sdFarmerReg';
+ const input=el(id);if(!input||!input.value.trim())return;
+ const reg=input.value.trim();
+ try{
+   const {data,error}=await authDb.rpc('cbms_accountant_approved_farmer_list',{
+     p_search:reg,p_limit:20
+   });
+   if(error)throw error;
+   const f=asRows(data).find(x=>x.registration_no===reg);
+   if(!f){showMessage('Approved farmer registration not found: '+reg,'error');return;}
+   const pairs=isBill?
+     [['customerName',f.name],['customerMobile',f.mobile],['billBlock',f.block]]:
+     [['sdFarmerName',f.name],['sdMobile',f.mobile],['sdVillage',f.village],['sdPanchayat',f.panchayat],['sdBlock',f.block],['sdFatherHusband',f.father_name]];
+   for(const [field,val] of pairs){const node=el(field);if(node&&val){node.value=val;node.dispatchEvent(new Event('change',{bubbles:true}));}}
+   showMessage('Approved farmer details filled using Registration No.');
+ }catch(e){showMessage('Farmer lookup: '+errText(e),'error');}
+};
+
+window.cbmsOpenFarmerPerformance=function(reg){
+ const link=document.querySelector('[data-title="Farmer Performance"]');
+ showPanel('farmerPerformancePanel',link||null);
+ el('cbmsFPerfReg').value=reg;
+ cbmsLoadPerformance();
+};
+window.cbmsLoadPerformance=async function(){
+ const reg=el('cbmsFPerfReg').value.trim();if(!reg){showMessage('Enter a farmer registration number.','error');return;}
+ el('cbmsFPerfMessage').textContent='Loading sales and seed distribution records…';el('cbmsFPerfResult').hidden=true;
+ try{
+   const {data,error}=await authDb.rpc('cbms_accountant_farmer_performance',{p_registration_no:reg});
+   if(error)throw error;
+   moduleState.report=data;
+   const f=data.farmer||{},sales=asRows(data.purchases),seeds=asRows(data.seeds);
+   el('cbmsFPerfName').textContent=(f.name||'Farmer')+' — '+(f.registration_no||'');
+   el('cbmsFPerfLocation').textContent=[f.village,f.block,f.mobile].filter(Boolean).join(' • ');
+   el('cbmsFPerfSpend').textContent=rupee(data.sales_total);
+   el('cbmsFPerfInvoices').textContent=String(data.invoice_count||0);
+   el('cbmsFPerfSeedCount').textContent=String(data.distribution_count||0);
+   el('cbmsFPerfSalesBody').innerHTML=sales.length?sales.map(x=>`<tr><td>${safe(x.date||'')}</td><td>${safe(x.invoice_no||'')}</td>
+     <td><b>${safe(x.item||'')}</b>${x.variety?'<br><small>'+safe(x.variety)+'</small>':''}</td>
+     <td>${fmtQty(x.quantity)} ${safe(x.unit||'')}</td><td>${rupee(x.rate)}</td><td>${rupee(x.line_total)}</td></tr>`).join(''):
+     '<tr><td colspan="6">No linked purchase records.</td></tr>';
+   el('cbmsFPerfSeedBody').innerHTML=seeds.length?seeds.map(x=>`<tr><td>${safe(x.date||'')}</td><td>${safe(x.distribution_no||'')}</td>
+     <td>${safe(x.scheme||'')}</td><td>${safe(x.seed||'')}</td><td>${fmtQty(x.quantity)} ${safe(x.unit||'')}</td></tr>`).join(''):
+     '<tr><td colspan="5">No linked seed distribution records.</td></tr>';
+   el('cbmsFPerfResult').hidden=false;
+   el('cbmsFPerfMessage').textContent='Records linked to '+reg+' (cancelled bills excluded).';
+ }catch(e){moduleState.report=null;el('cbmsFPerfMessage').textContent='Load error: '+errText(e)+' — ensure Supabase update SQL has been executed.';}
+};
+window.cbmsPrintFarmerPerformance=function(){
+ const r=moduleState.report;if(!r)return;
+ const f=r.farmer||{},sales=asRows(r.purchases),seeds=asRows(r.seeds);
+ const salesRows=sales.length?sales.map(x=>`<tr><td>${safe(x.date)}</td><td>${safe(x.invoice_no)}</td><td>${safe(x.item)}</td><td>${fmtQty(x.quantity)} ${safe(x.unit)}</td><td>${rupee(x.line_total)}</td></tr>`).join(''):'<tr><td colspan="5">No purchases</td></tr>';
+ const seedRows=seeds.length?seeds.map(x=>`<tr><td>${safe(x.date)}</td><td>${safe(x.distribution_no)}</td><td>${safe(x.scheme)}</td><td>${safe(x.seed)}</td><td>${fmtQty(x.quantity)} ${safe(x.unit)}</td></tr>`).join(''):'<tr><td colspan="5">No seed distribution</td></tr>';
+ openPrint('Farmer Performance '+f.registration_no,`<h2>Farmer Performance Report</h2><p><b>Farmer:</b> ${safe(f.name)}<br><b>Registration:</b> ${safe(f.registration_no)}<br><b>Village/Block:</b> ${safe(f.village)} / ${safe(f.block)}</p>
+ <p><b>Invoice count:</b> ${Number(r.invoice_count||0)} &nbsp; <b>Total billed:</b> ${rupee(r.sales_total)} &nbsp; <b>Seed distributions:</b> ${Number(r.distribution_count||0)}</p>
+ <h2>Purchase Details</h2><table><thead><tr><th>Date</th><th>Invoice</th><th>Item</th><th>Quantity</th><th>Amount</th></tr></thead><tbody>${salesRows}</tbody></table>
+ <h2>Seed Distribution Details</h2><table><thead><tr><th>Date</th><th>Distribution No.</th><th>Scheme</th><th>Seed</th><th>Quantity</th></tr></thead><tbody>${seedRows}</tbody></table>
+ <p class="muted">System report includes only transactions with this exact registration number. Invoice total includes discounts/tax and may differ from sum of item lines.</p>`);
+};
+})();
+
+</script>
 </body>
 </html>
