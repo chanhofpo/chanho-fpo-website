@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Block Coordinator Dashboard - Chanho FPO</title>
-<!-- CBMS Admin Registration: Bank Name dropdown + IFSC auto Branch; no payment mode in Admin Registration. -->
+<!-- CBMS Admin Registration: area dropdowns synced with Farmer Registration; bank dropdown and IFSC auto-branch. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
@@ -95,9 +95,12 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <div><label>Aadhaar *</label><input id="arAadhaar" maxlength="12"></div>
 <div><label>PAN Number *</label><input id="arPan" maxlength="10" placeholder="ABCDE1234F" style="text-transform:uppercase" required></div>
 <div><label>Block</label><input id="arBlock" readonly></div>
-<div><label>Panchayat</label><input id="arPanchayat"></div>
-<div><label>Village</label><input id="arVillage"></div>
-<div class="span-3"><label>Full Address</label><textarea id="arAddress"></textarea></div>
+<div><label for="arPanchayat">Panchayat *</label><select id="arPanchayat" required onchange="cbmsAreaPanchayatChanged('ar')" disabled><option value="">Select Panchayat</option></select></div>
+<div><label for="arVillage">Village *</label><select id="arVillage" required disabled><option value="">First select Panchayat</option></select></div>
+<div><label>District</label><input value="Ranchi" readonly></div>
+<div><label>State</label><input value="Jharkhand" readonly></div>
+<div class="span-3"><label>Full Address / House / Tola</label><textarea id="arAddress" placeholder="House number, Tola, landmark etc."></textarea></div>
+<div class="span-3"><div class="note">Block ke hisaab se Panchayat aur us Panchayat ke villages hi dikhenge. Ye wahi area list hai jo FPO Farmer Registration form me hai. Full Address me alag se ghar/tola likhein.</div></div>
 </div>
 <h3 style="color:#075e88;margin:22px 0 10px">Bank Details</h3>
 <div class="grid">
@@ -162,10 +165,11 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <section id="assignPanel" class="panel">
 <div class="section"><h2>Admin Assignment / Realignment</h2>
 <div class="grid">
-<div><label>Admin *</label><select id="asAdmin"><option value="">Select Admin</option></select></div>
+<div><label>Admin *</label><select id="asAdmin" onchange="cbmsAreaSuggestForAdmin()"><option value="">Select Admin</option></select></div>
 <div><label>Block</label><input id="asBlock" readonly></div>
-<div><label>Panchayat *</label><input id="asPanchayat"></div>
-<div><label>Village *</label><input id="asVillage"></div>
+<div><label for="asPanchayat">Assigned Panchayat *</label><select id="asPanchayat" required onchange="cbmsAreaPanchayatChanged('as')" disabled><option value="">Select Panchayat</option></select></div>
+<div><label for="asVillage">Assigned Village *</label><select id="asVillage" required disabled><option value="">First select Panchayat</option></select></div>
+<div class="span-3"><div class="note" id="asAreaHint">Admin select karne par uske Registration Address ka Panchayat / Village suggestion aayega. Working Area ko confirm karke hi Assign button dabaiye. Registration Address aur Assigned Area alag ho sakte hain.</div></div>
 <div><label>Target Farmer Count</label><input id="asTarget" type="number" min="0" value="0"></div>
 </div><br><button class="primary" onclick="assignAdmin()">Assign / Re-align Admin</button>
 </div>
@@ -213,6 +217,139 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 
 let coordinator=null, activeBlock="", farmers=[], admins=[], assignments=[], performance=[];
 
+// Address + assignment use SAME village master as Farmer Registration (register-secure.html).
+// A missing or incorrect locality should be corrected in BOTH forms before use.
+const CBMS_COORDINATOR_AREA_DATA = {
+
+Chanho: {
+
+Balsokra:["Balsokra","Birra"],
+
+Beyasi:["Beyasi","Goke","Kanjgi","Madai","Sisai"],
+
+Chama:["Chama","Chamranga","Chora","Ramdaga"],
+
+Chatwal:["Chatwal","Masmano","Pakaria","Rakadih"],
+
+Choreya:["Choreya","Madhukam","Nunhu"],
+
+Karkat:["Chancho","Karkat","Sonchipi"],
+
+Lundri:["Barhe","Kataiya","Lundri","Sukurhutte"],
+
+Murto:["Chutyo","Hondpiri","Kullu","Melani","Murto"],
+
+Pandri:["Honhe","Lurangi","Pondri","Sonrkhap"],
+
+Patratu:["Ara","Betlangi","Patratu"],
+
+Raghunathpur:["Ganeshpur","Jaipur","Koko","Raghunathpur"],
+
+Roll:["Chaliyo","Gutua","Mahthatoli","Rol"],
+
+Silagain:["Hurhuri","Naudi","Silagain"],
+
+Sons:["Buchaopa","Chanho","Lupunga","Opa","Patuk","Sons"],
+
+Tala:["Bachhau","Badri","Hatri","Kamta","Karambo","Tala"],
+
+Tanger:["Bejang","Hutar","Tangar"],
+
+Taranga:["Harra","Lepsar","Soparam","Taranga"]
+
+},
+
+Mandar: {
+
+Banjhila:["Banjhila","Burhakhukhra"],
+
+Bargari:["Bargari","Jaher","Keskani","Sewadih"],
+
+Bishakhatanga:["Bishakhatanga","Gorkho","Haril","Murkuni"],
+
+Brambey:["Barambe","Chund","Maltoli","Tikotoli"],
+
+Jhinjhri:["Jhinghri","Korambe","Sakarpada","Tatkundo","Totambi"],
+
+Kaimbo:["Gurgurjari","Kaimbo","Murjuli","Sargaon"],
+
+Kanjia:["Kanjiya","Pungi","Sosai"],
+
+Karge:["Hatma","Karge","Rege"],
+
+Loyo:["Loiyo","Sakra"],
+
+Mahuajari:["Bando","Bansjari","Darjijari","Kanijari","Mahuajari","Nawatanr"],
+
+Malti:["Chatwal","Malti"],
+
+Mandar:["Katchancho","Mandar"],
+
+Mandro:["Bajra","Bakhar","Charki","Charnalo","Chigri","Deuri Alias Dongatoli","Kurkura","Mandro"],
+
+Murma:["Kandri","Karkaria","Mesal","Murma"],
+
+Nagra:["Gore","Nagra"],
+
+Sarwa:["Babro","Dumri","Jhikpur","Sarwa"],
+
+Sursa:["Baski","Masmano","Sursa"],
+
+Tangarbasli:["Naro","Pareyago","Tangarbasuli"],
+
+Tigoiambatoli:["Garmi","Hesal","Hesmi","Tigoiambatoli"]
+
+}
+
+}
+
+function cbmsAreaOption(value, text) {
+  const option = document.createElement('option');
+  option.value = value;
+  option.textContent = text;
+  return option;
+}
+function cbmsAreaFill(select, names, placeholder, requestedValue) {
+  select.replaceChildren(cbmsAreaOption('', placeholder));
+  names.forEach(name => select.add(cbmsAreaOption(name, name)));
+  select.disabled = !names.length;
+  const found = names.find(name => name === requestedValue);
+  select.value = found || '';
+}
+function cbmsAreaPanchayatChanged(prefix, requestedVillage='') {
+  const panchayat = document.getElementById(prefix+'Panchayat').value;
+  const villageSelect = document.getElementById(prefix+'Village');
+  const villages = (CBMS_COORDINATOR_AREA_DATA[activeBlock] || {})[panchayat] || [];
+  cbmsAreaFill(villageSelect, villages, panchayat?'Select Village':'First select Panchayat', requestedVillage);
+}
+function cbmsAreaInitialize(prefix, selectedPanchayat='', selectedVillage='') {
+  const list = CBMS_COORDINATOR_AREA_DATA[activeBlock] || {};
+  cbmsAreaFill(document.getElementById(prefix+'Panchayat'), Object.keys(list), 'Select Panchayat', selectedPanchayat);
+  cbmsAreaPanchayatChanged(prefix, selectedVillage);
+}
+function cbmsAreaCurrent(prefix) {
+  const panchayat = document.getElementById(prefix+'Panchayat').value;
+  const village = document.getElementById(prefix+'Village').value;
+  const valid = !!(CBMS_COORDINATOR_AREA_DATA[activeBlock]?.[panchayat] || []).includes(village);
+  return {panchayat, village, valid};
+}
+function cbmsAreaSuggestForAdmin(){
+  const id = document.getElementById('asAdmin').value;
+  const hint = document.getElementById('asAreaHint');
+  const admin = admins.find(a=>String(a.admin_id)===String(id));
+  if(!admin){
+    cbmsAreaInitialize('as');
+    hint.textContent='Admin select karein, phir assigned Panchayat aur Village confirm karein.';
+    return;
+  }
+  cbmsAreaInitialize('as', String(admin.panchayat||'').trim(), String(admin.village||'').trim());
+  const current=cbmsAreaCurrent('as');
+  hint.textContent = current.valid
+     ? 'Admin ke registered address se area chun liya gaya hai. Isko kaam karne wali area se milakar confirm karein. Registration address aur assigned area alag ho sakte hain.'
+     : 'Is Admin ka registered Panchayat / Village area list me nahi mila. Dropdown se sahi area khud select karein; agar naam missing hai, pehle Farmer Registration ki list ke saath verify karein.';
+}
+
+
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 let messageTimer;function msg(t,type="success"){const b=document.getElementById("message");clearTimeout(messageTimer);b.textContent=t;b.className="message "+type;b.style.display="block";messageTimer=setTimeout(()=>{b.style.display="none"},5000)}
 function showPanel(id,btn,title){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");document.getElementById("pageTitle").textContent=title}
@@ -258,6 +395,9 @@ function applyActiveBlockToForms(){
     const el=document.getElementById(id);
     if(el) el.value=activeBlock;
   });
+  cbmsAreaInitialize('ar');
+  cbmsAreaInitialize('as');
+  document.getElementById('asAreaHint').textContent='Admin select karein, phir assigned Panchayat aur Village confirm karein.';
 }
 
 async function changeActiveBlock(){
@@ -282,7 +422,10 @@ async function loadAdmins(){
   try{
     admins=arr(await rpc("cbms_block_admin_list",{p_block:activeBlock}));
     const s=document.getElementById("asAdmin");
+    const previouslySelected=s.value;
     s.innerHTML='<option value="">Select Admin</option>'+admins.filter(a=>String(a.status||"").toLowerCase()==="active").map(a=>`<option value="${esc(a.admin_id)}">${esc(a.admin_id)} - ${esc(a.name)}</option>`).join("");
+    if(Array.from(s.options).some(x=>x.value===previouslySelected)){s.value=previouslySelected;}
+    cbmsAreaSuggestForAdmin();
   }catch(e){msg(e.message,"error")}
 }
 
@@ -462,6 +605,8 @@ async function registerAdmin(){
   const result = document.getElementById("adminRegResult");
   const val = id => (document.getElementById(id)?.value || "").trim();
   if (!activeBlock || !coordinator) { msg("Coordinator session load nahi hua.", "error"); return; }
+  const adminLocation=cbmsAreaCurrent('ar');
+  if(!adminLocation.valid){msg("Admin Address: valid Panchayat aur Village dropdown se select karein.","error");return;}
   if (!val("arName")) { msg("Admin Name required hai.", "error"); return; }
   if (!/^\d{10}$/.test(val("arMobile"))) { msg("Mobile 10 digits ka hona chahiye.", "error"); return; }
   if (!/^\d{12}$/.test(val("arAadhaar"))) { msg("Aadhaar 12 digits ka hona chahiye.", "error"); return; }
@@ -497,7 +642,7 @@ async function registerAdmin(){
       block:activeBlock,
       name:val("arName"), father_name:val("arFather"), dob:val("arDob") || null,
       gender:val("arGender"), mobile:val("arMobile"), email:val("arEmail").toLowerCase(),
-      pan_number:pan, aadhar_number:val("arAadhaar"), village:val("arVillage"), panchayat:val("arPanchayat"),
+      pan_number:pan, aadhar_number:val("arAadhaar"), village:adminLocation.village, panchayat:adminLocation.panchayat,
       full_address:val("arAddress"), bank_name:cbmsAdminBankValue(), bank_branch:val("arBankBranch"),
       account_number:account, ifsc_code:ifsc,
       joining_date:val("arJoiningDate") || null, qualification:val("arQualification"),
@@ -633,12 +778,29 @@ async function verifyFarmer(id){
 
 async function assignAdmin(){
   try{
+    const assignedAdminId=document.getElementById("asAdmin").value;
+    if(!assignedAdminId || !admins.some(a=>String(a.admin_id)===assignedAdminId && String(a.status||'').toLowerCase()==='active')){
+      msg('Pehle current Block ka Active Admin select karein.','error');return;
+    }
+    const area=cbmsAreaCurrent('as');
+    if(!area.valid){msg('Assignment ke liye sahi Panchayat aur uske Village ko dropdown se chunein.','error');return;}
+    const target=Number(document.getElementById('asTarget').value||0);
+    if(!Number.isInteger(target)||target<0){msg('Target Farmer Count zero ya positive whole number hona chahiye.','error');return;}
+    const existing=assignments.find(a=>String(a.block||'').toLowerCase()===activeBlock.toLowerCase() &&
+       String(a.panchayat||'').trim().toLowerCase()===area.panchayat.toLowerCase() &&
+       String(a.village||'').trim().toLowerCase()===area.village.toLowerCase() &&
+       String(a.status||'').toLowerCase()==='active');
+    if(existing){
+      const other=String(existing.admin_id||'');
+      if(other===assignedAdminId){msg('Is Village ka assignment isi Admin ke naam par pehle se Active hai.','error');return;}
+      if(!confirm('Yeh Village pehle se Admin '+other+' ko assigned hai. Isko '+assignedAdminId+' ko re-align karna hai?')) return;
+    }
     const d=await rpc("cbms_block_assign_admin",{
       p_block:activeBlock,
-      p_admin_id:document.getElementById("asAdmin").value,
-      p_panchayat:document.getElementById("asPanchayat").value.trim(),
-      p_village:document.getElementById("asVillage").value.trim(),
-      p_target_count:Number(document.getElementById("asTarget").value||0)
+      p_admin_id:assignedAdminId,
+      p_panchayat:area.panchayat,
+      p_village:area.village,
+      p_target_count:target
     });
     msg("Admin assigned: "+d.admin_id+" → "+d.village);await loadAssignments();await loadPerformance();
   }catch(e){msg("Assignment failed: "+e.message,"error")}
