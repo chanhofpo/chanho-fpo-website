@@ -521,6 +521,65 @@
                 grid-template-columns: 1fr;
             }
         }
+    
+/* ================= MANAGEMENT TEAM ================= */
+.management-section {
+    padding: 55px 5%;
+    background: #f0faf0;
+    text-align: center;
+}
+.management-section .title {
+    color: #126b32;
+    margin-bottom: 10px;
+}
+.management-intro {
+    color: #526052;
+    margin: 0 auto 28px;
+    max-width: 650px;
+}
+.management-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 260px));
+    justify-content: center;
+    gap: 26px;
+    max-width: 650px;
+    margin: 0 auto;
+}
+.management-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+    border: 1px solid #dcebdc;
+}
+.management-card img {
+    display: block;
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    object-position: center top;
+}
+.management-card-info {
+    padding: 17px 12px 20px;
+}
+.management-card-info h3 {
+    color: #126b32;
+    font-size: 19px;
+    margin-bottom: 5px;
+}
+.management-card-info p {
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+}
+@media (max-width: 600px) {
+    .management-grid {
+        grid-template-columns: minmax(0, 290px);
+        gap: 20px;
+    }
+    .management-card img { height: 330px; }
+}
+
     </style>
 </head>
 
@@ -658,6 +717,37 @@
 
 </section>
 
+
+
+<!-- ================= MANAGEMENT TEAM ================= -->
+<section class="management-section" id="management">
+    <h2 class="title">हमारी प्रबंधन टीम</h2>
+    <p class="management-intro">
+        Chanho Birsa Munda Sangathan Producer Company Limited के प्रबंधन से जुड़े पदाधिकारी।
+    </p>
+
+    <div class="management-grid">
+        <article class="management-card">
+            <img src="images/kamakhya-singh-ceo.jpg"
+                 alt="Kamakhya Singh - Chief Executive Officer"
+                 loading="lazy">
+            <div class="management-card-info">
+                <h3>Kamakhya Singh</h3>
+                <p>Chief Executive Officer (CEO)</p>
+            </div>
+        </article>
+
+        <article class="management-card">
+            <img src="images/ishwar-prasad-gupta-secretary.jpg"
+                 alt="Ishwar Prasad Gupta - Secretary"
+                 loading="lazy">
+            <div class="management-card-info">
+                <h3>Ishwar Prasad Gupta</h3>
+                <p>Secretary</p>
+            </div>
+        </article>
+    </div>
+</section>
 
 <!-- ================= SERVICES ================= -->
 
