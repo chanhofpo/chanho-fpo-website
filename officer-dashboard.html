@@ -4326,8 +4326,11 @@ function cbmsMgmtRenderTable(){
 
     const rows = [];
     cbmsMgmtAdmins.forEach(admin => {
+        // Officer Management me sirf current Active assignments dikhaye jayenge.
+        // Inactive assignments database me history ke liye safe rahenge, lekin UI me hide honge.
         const assignments = cbmsMgmtAssignments.filter(a =>
-            String(a.admin_id || "") === String(admin.admin_id)
+            String(a.admin_id || "") === String(admin.admin_id) &&
+            String(a.status || "").toLowerCase() === "active"
         );
 
         if(!assignments.length){
