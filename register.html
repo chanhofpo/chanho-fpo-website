@@ -284,6 +284,38 @@ button:disabled{
         padding:18px;
     }
 }
+
+/* =========================
+   FARMER REGISTRATION PREVIEW
+========================= */
+#previewPanel{display:none;margin-top:20px}
+.preview-card{background:#fff;border:1px solid #d7e1e8;border-radius:12px;padding:20px;box-shadow:0 3px 14px rgba(0,0,0,.07)}
+.preview-title{font-size:21px;font-weight:700;color:#166534;margin:0 0 6px}
+.preview-note{font-size:13px;color:#667085;margin:0 0 18px}
+.preview-section{margin-top:18px;border:1px solid #dce7df;border-radius:8px;overflow:hidden}
+.preview-section h3{margin:0;padding:10px 12px;background:#ecfdf5;color:#166534;font-size:15px}
+.preview-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+.preview-item{padding:10px 12px;border-top:1px solid #eef2f0}
+.preview-item:nth-child(odd){border-right:1px solid #eef2f0}
+.preview-item span{display:block;font-size:11px;color:#667085;margin-bottom:4px}
+.preview-item strong{font-size:13px;word-break:break-word}
+.preview-files{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px}
+.preview-file{border:1px solid #e5e7eb;border-radius:7px;padding:10px;background:#fafcfd}
+.preview-file strong{display:block;font-size:12px;color:#344054}
+.preview-file small{display:block;margin-top:4px;color:#667085;word-break:break-word}
+.preview-actions{display:flex;gap:10px;margin-top:20px}
+.preview-actions button{width:auto;flex:1;margin-top:0}
+.edit-btn{background:#64748b}
+.edit-btn:hover{background:#475569}
+.final-submit-btn{background:#166534}
+.final-submit-btn:hover{background:#15803d}
+.preview-warning{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px;border-radius:7px;font-size:13px;margin-top:12px}
+@media(max-width:700px){
+  .preview-grid,.preview-files{grid-template-columns:1fr}
+  .preview-item:nth-child(odd){border-right:0}
+  .preview-actions{flex-direction:column}
+}
+
 </style>
 </head>
 
@@ -547,12 +579,26 @@ button:disabled{
 </div>
 
 <button type="submit" id="submitBtn">
-    Submit Farmer Registration
+    Preview Farmer Registration
 </button>
 
 </form>
 
 <div id="message"></div>
+
+
+<div id="previewPanel">
+  <div class="preview-card">
+    <h2 class="preview-title">Farmer Registration Preview</h2>
+    <p class="preview-note">Final Submit करने से पहले सभी जानकारी ध्यान से जाँच लें। कोई गलती हो तो <b>Edit</b> दबाकर वापस form में सुधार करें।</p>
+    <div id="previewContent"></div>
+    <div class="preview-warning">यह अभी Final Registration नहीं है। <b>Submit Final</b> दबाने के बाद ही documents upload होकर Farmer Registration आगे भेजा जाएगा।</div>
+    <div class="preview-actions">
+      <button type="button" class="edit-btn" onclick="editPreview()">✏️ Edit</button>
+      <button type="button" class="final-submit-btn" onclick="finalSubmitRegistration()">✅ Submit Final</button>
+    </div>
+  </div>
+</div>
 
 </div>
 </div>
@@ -865,216 +911,282 @@ async function uploadFile(file,folder){
 
 }
 
-form.addEventListener("submit",async function(e){
 
+let previewReady = false;
+
+function previewText(value){
+    const text = String(value ?? "").trim();
+    return text ? text : "-";
+}
+
+function escapePreview(value){
+    return String(value ?? "").replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+}
+
+function selectedFileName(id){
+    const input = document.getElementById(id);
+    const file = input && input.files ? input.files[0] : null;
+    return file ? file.name : "";
+}
+
+function previewField(label,id){
+    return `
+      <div class="preview-item">
+        <span>${escapePreview(label)}</span>
+        <strong>${escapePreview(previewText(getValue(id)))}</strong>
+      </div>`;
+}
+
+function buildPreview(){
+    const block = getValue("block");
+    const panchayat = getValue("panchayat");
+    const village = getValue("village");
+
+    return `
+      <div class="preview-section">
+        <h3>1. Personal Details</h3>
+        <div class="preview-grid">
+          ${previewField("Farmer Name","name")}
+          ${previewField("Father / Husband Name","father_name")}
+          ${previewField("Date of Birth","date_of_birth")}
+          ${previewField("Gender","gender")}
+          ${previewField("Aadhaar Number","aadhar_number")}
+          ${previewField("Mobile Number","mobile")}
+        </div>
+      </div>
+
+      <div class="preview-section">
+        <h3>2. Area Details</h3>
+        <div class="preview-grid">
+          ${previewField("Block","block")}
+          ${previewField("Panchayat","panchayat")}
+          ${previewField("Village","village")}
+          ${previewField("District","district")}
+          ${previewField("State","state")}
+        </div>
+      </div>
+
+      <div class="preview-section">
+        <h3>3. Farmer / Agriculture Details</h3>
+        <div class="preview-grid">
+          ${previewField("Address","address")}
+          ${previewField("Main Crop","crop")}
+          ${previewField("Land / भूमि","land")}
+          ${previewField("Category","category")}
+        </div>
+      </div>
+
+      <div class="preview-section">
+        <h3>4. Bank Details</h3>
+        <div class="preview-grid">
+          ${previewField("Bank Name","bank_name")}
+          ${previewField("Branch Name","bank_branch")}
+          ${previewField("Account Number","account_number")}
+          ${previewField("IFSC Code","ifsc_code")}
+        </div>
+      </div>
+
+      <div class="preview-section">
+        <h3>5. Payment Details</h3>
+        <div class="preview-grid">
+          ${previewField("Payment Mode","payment_mode")}
+        </div>
+      </div>
+
+      <div class="preview-section">
+        <h3>6. Documents</h3>
+        <div class="preview-files">
+          ${previewFile("Photo","photo")}
+          ${previewFile("Signature","signature")}
+          ${previewFile("Aadhaar Card","aadhar_file")}
+          ${previewFile("Form","form_file")}
+          ${previewFile("Land Record","land_record")}
+        </div>
+      </div>
+    `;
+}
+
+function previewFile(label,id){
+    const name = selectedFileName(id);
+    return `
+      <div class="preview-file">
+        <strong>${escapePreview(label)}</strong>
+        <small>${escapePreview(name || "File not selected")}</small>
+      </div>`;
+}
+
+function validateRegistrationBeforePreview(){
+    const block = getValue("block");
+    const panchayat = getValue("panchayat");
+    const village = getValue("village");
+
+    if(!block || !panchayat || !village){
+        throw new Error("Block, Panchayat और Village चुनना जरूरी है।");
+    }
+
+    const aadhar = getValue("aadhar_number");
+    if(!/^[0-9]{12}$/.test(aadhar)){
+        throw new Error("Aadhaar number 12 digit का होना चाहिए।");
+    }
+
+    const mobile = getValue("mobile");
+    if(!/^[0-9]{10}$/.test(mobile)){
+        throw new Error("Mobile number 10 digit का होना चाहिए।");
+    }
+
+    const files = ["photo","signature","aadhar_file","form_file","land_record"];
+    for(const id of files){
+        if(!document.getElementById(id)?.files?.[0]){
+            throw new Error("सभी documents upload करना जरूरी है।");
+        }
+    }
+}
+
+form.addEventListener("submit",function(e){
     e.preventDefault();
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Submitting...";
-    message.style.display = "none";
+    try{
+        if(!form.checkValidity()){
+            form.reportValidity();
+            return;
+        }
+
+        validateRegistrationBeforePreview();
+
+        document.getElementById("previewContent").innerHTML = buildPreview();
+        document.getElementById("previewPanel").style.display = "block";
+        form.style.display = "none";
+        previewReady = true;
+
+        message.style.display = "none";
+        window.scrollTo({top:document.getElementById("previewPanel").offsetTop - 20,behavior:"smooth"});
+    }catch(error){
+        console.error(error);
+        showMessage(error.message,"error");
+    }
+});
+
+function editPreview(){
+    document.getElementById("previewPanel").style.display = "none";
+    form.style.display = "block";
+    previewReady = false;
+    window.scrollTo({top:form.offsetTop - 20,behavior:"smooth"});
+}
+
+async function finalSubmitRegistration(){
+    if(!previewReady){
+        editPreview();
+        return;
+    }
+
+    const finalBtn = document.querySelector(".final-submit-btn");
+    const editBtn = document.querySelector(".edit-btn");
 
     try{
+        validateRegistrationBeforePreview();
+
+        finalBtn.disabled = true;
+        editBtn.disabled = true;
+        finalBtn.textContent = "Submitting Final...";
+
+        message.style.display = "none";
 
         const block = getValue("block");
         const panchayat = getValue("panchayat");
         const village = getValue("village");
-
-        if(!block || !panchayat || !village){
-
-            throw new Error(
-                "Block, Panchayat और Village चुनना जरूरी है।"
-            );
-
-        }
-
-        const aadhar =
-        getValue("aadhar_number");
-
-        if(!/^[0-9]{12}$/.test(aadhar)){
-
-            throw new Error(
-                "Aadhaar number 12 digit का होना चाहिए।"
-            );
-
-        }
-
-        const mobile =
-        getValue("mobile");
-
-        if(!/^[0-9]{10}$/.test(mobile)){
-
-            throw new Error(
-                "Mobile number 10 digit का होना चाहिए।"
-            );
-
-        }
+        const aadhar = getValue("aadhar_number");
+        const mobile = getValue("mobile");
 
         const files = {
-
-            photo:
-            document.getElementById("photo").files[0],
-
-            signature:
-            document.getElementById("signature").files[0],
-
-            aadhar_file:
-            document.getElementById("aadhar_file").files[0],
-
-            form_file:
-            document.getElementById("form_file").files[0],
-
-            land_record:
-            document.getElementById("land_record").files[0]
-
+            photo: document.getElementById("photo").files[0],
+            signature: document.getElementById("signature").files[0],
+            aadhar_file: document.getElementById("aadhar_file").files[0],
+            form_file: document.getElementById("form_file").files[0],
+            land_record: document.getElementById("land_record").files[0]
         };
 
-        for(const key in files){
+        finalBtn.textContent = "Uploading Documents...";
 
-            if(!files[key]){
+        const photo_url = await uploadFile(files.photo,"photo");
+        const signature_url = await uploadFile(files.signature,"signature");
+        const aadhar_url = await uploadFile(files.aadhar_file,"aadhar");
+        const form_url = await uploadFile(files.form_file,"form");
+        const land_record_url = await uploadFile(files.land_record,"land-record");
 
-                throw new Error(
-                    "सभी documents upload करना जरूरी है।"
-                );
+        finalBtn.textContent = "Registering Farmer...";
 
-            }
+        const {data,error} = await db.rpc("register_farmer_auto",{
+            p_name:getValue("name"),
+            p_father_name:getValue("father_name"),
+            p_date_of_birth:getValue("date_of_birth"),
+            p_aadhar_number:aadhar,
+            p_mobile:mobile,
+            p_gender:getValue("gender"),
+            p_village:village,
+            p_panchayat:panchayat,
+            p_block:block,
+            p_district:"Ranchi",
+            p_state:"Jharkhand",
+            p_crop:getValue("crop"),
+            p_land:getValue("land"),
+            p_category:getValue("category"),
+            p_address:getValue("address"),
+            p_bank_name:getValue("bank_name"),
+            p_bank_branch:getValue("bank_branch"),
+            p_account_number:getValue("account_number"),
+            p_ifsc_code:getValue("ifsc_code").toUpperCase(),
+            p_payment_mode:getValue("payment_mode"),
+            p_photo_url:photo_url,
+            p_signature_url:signature_url,
+            p_aadhar_url:aadhar_url,
+            p_form_url:form_url,
+            p_land_record_url:land_record_url
+        });
 
-        }
-
-        submitBtn.textContent =
-        "Uploading Documents...";
-
-        const photo_url =
-        await uploadFile(files.photo,"photo");
-
-        const signature_url =
-        await uploadFile(files.signature,"signature");
-
-        const aadhar_url =
-        await uploadFile(files.aadhar_file,"aadhar");
-
-        const form_url =
-        await uploadFile(files.form_file,"form");
-
-        const land_record_url =
-        await uploadFile(files.land_record,"land-record");
-
-        submitBtn.textContent =
-        "Registering Farmer...";
-
-        const {data,error} =
-        await db.rpc(
-            "register_farmer_auto",
-            {
-                p_name:getValue("name"),
-                p_father_name:getValue("father_name"),
-                p_date_of_birth:getValue("date_of_birth"),
-                p_aadhar_number:aadhar,
-                p_mobile:mobile,
-                p_gender:getValue("gender"),
-                p_village:village,
-                p_panchayat:panchayat,
-                p_block:block,
-                p_district:"Ranchi",
-                p_state:"Jharkhand",
-                p_crop:getValue("crop"),
-                p_land:getValue("land"),
-                p_category:getValue("category"),
-                p_address:getValue("address"),
-                p_bank_name:getValue("bank_name"),
-                p_bank_branch:getValue("bank_branch"),
-                p_account_number:getValue("account_number"),
-                p_ifsc_code:getValue("ifsc_code").toUpperCase(),
-                p_payment_mode:getValue("payment_mode"),
-                p_photo_url:photo_url,
-                p_signature_url:signature_url,
-                p_aadhar_url:aadhar_url,
-                p_form_url:form_url,
-                p_land_record_url:land_record_url
-            }
-        );
-
-        if(error){
-
-            throw new Error(error.message);
-
-        }
+        if(error) throw new Error(error.message);
 
         let registrationNumber = data;
-
         if(typeof data === "object" && data !== null){
-
             registrationNumber =
-            data.registration_number ||
-            data.registration_no ||
-            data.reg_no ||
-            data.id ||
-            JSON.stringify(data);
-
+                data.registration_number ||
+                data.registration_no ||
+                data.reg_no ||
+                data.id ||
+                JSON.stringify(data);
         }
 
         showMessage(
-
             "Registration Successful!" +
-
-            "<div class='registration'>" +
-            registrationNumber +
-            "</div>" +
-
-            "<div class='status-box'>" +
-            "Status: Pending Admin Verification" +
-            "</div>" +
-
-            "<br>" +
-
-            "आपका application चुने गए Panchayat के Admin को भेज दिया गया है।" +
-
-            "<br><br>" +
-
-            "कृपया अपना Registration Number सुरक्षित रखें।",
-
+            "<div class='registration'>" + escapePreview(registrationNumber) + "</div>" +
+            "<div class='status-box'>Status: Pending Admin Verification</div>" +
+            "<br>आपका application चुने गए Panchayat के Admin को भेज दिया गया है।" +
+            "<br><br>कृपया अपना Registration Number सुरक्षित रखें।",
             "success"
-
         );
 
+        document.getElementById("previewPanel").style.display = "none";
+        form.style.display = "block";
         form.reset();
-
-        resetSelect(
-            panchayatSelect,
-            "Select Panchayat"
-        );
-
-        resetSelect(
-            villageSelect,
-            "Select Village"
-        );
-
+        resetSelect(panchayatSelect,"Select Panchayat");
+        resetSelect(villageSelect,"Select Village");
         panchayatSelect.disabled = true;
         villageSelect.disabled = true;
         areaInfo.style.display = "none";
+        previewReady = false;
 
-    }
+        window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});
 
-    catch(error){
-
+    }catch(error){
         console.error(error);
-
-        showMessage(
-            "Registration failed:<br>" +
-            error.message,
-            "error"
-        );
-
+        showMessage("Registration failed:<br>" + escapePreview(error.message),"error");
+        finalBtn.disabled = false;
+        editBtn.disabled = false;
+        finalBtn.textContent = "✅ Submit Final";
     }
+}
 
-    finally{
-
-        submitBtn.disabled = false;
-        submitBtn.textContent =
-        "Submit Farmer Registration";
-
-    }
-
-});
 
 </script>
 
