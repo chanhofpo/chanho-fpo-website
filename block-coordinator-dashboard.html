@@ -46,6 +46,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   <div class="nav">
     <button class="active" onclick="showPanel('homePanel',this,'Dashboard')">🏠 Dashboard</button>
     <button onclick="showPanel('adminRegPanel',this,'Admin Registration')">👤 Admin Registration</button>
+    <button onclick="showPanel('farmerRegPanel',this,'Farmer Registration');cbmsFarmerRegInitialize()">👨‍🌾 Farmer Registration</button>
     <button onclick="showPanel('farmerVerifyPanel',this,'Farmer Edit & Verification');loadFarmers()">✅ Farmer Edit & Verification</button>
     <button onclick="showPanel('assignPanel',this,'Admin Assignment');loadAdmins();loadAssignments()">📍 Admin Assignment</button>
     <button onclick="showPanel('dataPanel',this,'Data List');loadAllDataLists()">📋 Data List</button>
@@ -154,6 +155,69 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <button id="registerAdminBtn" class="primary" onclick="registerAdmin()">Register Admin</button>
 <div id="adminRegResult" style="margin-top:12px" aria-live="polite"></div>
 </div></section>
+
+<section id="farmerRegPanel" class="panel">
+<div class="section">
+<h2>Farmer Registration</h2>
+<div class="note" style="margin-bottom:12px">
+  Is form se Block Coordinator apne assigned Block ke farmer register kar sakta hai.
+  Panchayat/Village sirf aapke active Coordinator Area Assignment ke hisaab se select hoga.
+  Registration ke baad farmer record me <b>block_coordinator_registered_by</b> aur
+  <b>block_coordinator_registered_at</b> automatically save honge.
+</div>
+
+<div class="grid">
+  <div><label>Name *</label><input id="frName" required></div>
+  <div><label>Father / Husband Name *</label><input id="frFather" required></div>
+  <div><label>Date of Birth</label><input id="frDob" type="date"></div>
+  <div><label>Gender *</label>
+    <select id="frGender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+  </div>
+  <div><label>Aadhaar Number *</label><input id="frAadhaar" maxlength="12" inputmode="numeric" required></div>
+  <div><label>Mobile *</label><input id="frMobile" maxlength="10" inputmode="numeric" required></div>
+
+  <div><label>Block</label><input id="frBlock" readonly></div>
+  <div><label>Panchayat *</label><select id="frPanchayat" required onchange="cbmsFarmerRegPanchayatChanged()"><option value="">Select Panchayat</option></select></div>
+  <div><label>Village *</label><select id="frVillage" required disabled><option value="">First select Panchayat</option></select></div>
+
+  <div><label>Crop</label><input id="frCrop" placeholder="e.g. Paddy, Maize, Vegetable"></div>
+  <div><label>Land</label><input id="frLand" placeholder="e.g. 2 acre / 1.5 acre"></div>
+  <div><label>Category</label>
+    <select id="frCategory"><option value="">Select</option><option>General</option><option>OBC</option><option>SC</option><option>ST</option><option>Other</option></select>
+  </div>
+
+  <div class="span-3"><label>Full Address *</label><textarea id="frAddress" placeholder="House / Tola / Landmark"></textarea></div>
+</div>
+
+<h3 style="color:#075e88;margin:22px 0 10px">Bank Details</h3>
+<div class="grid">
+  <div><label>Bank Name *</label><input id="frBankName" required></div>
+  <div><label>Bank Branch *</label><input id="frBankBranch" required></div>
+  <div><label>Account Number *</label><input id="frAccountNumber" inputmode="numeric" maxlength="25" required></div>
+  <div><label>IFSC Code *</label><input id="frIfscCode" maxlength="11" style="text-transform:uppercase" required></div>
+  <div><label>Payment Mode *</label>
+    <select id="frPaymentMode" required><option value="">Select</option><option>Cash</option><option>UPI</option><option>Bank Transfer</option></select>
+  </div>
+</div>
+
+<h3 style="color:#075e88;margin:22px 0 10px">Documents</h3>
+<div class="note">
+  Photo, Signature, Aadhaar, Form aur Land Record upload kar sakte hain.
+  File maximum 5 MB; JPG, PNG, WEBP ya PDF.
+</div><br>
+<div class="grid">
+  <div><label>Farmer Photo</label><input id="frPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"></div>
+  <div><label>Signature</label><input id="frSignatureFile" type="file" accept="image/jpeg,image/png,image/webp"></div>
+  <div><label>Aadhaar Document</label><input id="frAadhaarFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+  <div><label>Registration Form</label><input id="frFormFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+  <div><label>Land Record</label><input id="frLandRecordFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+</div><br>
+
+<button id="farmerRegisterBtn" class="primary" onclick="cbmsRegisterFarmer()">Register Farmer</button>
+<button type="button" class="secondary" onclick="cbmsFarmerRegReset()" style="margin-left:8px">Reset</button>
+<div id="farmerRegResult" style="margin-top:12px" aria-live="polite"></div>
+</div>
+</section>
 
 <section id="farmerVerifyPanel" class="panel">
 <div class="section"><h2>Farmer Data Edit & Verification</h2>
@@ -397,6 +461,7 @@ function applyActiveBlockToForms(){
   });
   cbmsAreaInitialize('ar');
   cbmsAreaInitialize('as');
+  cbmsFarmerRegInitialize();
   document.getElementById('asAreaHint').textContent='Admin select karein, phir assigned Panchayat aur Village confirm karein.';
 }
 
@@ -678,6 +743,229 @@ async function registerAdmin(){
     result.textContent="Registration failed: " + (e.message || String(e)) + ". Koi duplicate Admin record banane se pehle data check karein.";
     msg("Admin registration failed: " + (e.message || String(e)),"error");
   }finally{btn.disabled=false;btn.textContent="Register Admin"}
+}
+
+
+/* =========================
+   CBMS BLOCK COORDINATOR FARMER REGISTRATION
+   Uses the existing cbms_block_register_farmer RPC.
+   The RPC itself enforces:
+   - active Block Coordinator
+   - assigned Block
+   - active Panchayat + Village assignment
+   - coordinator ID + registration timestamp on farmer record
+   ========================= */
+
+function cbmsFarmerRegFillSelect(select, values, placeholder, selected=""){
+  if(!select) return;
+  select.innerHTML = `<option value="">${esc(placeholder)}</option>` +
+    values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+  if(selected && values.includes(selected)) select.value = selected;
+}
+
+function cbmsFarmerRegInitialize(){
+  const blockEl=document.getElementById("frBlock");
+  const p=document.getElementById("frPanchayat");
+  const v=document.getElementById("frVillage");
+  if(!blockEl || !p || !v) return;
+
+  blockEl.value=activeBlock || "";
+  const area=CBMS_COORDINATOR_AREA_DATA[activeBlock] || {};
+  cbmsFarmerRegFillSelect(p,Object.keys(area),"Select Panchayat");
+  v.innerHTML='<option value="">First select Panchayat</option>';
+  v.disabled=true;
+}
+
+function cbmsFarmerRegPanchayatChanged(){
+  const p=document.getElementById("frPanchayat");
+  const v=document.getElementById("frVillage");
+  if(!p || !v) return;
+
+  const villages=(CBMS_COORDINATOR_AREA_DATA[activeBlock] || {})[p.value] || [];
+  cbmsFarmerRegFillSelect(v,villages,p.value ? "Select Village" : "First select Panchayat");
+  v.disabled=!p.value;
+}
+
+function cbmsFarmerRegFilePath(kind,file){
+  if(!file) return null;
+  const ext=(file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g,"");
+  return {kind,ext,file};
+}
+
+async function cbmsFarmerRegUpload(file,kind){
+  if(!file) return null;
+  if(file.size > 5 * 1024 * 1024){
+    throw new Error(kind + " file 5 MB se bada hai.");
+  }
+  const allowed = [
+    "image/jpeg","image/png","image/webp","application/pdf"
+  ];
+  if(file.type && !allowed.includes(file.type)){
+    throw new Error(kind + " ka file type supported nahi hai.");
+  }
+
+  const {data:{session}}=await db.auth.getSession();
+  const userId=session?.user?.id;
+  if(!userId) throw new Error("Login session nahi mila.");
+
+  const ext=(file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const path=`farmer-registration/${userId}/${kind}/${crypto.randomUUID()}.${ext}`;
+
+  const {error}=await db.storage.from("farmer-documents").upload(path,file,{
+    cacheControl:"3600",
+    upsert:false,
+    contentType:file.type || undefined
+  });
+  if(error) throw new Error(kind + " upload failed: " + error.message);
+  return path;
+}
+
+function cbmsFarmerRegVal(id){
+  return String(document.getElementById(id)?.value ?? "").trim();
+}
+
+function cbmsFarmerRegValidate(){
+  const name=cbmsFarmerRegVal("frName");
+  const father=cbmsFarmerRegVal("frFather");
+  const aadhaar=cbmsFarmerRegVal("frAadhaar");
+  const mobile=cbmsFarmerRegVal("frMobile");
+  const panchayat=cbmsFarmerRegVal("frPanchayat");
+  const village=cbmsFarmerRegVal("frVillage");
+  const address=cbmsFarmerRegVal("frAddress");
+  const bank=cbmsFarmerRegVal("frBankName");
+  const branch=cbmsFarmerRegVal("frBankBranch");
+  const account=cbmsFarmerRegVal("frAccountNumber");
+  const ifsc=cbmsFarmerRegVal("frIfscCode");
+  const payment=cbmsFarmerRegVal("frPaymentMode");
+
+  if(!name || !father || !aadhaar || !mobile || !panchayat || !village || !address ||
+     !bank || !branch || !account || !ifsc || !payment){
+    throw new Error("Sabhi * required fields bhariye.");
+  }
+  if(!/^\d{12}$/.test(aadhaar)) throw new Error("Aadhaar 12 digit hona chahiye.");
+  if(!/^\d{10}$/.test(mobile)) throw new Error("Mobile 10 digit hona chahiye.");
+  if(!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc.toUpperCase())) throw new Error("IFSC format galat hai.");
+
+  const validVillage=((CBMS_COORDINATOR_AREA_DATA[activeBlock] || {})[panchayat] || []).includes(village);
+  if(!validVillage) throw new Error("Selected Panchayat/Village active Coordinator area me nahi hai.");
+
+  return {
+    p_block: activeBlock,
+    p_name:name,
+    p_father_name:father,
+    p_date_of_birth:cbmsFarmerRegVal("frDob") || null,
+    p_aadhar_number:aadhaar,
+    p_mobile:mobile,
+    p_gender:cbmsFarmerRegVal("frGender"),
+    p_village:village,
+    p_panchayat:panchayat,
+    p_crop:cbmsFarmerRegVal("frCrop"),
+    p_land:cbmsFarmerRegVal("frLand"),
+    p_category:cbmsFarmerRegVal("frCategory"),
+    p_address:address,
+    p_bank_name:bank,
+    p_bank_branch:branch,
+    p_account_number:account,
+    p_ifsc_code:ifsc.toUpperCase(),
+    p_payment_mode:payment
+  };
+}
+
+async function cbmsRegisterFarmer(){
+  const btn=document.getElementById("farmerRegisterBtn");
+  const result=document.getElementById("farmerRegResult");
+  if(!btn || !result) return;
+
+  try{
+    btn.disabled=true;
+    btn.textContent="Registering Farmer...";
+    result.innerHTML="";
+
+    const payload=cbmsFarmerRegValidate();
+
+    const [photoUrl,signatureUrl,aadhaarUrl,formUrl,landRecordUrl]=await Promise.all([
+      cbmsFarmerRegUpload(document.getElementById("frPhotoFile")?.files[0],"photo"),
+      cbmsFarmerRegUpload(document.getElementById("frSignatureFile")?.files[0],"signature"),
+      cbmsFarmerRegUpload(document.getElementById("frAadhaarFile")?.files[0],"aadhaar"),
+      cbmsFarmerRegUpload(document.getElementById("frFormFile")?.files[0],"form"),
+      cbmsFarmerRegUpload(document.getElementById("frLandRecordFile")?.files[0],"land-record")
+    ]);
+
+    const data=await rpc("cbms_block_register_farmer",{
+      ...payload,
+      p_photo_url:photoUrl,
+      p_signature_url:signatureUrl,
+      p_aadhar_url:aadhaarUrl,
+      p_form_url:formUrl,
+      p_land_record_url:landRecordUrl
+    });
+
+    if(!data || data.success === false){
+      const code=data?.error || "";
+      const message=data?.message || "Farmer registration failed.";
+      if(code==="AREA_NOT_ASSIGNED"){
+        throw new Error("Ye Panchayat + Village aapke Coordinator Area Assignment me Active nahi hai.");
+      }
+      throw new Error(message);
+    }
+
+    const regNo=data.registration_no || data.registration_number || data.reg_no || "-";
+    const coordinatorId=data.block_coordinator_registered_by || coordinator?.coordinator_id || "-";
+
+    result.innerHTML=`<div class="note" style="border-color:#b7dfc2;background:#f0faf3;color:#155724">
+      <b>Farmer Registration Successful</b><br>
+      Registration No: <b>${esc(regNo)}</b><br>
+      Farmer: ${esc(data.name || payload.p_name)}<br>
+      Block: ${esc(data.block || payload.p_block)}<br>
+      Panchayat: ${esc(data.panchayat || payload.p_panchayat)}<br>
+      Village: ${esc(data.village || payload.p_village)}<br>
+      Admin: ${esc(data.admin_id || "-")}<br>
+      Coordinator ID: ${esc(coordinatorId)}<br>
+      Status: ${esc(data.status || "Pending Admin Verification")}<br><br>
+      <b>Farmer record me Coordinator ID aur registration time save ho gaya hai.</b>
+    </div>`;
+
+    cbmsFarmerRegReset(false);
+    await loadFarmers();
+    await loadSummary();
+    if(typeof loadPerformance==="function") await loadPerformance();
+
+  }catch(e){
+    console.error("Farmer Registration:",e);
+    result.innerHTML=`<div class="message error" style="display:block">Registration failed: ${esc(e.message || String(e))}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Register Farmer";
+  }
+}
+
+function cbmsFarmerRegReset(clearResult=true){
+  const ids=[
+    "frName","frFather","frDob","frGender","frAadhaar","frMobile",
+    "frPanchayat","frVillage","frCrop","frLand","frCategory","frAddress",
+    "frBankName","frBankBranch","frAccountNumber","frIfscCode","frPaymentMode"
+  ];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(el.tagName==="SELECT") el.selectedIndex=0;
+    else el.value="";
+  });
+
+  ["frPhotoFile","frSignatureFile","frAadhaarFile","frFormFile","frLandRecordFile"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value="";
+  });
+
+  const v=document.getElementById("frVillage");
+  if(v){v.innerHTML='<option value="">First select Panchayat</option>';v.disabled=true;}
+  const b=document.getElementById("frBlock");
+  if(b) b.value=activeBlock || "";
+
+  if(clearResult){
+    const result=document.getElementById("farmerRegResult");
+    if(result) result.innerHTML="";
+  }
 }
 
 async function loadFarmers(){
