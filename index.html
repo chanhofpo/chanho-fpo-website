@@ -565,7 +565,20 @@
 .photo-gallery-btn{display:inline-block;background:#126b32;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold}
 .photo-gallery-btn.secondary{background:#ff9800;color:#111}
 
-    /* ================= MANAGEMENT TEAM ================= */
+    /* ================= WEBSITE UPDATES ================= */
+.website-updates-section{padding:55px 5%;background:#f7fff7}
+.website-updates-intro{max-width:800px;margin:-12px auto 28px;text-align:center;color:#526052;line-height:1.6}
+.website-updates-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.website-update-card{background:#fff;border:1px solid #dcebdc;border-radius:13px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.09)}
+.website-update-card img{width:100%;height:210px;object-fit:cover;display:block}
+.website-update-body{padding:16px}.website-update-category{display:inline-block;background:#e8f5e9;color:#126b32;font-size:11px;font-weight:700;padding:5px 8px;border-radius:12px}
+.website-update-body h3{color:#126b32;margin:9px 0 5px;font-size:18px}
+.website-update-body p{color:#555;line-height:1.55;margin:0;font-size:14px}
+.website-update-date{margin-top:10px;color:#888;font-size:11px}
+.website-updates-loading,.website-updates-empty{grid-column:1/-1;text-align:center;background:#fff;border:1px solid #dcebdc;border-radius:12px;padding:28px;color:#667085}
+@media(max-width:600px){.website-updates-grid{grid-template-columns:1fr}.website-update-card img{height:230px}}
+
+/* ================= MANAGEMENT TEAM ================= */
 .management-section {
     padding: 55px 5%;
     background: #f0faf0;
@@ -792,6 +805,18 @@
     </article>
 
 </div>
+</section>
+
+<!-- ================= WEBSITE UPDATES / PHOTO STORIES ================= -->
+<section class="website-updates-section" id="updates">
+    <h2 class="title">📸 हमारी गतिविधियाँ और अपडेट</h2>
+    <p class="website-updates-intro">
+        FPO की Seed Distribution, Farmer Success Story, Training, Field Visit, Farmer Meeting,
+        Crop/Harvest और अन्य गतिविधियों की नई तस्वीरें एवं जानकारी यहाँ दिखाई देंगी।
+    </p>
+    <div id="websiteUpdatesGrid" class="website-updates-grid">
+        <div class="website-updates-loading">Updates load हो रहे हैं...</div>
+    </div>
 </section>
 
 <!-- ================= SERVICES ================= -->
@@ -1050,6 +1075,50 @@
 
 </footer>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CBMS_PUBLIC_SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const CBMS_PUBLIC_SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const cbmsPublicDb=window.supabase.createClient(CBMS_PUBLIC_SUPABASE_URL,CBMS_PUBLIC_SUPABASE_KEY);
+
+function cbmsUpdateEscape(v){
+  return String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#039;"}[c]));
+}
+function cbmsUpdateDate(v){
+  try{return new Date(v).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return "";}
+}
+async function loadWebsiteUpdates(){
+  const box=document.getElementById("websiteUpdatesGrid");
+  if(!box)return;
+  const {data,error}=await cbmsPublicDb.from("website_updates")
+    .select("id,title,category,description,image_url,published_at")
+    .eq("published",true)
+    .order("published_at",{ascending:false})
+    .limit(12);
+  if(error){
+    box.innerHTML='<div class="website-updates-empty">Updates अभी उपलब्ध नहीं हैं।</div>';
+    console.error("Website updates:",error);
+    return;
+  }
+  if(!data || !data.length){
+    box.innerHTML='<div class="website-updates-empty">अभी कोई नया update/photo उपलब्ध नहीं है।</div>';
+    return;
+  }
+  box.innerHTML=data.map(x=>`
+    <article class="website-update-card">
+      ${x.image_url ? '<img src="'+cbmsUpdateEscape(x.image_url)+'" alt="'+cbmsUpdateEscape(x.title)+'" loading="lazy">' : ''}
+      <div class="website-update-body">
+        <span class="website-update-category">${cbmsUpdateEscape(x.category||"Other")}</span>
+        <h3>${cbmsUpdateEscape(x.title)}</h3>
+        ${x.description ? '<p>'+cbmsUpdateEscape(x.description)+'</p>' : ''}
+        <div class="website-update-date">📅 ${cbmsUpdateDate(x.published_at)}</div>
+      </div>
+    </article>
+  `).join("");
+}
+loadWebsiteUpdates();
+</script>
 
 </body>
 </html>
