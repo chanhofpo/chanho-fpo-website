@@ -4026,14 +4026,14 @@ async function cbmsLoadWebsiteUpdates(){
   const tbody=document.getElementById("cbmsWebsiteUpdatesBody");
   if(!tbody)return;
   if(!currentOfficer || String(currentOfficer.status || "").toLowerCase() !== "active"){
-    tbody.innerHTML='<tr><td colspan="6" class="empty">Sirf Active Officer Website Updates manage kar sakta hai.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="7" class="empty">Sirf Active Officer Website Updates manage kar sakta hai.</td></tr>';
     return;
   }
   const {data,error}=await db.from("website_updates")
     .select("id,title,category,content_type,description,image_url,published,published_at,created_at,updated_at")
     .order("published_at",{ascending:false,nullsFirst:false}).limit(100);
-  if(error){tbody.innerHTML='<tr><td colspan="6" class="empty">Load failed: '+escapeHtml(error.message)+'</td></tr>';return;}
-  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No website updates yet.</td></tr>';return;}
+  if(error){tbody.innerHTML='<tr><td colspan="7" class="empty">Load failed: '+escapeHtml(error.message)+'</td></tr>';return;}
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="7" class="empty">No website updates yet.</td></tr>';return;}
   tbody.innerHTML=data.map(x=>`
     <tr>
       <td>${x.image_url?'<img src="'+escapeHtml(x.image_url)+'" style="width:70px;height:55px;object-fit:cover;border-radius:5px">':'—'}</td>
