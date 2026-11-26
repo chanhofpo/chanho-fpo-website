@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPO Photo Gallery | Chanho Birsa Munda Sangathan</title>
+<meta name="description" content="Chanho Birsa Munda Sangathan Producer Company Limited photo gallery - seed distribution, farmer success stories, training, field activities and agriculture programmes.">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5fff5;color:#222}
+header{background:#126b32;color:#fff;padding:12px 4%;display:flex;align-items:center;gap:14px;justify-content:space-between;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
+.brand h1{font-size:18px;margin:0;line-height:1.25}.brand p{font-size:12px;margin:4px 0 0}
+.back{color:#fff;text-decoration:none;background:#0b5d2c;padding:9px 14px;border-radius:7px;font-weight:bold}
+.hero{text-align:center;padding:40px 18px 25px}.hero h2{color:#126b32;font-size:30px;margin:0 0 10px}.hero p{max-width:800px;margin:auto;line-height:1.6;color:#555}
+.toolbar{max-width:1100px;margin:0 auto 20px;padding:0 18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.filter{border:1px solid #b9d9c0;background:#fff;color:#126b32;padding:9px 14px;border-radius:999px;cursor:pointer;font-weight:bold}.filter.active{background:#126b32;color:#fff}
+.gallery{max-width:1100px;margin:auto;padding:0 18px 55px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.10);border:1px solid #e0eae1}
+.card img{width:100%;height:210px;object-fit:cover;display:block;cursor:pointer}.info{padding:12px}.cat{font-size:12px;color:#126b32;font-weight:bold}.name{margin:5px 0 0;font-weight:bold;font-size:15px}
+.empty{text-align:center;grid-column:1/-1;padding:35px;background:#fff;border-radius:12px;color:#666}
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99;align-items:center;justify-content:center;padding:20px}
+#lightbox.open{display:flex}#lightbox img{max-width:95vw;max-height:90vh;border-radius:8px}.close{position:absolute;right:22px;top:15px;color:#fff;font-size:35px;cursor:pointer}
+.upload-box{max-width:900px;margin:0 auto 35px;background:#fff;border:1px solid #dbe9dc;border-radius:14px;padding:20px;box-shadow:0 3px 12px rgba(0,0,0,.08);display:none}
+.upload-box.show{display:block}.upload-box h3{margin-top:0;color:#126b32}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input,select{width:100%;padding:11px;border:1px solid #cfd8d2;border-radius:7px}button.upload{background:#198754;color:#fff;border:0;padding:11px 18px;border-radius:7px;font-weight:bold;cursor:pointer;margin-top:12px}
+.msg{margin-top:10px;font-size:14px}.hint{font-size:12px;color:#666;margin-top:7px}
+@media(max-width:650px){.row{grid-template-columns:1fr}.brand h1{font-size:15px}.back{padding:8px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+<header>
+<div class="brand"><img class="logo" src="logo.png" alt="Chanho FPO Logo"><div><h1>Chanho Birsa Munda Sangathan Producer Company Limited</h1><p>Photo Gallery</p></div></div>
+<a class="back" href="index.html">← Home</a>
+</header>
+
+<section class="hero">
+<h2>📸 हमारी गतिविधियाँ और उपलब्धियाँ</h2>
+<p>Seed Distribution, Farmer Success Story, Training, Field Visit, Farmer Meeting, Crop/Harvest और FPO की अन्य गतिविधियों की तस्वीरें यहाँ दिखाई देंगी।</p>
+</section>
+
+<div class="toolbar" id="filters">
+<button class="filter active" data-cat="all">सभी</button>
+<button class="filter" data-cat="seed-distribution">🌱 Seed Distribution</button>
+<button class="filter" data-cat="success-story">🏆 Success Story</button>
+<button class="filter" data-cat="training">📚 Training</button>
+<button class="filter" data-cat="field-visit">🚜 Field Visit</button>
+<button class="filter" data-cat="farmer-meeting">👨‍🌾 Farmer Meeting</button>
+<button class="filter" data-cat="crop-harvest">🌾 Crop / Harvest</button>
+<button class="filter" data-cat="other">📷 Other</button>
+</div>
+
+<div class="upload-box" id="uploadBox">
+<h3>📤 Staff Photo Upload</h3>
+<div class="row">
+<div><label>Category</label><select id="category">
+<option value="seed-distribution">Seed Distribution</option>
+<option value="success-story">Success Story</option>
+<option value="training">Training</option>
+<option value="field-visit">Field Visit</option>
+<option value="farmer-meeting">Farmer Meeting</option>
+<option value="crop-harvest">Crop / Harvest</option>
+<option value="other">Other</option>
+</select></div>
+<div><label>Photo</label><input id="photo" type="file" accept="image/*" multiple></div>
+</div>
+<button class="upload" id="uploadBtn">Upload Photo</button>
+<div class="hint">JPG, PNG, WEBP आदि image files. Staff login आवश्यक है।</div>
+<div class="msg" id="msg"></div>
+</div>
+
+<div class="gallery" id="gallery"><div class="empty">Photos load हो रही हैं...</div></div>
+
+<div id="lightbox"><span class="close" onclick="closeLightbox()">×</span><img id="lightboxImg" alt=""></div>
+
+<script>
+const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const BUCKET="fpo-gallery";
+const categories=["seed-distribution","success-story","training","field-visit","farmer-meeting","crop-harvest","other"];
+const categoryNames={
+"seed-distribution":"Seed Distribution","success-story":"Success Story","training":"Training",
+"field-visit":"Field Visit","farmer-meeting":"Farmer Meeting","crop-harvest":"Crop / Harvest","other":"Other"
+};
+let allPhotos=[];
+
+async function loadPhotos(){
+  const out=[];
+  for(const cat of categories){
+    const {data,error}=await db.storage.from(BUCKET).list(cat,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+    if(!error && data){
+      data.filter(x=>x.name && !x.name.endsWith("/")).forEach(x=>{
+        const {data:urlData}=db.storage.from(BUCKET).getPublicUrl(cat+"/"+x.name);
+        out.push({name:x.name,cat,url:urlData.publicUrl,created_at:x.created_at||""});
+      });
+    }
+  }
+  allPhotos=out.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+  render("all");
+}
+
+function render(filter){
+  const box=document.getElementById("gallery");
+  const photos=filter==="all"?allPhotos:allPhotos.filter(x=>x.cat===filter);
+  if(!photos.length){box.innerHTML='<div class="empty">अभी इस category में कोई photo upload नहीं है।</div>';return;}
+  box.innerHTML=photos.map(p=>'<article class="card"><img src="'+p.url.replace(/"/g,'&quot;')+'" alt="'+categoryNames[p.cat]+'" onclick="openLightbox(this.src)"><div class="info"><div class="cat">'+categoryNames[p.cat]+'</div><div class="name">'+escapeHtml(p.name.replace(/\.[^.]+$/,"").replace(/[-_]/g," "))+'</div></div></article>').join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightbox").classList.add("open")}
+function closeLightbox(){document.getElementById("lightbox").classList.remove("open")}
+document.getElementById("lightbox").addEventListener("click",e=>{if(e.target.id==="lightbox")closeLightbox()});
+
+document.querySelectorAll(".filter").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render(btn.dataset.cat);
+}));
+
+async function checkStaff(){
+ const {data}=await db.auth.getSession();
+ if(data && data.session && data.session.user){
+   document.getElementById("uploadBox").classList.add("show");
+ }
+}
+document.getElementById("uploadBtn").addEventListener("click",async()=>{
+ const files=[...document.getElementById("photo").files],cat=document.getElementById("category").value,msg=document.getElementById("msg");
+ if(!files.length){msg.textContent="Photo select कीजिए।";return}
+ msg.textContent="Uploading...";
+ let ok=0;
+ for(const file of files){
+   if(!file.type.startsWith("image/")) continue;
+   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+   const path=cat+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safe;
+   const {error}=await db.storage.from(BUCKET).upload(path,file,{cacheControl:"3600",upsert:false});
+   if(!error) ok++;
+ }
+ msg.textContent=ok+" photo upload हो गया।";
+ document.getElementById("photo").value="";
+ await loadPhotos();
+});
+checkStaff();
+loadPhotos();
+</script>
+</body>
+</html>
