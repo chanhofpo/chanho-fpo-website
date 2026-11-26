@@ -363,11 +363,14 @@ tr:nth-child(even) td{background:#fafcfd}
 
   <section id="websiteUpdatesPanel" class="portal-panel">
   <div class="section">
-    <h2>📸 Website Updates / Photo Gallery</h2>
-    <p class="section-note">Yahan se jo update/photo publish karenge, wahi public website ke homepage ke “हमारी गतिविधियाँ और अपडेट” section me automatically show hoga.</p>
+    <h2>📢 Website Content Manager — Story & Notice</h2>
+    <p class="section-note">Activity/Story homepage ke photo section me aur Notice homepage ke Important Notice section me dikhega.</p>
     <div id="cbmsWebsiteUpdateMsg" class="message"></div>
     <form id="cbmsWebsiteUpdateForm" onsubmit="event.preventDefault();cbmsPublishWebsiteUpdate();">
       <div class="form-grid">
+        <div><label>Content Type *</label>
+          <select id="cbmsUpdateType" required><option value="story">Activity / Story</option><option value="notice">Notice / सूचना</option></select>
+        </div>
         <div><label>Category *</label>
           <select id="cbmsUpdateCategory" required>
             <option>Seed Distribution</option><option>Success Story</option><option>Training</option>
@@ -376,7 +379,7 @@ tr:nth-child(even) td{background:#fafcfd}
         </div>
         <div><label>Title *</label><input id="cbmsUpdateTitle" placeholder="जैसे: सरसों बीज वितरण कार्यक्रम" required></div>
         <div class="form-span-2"><label>Description</label><textarea id="cbmsUpdateDescription" placeholder="कार्यक्रम/सफलता की संक्षिप्त जानकारी..."></textarea></div>
-        <div><label>Photo</label><input id="cbmsUpdatePhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div>
+        <div><label>Photo (Story ke liye; Notice optional)</label><input id="cbmsUpdatePhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div>
         <div><label>Status</label><select id="cbmsUpdatePublished"><option value="true">Publish on Website</option><option value="false">Save as Draft</option></select></div>
       </div>
       <div style="margin-top:12px"><button class="primary-btn" id="cbmsUpdatePublishBtn" type="submit">📤 Publish Update</button></div>
@@ -385,8 +388,8 @@ tr:nth-child(even) td{background:#fafcfd}
   <div class="section">
     <h2>Published / Saved Updates</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Photo</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody id="cbmsWebsiteUpdatesBody"><tr><td colspan="6" class="empty">No updates.</td></tr></tbody>
+      <thead><tr><th>Photo</th><th>Type</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="cbmsWebsiteUpdatesBody"><tr><td colspan="7" class="empty">No updates.</td></tr></tbody>
     </table></div>
   </div>
 </section>
@@ -4027,13 +4030,14 @@ async function cbmsLoadWebsiteUpdates(){
     return;
   }
   const {data,error}=await db.from("website_updates")
-    .select("id,title,category,description,image_url,published,published_at,created_at,updated_at")
+    .select("id,title,category,content_type,description,image_url,published,published_at,created_at,updated_at")
     .order("published_at",{ascending:false,nullsFirst:false}).limit(100);
   if(error){tbody.innerHTML='<tr><td colspan="6" class="empty">Load failed: '+escapeHtml(error.message)+'</td></tr>';return;}
   if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No website updates yet.</td></tr>';return;}
   tbody.innerHTML=data.map(x=>`
     <tr>
       <td>${x.image_url?'<img src="'+escapeHtml(x.image_url)+'" style="width:70px;height:55px;object-fit:cover;border-radius:5px">':'—'}</td>
+      <td>${x.content_type==="notice"?"Notice":"Story"}</td>
       <td>${escapeHtml(x.category||"Other")}</td>
       <td>${escapeHtml(x.title||"")}</td>
       <td>${new Date(x.published_at||x.created_at).toLocaleDateString("en-IN")}</td>
@@ -4069,6 +4073,7 @@ async function cbmsPublishWebsiteUpdate(){
     const {error:iErr}=await db.from("website_updates").insert({
       title,
       category,
+      content_type:document.getElementById("cbmsUpdateType").value,
       description:description||null,
       image_url,
       published,
