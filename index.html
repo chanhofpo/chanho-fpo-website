@@ -558,6 +558,15 @@
         }
     
 /* ================= SINGLE PHOTO UPDATE ================= */
+.website-notices-section{padding:38px 5%;background:#fff8e8;text-align:center}
+.website-notices-list{max-width:900px;margin:0 auto;display:grid;gap:14px;text-align:left}
+.website-notice-card{background:#fff;border:1px solid #f0d99b;border-left:5px solid #d18b00;border-radius:10px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.website-notice-card h3{margin:7px 0;color:#784900}
+.website-notice-card p{margin:8px 0;line-height:1.7;white-space:pre-wrap;color:#333}
+.website-notice-date{font-size:13px;color:#777}
+.website-photo-story{max-width:760px;margin:16px auto 0;text-align:left;line-height:1.7}
+.website-photo-story h3{margin:0 0 8px;color:#176b36}
+.website-photo-story p{white-space:pre-wrap;margin:0;color:#333}
 .website-photo-section{padding:45px 5%;background:#f7fff7;text-align:center}
 .website-photo-section .title{margin-bottom:22px}
 .website-photo-box{
@@ -818,12 +827,21 @@
 </div>
 </section>
 
-<!-- ================= WEBSITE PHOTO ================= -->
+<!-- ================= IMPORTANT NOTICES ================= -->
+<section class="website-notices-section" id="notices">
+  <h2 class="title">📢 महत्वपूर्ण सूचना / Notice</h2>
+  <div id="websiteNoticesList" class="website-notices-list">
+    <div class="website-photo-placeholder">नई सूचना उपलब्ध होने पर यहाँ दिखाई देगी।</div>
+  </div>
+</section>
+
+<!-- ================= WEBSITE ACTIVITY ================= -->
 <section class="website-photo-section" id="updates">
-    <h2 class="title">📸 FPO गतिविधि</h2>
-    <div id="websitePhotoBox" class="website-photo-box">
-        <div class="website-photo-placeholder">Officer Dashboard से प्रकाशित फोटो यहाँ दिखाई देगी।</div>
-    </div>
+  <h2 class="title">📸 FPO गतिविधि और किसान सफलता की कहानी</h2>
+  <div id="websitePhotoBox" class="website-photo-box">
+    <div class="website-photo-placeholder">Officer Dashboard से प्रकाशित फोटो यहाँ दिखाई देगी।</div>
+  </div>
+  <div id="websitePhotoStory" class="website-photo-story"></div>
 </section>
 
 <!-- ================= SERVICES ================= -->
@@ -1075,72 +1093,24 @@
 const CBMS_PUBLIC_SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
 const CBMS_PUBLIC_SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 const cbmsPublicDb=window.supabase.createClient(CBMS_PUBLIC_SUPABASE_URL,CBMS_PUBLIC_SUPABASE_KEY);
-
+function cbmsPublicEscape(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function cbmsPublicDate(v){if(!v)return "";const d=new Date(v);return isNaN(d)? "":d.toLocaleDateString("hi-IN",{day:"2-digit",month:"long",year:"numeric"});}
 async function loadWebsitePhoto(){
-  const box=document.getElementById("websitePhotoBox");
-  if(!box)return;
-  const {data,error}=await cbmsPublicDb.from("website_updates")
-    .select("title,image_url,published_at")
-    .eq("published",true)
-    .not("image_url","is",null)
-    .order("published_at",{ascending:false})
-    .limit(1);
-  if(error){
-    box.innerHTML='<div class="website-photo-placeholder">Photo अभी उपलब्ध नहीं है।</div>';
-    console.error("Website photo:",error);
-    return;
-  }
-  if(!data || !data.length || !data[0].image_url){
-    box.innerHTML='<div class="website-photo-placeholder">Officer Dashboard से प्रकाशित फोटो यहाँ दिखाई देगी।</div>';
-    return;
-  }
-  const item=data[0];
-  box.innerHTML='<img src="'+String(item.image_url).replace(/"/g,'&quot;')+'" alt="'+String(item.title||"FPO Activity Photo").replace(/"/g,'&quot;')+'" loading="lazy">';
+ const box=document.getElementById("websitePhotoBox"),story=document.getElementById("websitePhotoStory");if(!box)return;
+ const {data,error}=await cbmsPublicDb.from("website_updates").select("title,description,image_url,published_at,content_type").eq("published",true).eq("content_type","story").not("image_url","is",null).order("published_at",{ascending:false}).limit(1);
+ if(error){box.innerHTML='<div class="website-photo-placeholder">फोटो अभी उपलब्ध नहीं है।</div>';console.error("Website photo:",error);return;}
+ if(!data?.length){box.innerHTML='<div class="website-photo-placeholder">Officer Dashboard से प्रकाशित फोटो यहाँ दिखाई देगी।</div>';return;}
+ const x=data[0];box.innerHTML='<img src="'+cbmsPublicEscape(x.image_url)+'" alt="'+cbmsPublicEscape(x.title)+'" loading="lazy">';
+ if(story)story.innerHTML='<h3>'+cbmsPublicEscape(x.title)+'</h3>'+(x.description?'<p>'+cbmsPublicEscape(x.description)+'</p>':'')+'<div class="website-notice-date">📅 '+cbmsPublicDate(x.published_at)+'</div>';
 }
-loadWebsitePhoto();
+async function loadWebsiteNotices(){
+ const box=document.getElementById("websiteNoticesList");if(!box)return;
+ const {data,error}=await cbmsPublicDb.from("website_updates").select("title,description,published_at").eq("published",true).eq("content_type","notice").order("published_at",{ascending:false}).limit(5);
+ if(error){box.innerHTML='<div class="website-photo-placeholder">सूचना अभी लोड नहीं हो सकी।</div>';console.error("Website notices:",error);return;}
+ if(!data?.length){box.innerHTML='<div class="website-photo-placeholder">अभी कोई नई सूचना जारी नहीं हुई है।</div>';return;}
+ box.innerHTML=data.map(x=>'<article class="website-notice-card"><div class="website-notice-date">📅 '+cbmsPublicDate(x.published_at)+'</div><h3>'+cbmsPublicEscape(x.title)+'</h3><p>'+cbmsPublicEscape(x.description||"")+'</p></article>').join("");
+}
+loadWebsitePhoto();loadWebsiteNotices();
 </script>
-<script>
-const CBMS_PUBLIC_SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
-const CBMS_PUBLIC_SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
-const cbmsPublicDb=window.supabase.createClient(CBMS_PUBLIC_SUPABASE_URL,CBMS_PUBLIC_SUPABASE_KEY);
-
-function cbmsUpdateEscape(v){
-  return String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#039;"}[c]));
-}
-function cbmsUpdateDate(v){
-  try{return new Date(v).toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"});}catch(e){return "";}
-}
-async function loadWebsiteUpdates(){
-  const box=document.getElementById("websiteUpdatesGrid");
-  if(!box)return;
-  const {data,error}=await cbmsPublicDb.from("website_updates")
-    .select("id,title,category,description,image_url,published_at")
-    .eq("published",true)
-    .order("published_at",{ascending:false})
-    .limit(12);
-  if(error){
-    box.innerHTML='<div class="website-updates-empty">Updates अभी उपलब्ध नहीं हैं।</div>';
-    console.error("Website updates:",error);
-    return;
-  }
-  if(!data || !data.length){
-    box.innerHTML='<div class="website-updates-empty">अभी कोई नया update/photo उपलब्ध नहीं है।</div>';
-    return;
-  }
-  box.innerHTML=data.map(x=>`
-    <article class="website-update-card">
-      ${x.image_url ? '<img src="'+cbmsUpdateEscape(x.image_url)+'" alt="'+cbmsUpdateEscape(x.title)+'" loading="lazy">' : ''}
-      <div class="website-update-body">
-        <span class="website-update-category">${cbmsUpdateEscape(x.category||"Other")}</span>
-        <h3>${cbmsUpdateEscape(x.title)}</h3>
-        ${x.description ? '<p>'+cbmsUpdateEscape(x.description)+'</p>' : ''}
-        <div class="website-update-date">📅 ${cbmsUpdateDate(x.published_at)}</div>
-      </div>
-    </article>
-  `).join("");
-}
-loadWebsiteUpdates();
-</script>
-
 </body>
 </html>
