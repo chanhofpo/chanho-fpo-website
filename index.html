@@ -23,22 +23,57 @@
     <meta name="twitter:description" content="Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.">
     <meta name="twitter:image" content="https://chanhofpo.github.io/chanho-fpo-website/logo.png">
 
-    <!-- Structured Data for Google -->
+    <!-- Structured Data for Google: Organization + Management Team -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Chanho Birsa Munda Sangathan Producer Company Limited",
-      "url": "https://chanhofpo.github.io/chanho-fpo-website/",
-      "logo": "https://chanhofpo.github.io/chanho-fpo-website/logo.png",
-      "description": "Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Vill-Hutar, PO-Tangar, PS-Chanho",
-        "addressLocality": "Ranchi",
-        "addressRegion": "Jharkhand",
-        "addressCountry": "IN"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://chanhofpo.github.io/chanho-fpo-website/#organization",
+          "name": "Chanho Birsa Munda Sangathan Producer Company Limited",
+          "url": "https://chanhofpo.github.io/chanho-fpo-website/",
+          "logo": "https://chanhofpo.github.io/chanho-fpo-website/logo.png",
+          "description": "Chanho Birsa Munda Sangathan Producer Company Limited, Chanho, Ranchi, Jharkhand. Farmer Registration, agricultural services, government schemes and FPO services for farmers.",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Vill-Hutar, PO-Tangar, PS-Chanho",
+            "addressLocality": "Ranchi",
+            "addressRegion": "Jharkhand",
+            "addressCountry": "IN"
+          },
+          "employee": [
+            {
+              "@id": "https://chanhofpo.github.io/chanho-fpo-website/#kamakhya-singh"
+            },
+            {
+              "@id": "https://chanhofpo.github.io/chanho-fpo-website/#ishwar-prasad-gupta"
+            }
+          ]
+        },
+        {
+          "@type": "Person",
+          "@id": "https://chanhofpo.github.io/chanho-fpo-website/#kamakhya-singh",
+          "name": "Kamakhya Singh",
+          "jobTitle": "Chief Executive Officer (CEO)",
+          "image": "https://chanhofpo.github.io/chanho-fpo-website/kamakhya-singh-ceo.jpg",
+          "worksFor": {
+            "@id": "https://chanhofpo.github.io/chanho-fpo-website/#organization"
+          },
+          "url": "https://chanhofpo.github.io/chanho-fpo-website/#management"
+        },
+        {
+          "@type": "Person",
+          "@id": "https://chanhofpo.github.io/chanho-fpo-website/#ishwar-prasad-gupta",
+          "name": "Ishwar Prasad Gupta",
+          "jobTitle": "Secretary",
+          "image": "https://chanhofpo.github.io/chanho-fpo-website/ishwar-prasad-gupta-secretary.jpg",
+          "worksFor": {
+            "@id": "https://chanhofpo.github.io/chanho-fpo-website/#organization"
+          },
+          "url": "https://chanhofpo.github.io/chanho-fpo-website/#management"
+        }
+      ]
     }
     </script>
 
@@ -730,7 +765,8 @@
 
     <article class="management-card">
         <img src="kamakhya-singh-ceo.jpg"
-             alt="Kamakhya Singh CEO">
+             alt="Kamakhya Singh, Chief Executive Officer of Chanho Birsa Munda Sangathan Producer Company Limited"
+             loading="lazy">
         <div class="management-card-info">
             <h3>Kamakhya Singh</h3>
             <p>Chief Executive Officer (CEO)</p>
@@ -739,7 +775,8 @@
 
     <article class="management-card">
         <img src="ishwar-prasad-gupta-secretary.jpg"
-             alt="Ishwar Prasad Gupta Secretary">
+             alt="Ishwar Prasad Gupta, Secretary of Chanho Birsa Munda Sangathan Producer Company Limited"
+             loading="lazy">
         <div class="management-card-info">
             <h3>Ishwar Prasad Gupta</h3>
             <p>Secretary</p>
