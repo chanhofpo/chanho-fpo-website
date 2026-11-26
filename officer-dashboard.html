@@ -184,6 +184,7 @@ tr:nth-child(even) td{background:#fafcfd}
     <button class="sidebar-link" data-title="Admin Area Directory" onclick="showOfficerPanel('adminDirectoryPanel',this);cbmsLoadOfficerAdminDirectory()"><span class="ico">▤</span>Admin Area Directory</button>
     <button class="sidebar-link" data-title="Admin Area & Status Management" onclick="showOfficerPanel('adminManagementPanel',this);cbmsLoadOfficerManagement()"><span class="ico">⚙</span>Admin Area &amp; Status Management</button>
     <button class="sidebar-link" data-title="Block Coordinator Performance" onclick="showOfficerPanel('performancePanel',this);loadPerformance()"><span class="ico">📊</span>Coordinator Performance</button>
+    <button class="sidebar-link" data-title="Website Updates" onclick="showOfficerPanel('websiteUpdatesPanel',this);cbmsLoadWebsiteUpdates()"><span class="ico">📸</span>Website Updates</button>
     <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
     <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
     <button class="sidebar-link" data-title="Farmer Applications" onclick="showOfficerPanel('farmersPanel',this)"><span class="ico">🌾</span>Farmer Applications</button>
@@ -360,7 +361,37 @@ tr:nth-child(even) td{background:#fafcfd}
     </div>
   </section>
 
-  <section id="profilePanel" class="portal-panel">
+  <section id="websiteUpdatesPanel" class="portal-panel">
+  <div class="section">
+    <h2>📸 Website Updates / Photo Gallery</h2>
+    <p class="section-note">Yahan se jo update/photo publish karenge, wahi public website ke homepage ke “हमारी गतिविधियाँ और अपडेट” section me automatically show hoga.</p>
+    <div id="cbmsWebsiteUpdateMsg" class="message"></div>
+    <form id="cbmsWebsiteUpdateForm" onsubmit="event.preventDefault();cbmsPublishWebsiteUpdate();">
+      <div class="form-grid">
+        <div><label>Category *</label>
+          <select id="cbmsUpdateCategory" required>
+            <option>Seed Distribution</option><option>Success Story</option><option>Training</option>
+            <option>Field Visit</option><option>Farmer Meeting</option><option>Crop / Harvest</option><option>Other</option>
+          </select>
+        </div>
+        <div><label>Title *</label><input id="cbmsUpdateTitle" placeholder="जैसे: सरसों बीज वितरण कार्यक्रम" required></div>
+        <div class="form-span-2"><label>Description</label><textarea id="cbmsUpdateDescription" placeholder="कार्यक्रम/सफलता की संक्षिप्त जानकारी..."></textarea></div>
+        <div><label>Photo</label><input id="cbmsUpdatePhoto" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div>
+        <div><label>Status</label><select id="cbmsUpdatePublished"><option value="true">Publish on Website</option><option value="false">Save as Draft</option></select></div>
+      </div>
+      <div style="margin-top:12px"><button class="primary-btn" id="cbmsUpdatePublishBtn" type="submit">📤 Publish Update</button></div>
+    </form>
+  </div>
+  <div class="section">
+    <h2>Published / Saved Updates</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Photo</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="cbmsWebsiteUpdatesBody"><tr><td colspan="6" class="empty">No updates.</td></tr></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="profilePanel" class="portal-panel">
     <div class="section">
       <h2>Manage Officer Profile</h2>
       <p class="section-note">Officer ID pehle se bana hua rahega. Yahan apna photo aur profile details update karein.</p>
@@ -3982,6 +4013,65 @@ function setOfficerAccountDateDefaults(){
 
     if(from && !from.value) from.value = `${y}-${m}-01`;
     if(to && !to.value) to.value = `${y}-${m}-${d}`;
+}
+
+
+/* =========================
+   WEBSITE UPDATES
+========================= */
+async function cbmsLoadWebsiteUpdates(){
+  const tbody=document.getElementById("cbmsWebsiteUpdatesBody");
+  if(!tbody)return;
+  const {data,error}=await db.from("website_updates").select("*").order("published_at",{ascending:false}).limit(100);
+  if(error){tbody.innerHTML='<tr><td colspan="6" class="empty">Load failed: '+escapeHtml(error.message)+'</td></tr>';return;}
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No website updates yet.</td></tr>';return;}
+  tbody.innerHTML=data.map(x=>`
+    <tr>
+      <td>${x.image_url?'<img src="'+escapeHtml(x.image_url)+'" style="width:70px;height:55px;object-fit:cover;border-radius:5px">':'—'}</td>
+      <td>${escapeHtml(x.category||"Other")}</td>
+      <td>${escapeHtml(x.title||"")}</td>
+      <td>${new Date(x.published_at||x.created_at).toLocaleDateString("en-IN")}</td>
+      <td>${x.published?'<span class="badge badge-approved">Published</span>':'<span class="badge badge-other">Draft</span>'}</td>
+      <td><button class="action-btn reject-btn" onclick="cbmsDeleteWebsiteUpdate('${x.id}')">Delete</button></td>
+    </tr>`).join("");
+}
+async function cbmsPublishWebsiteUpdate(){
+  const btn=document.getElementById("cbmsUpdatePublishBtn"), msg=document.getElementById("cbmsWebsiteUpdateMsg");
+  const title=document.getElementById("cbmsUpdateTitle").value.trim();
+  const category=document.getElementById("cbmsUpdateCategory").value;
+  const description=document.getElementById("cbmsUpdateDescription").value.trim();
+  const published=document.getElementById("cbmsUpdatePublished").value==="true";
+  const file=document.getElementById("cbmsUpdatePhoto").files[0];
+  if(!title){showError("Title required.");return;}
+  btn.disabled=true;btn.textContent="Uploading...";
+  try{
+    const {data:s,error:sErr}=await db.auth.getSession(); if(sErr||!s?.session) throw new Error("Officer session expired.");
+    let image_url=null;
+    if(file){
+      if(!file.type.startsWith("image/")) throw new Error("Only image file allowed.");
+      if(file.size>10*1024*1024) throw new Error("Photo 10 MB se chhoti honi chahiye.");
+      const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+      const path="updates/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safe;
+      const {error:uErr}=await db.storage.from("website-updates").upload(path,file,{cacheControl:"3600",upsert:false});
+      if(uErr) throw uErr;
+      image_url=db.storage.from("website-updates").getPublicUrl(path).data.publicUrl;
+    }
+    const {error:iErr}=await db.from("website_updates").insert({
+      title,category,description:description||null,image_url,published,created_by:s.session.user.id
+    });
+    if(iErr) throw iErr;
+    msg.className="message success";msg.textContent=published?"Website par update publish ho gaya.":"Draft save ho gaya.";
+    document.getElementById("cbmsWebsiteUpdateForm").reset();
+    await cbmsLoadWebsiteUpdates();
+  }catch(err){
+    msg.className="message error";msg.textContent="Update failed: "+(err?.message||String(err));
+  }finally{btn.disabled=false;btn.textContent="📤 Publish Update";}
+}
+async function cbmsDeleteWebsiteUpdate(id){
+  if(!confirm("Is website update ko delete karna hai?"))return;
+  const {error}=await db.from("website_updates").delete().eq("id",id);
+  if(error){showError("Delete failed: "+error.message);return;}
+  await cbmsLoadWebsiteUpdates();
 }
 
 
