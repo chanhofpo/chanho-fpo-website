@@ -4022,7 +4022,13 @@ function setOfficerAccountDateDefaults(){
 async function cbmsLoadWebsiteUpdates(){
   const tbody=document.getElementById("cbmsWebsiteUpdatesBody");
   if(!tbody)return;
-  const {data,error}=await db.from("website_updates").select("*").order("published_at",{ascending:false}).limit(100);
+  if(!currentOfficer || String(currentOfficer.status || "").toLowerCase() !== "active"){
+    tbody.innerHTML='<tr><td colspan="6" class="empty">Sirf Active Officer Website Updates manage kar sakta hai.</td></tr>';
+    return;
+  }
+  const {data,error}=await db.from("website_updates")
+    .select("id,title,category,description,image_url,published,published_at,created_at,updated_at")
+    .order("published_at",{ascending:false,nullsFirst:false}).limit(100);
   if(error){tbody.innerHTML='<tr><td colspan="6" class="empty">Load failed: '+escapeHtml(error.message)+'</td></tr>';return;}
   if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No website updates yet.</td></tr>';return;}
   tbody.innerHTML=data.map(x=>`
@@ -4056,8 +4062,17 @@ async function cbmsPublishWebsiteUpdate(){
       if(uErr) throw uErr;
       image_url=db.storage.from("website-updates").getPublicUrl(path).data.publicUrl;
     }
+    if(!currentOfficer || String(currentOfficer.status || "").toLowerCase() !== "active"){
+      throw new Error("Sirf Active Officer update publish kar sakta hai.");
+    }
+    const now = new Date().toISOString();
     const {error:iErr}=await db.from("website_updates").insert({
-      title,category,description:description||null,image_url,published,created_by:s.session.user.id
+      title,
+      category,
+      description:description||null,
+      image_url,
+      published,
+      published_at: published ? now : null
     });
     if(iErr) throw iErr;
     msg.className="message success";msg.textContent=published?"Website par update publish ho gaya.":"Draft save ho gaya.";
@@ -4068,6 +4083,9 @@ async function cbmsPublishWebsiteUpdate(){
   }finally{btn.disabled=false;btn.textContent="📤 Publish Update";}
 }
 async function cbmsDeleteWebsiteUpdate(id){
+  if(!currentOfficer || String(currentOfficer.status || "").toLowerCase() !== "active"){
+    showError("Sirf Active Officer update delete kar sakta hai.");return;
+  }
   if(!confirm("Is website update ko delete karna hai?"))return;
   const {error}=await db.from("website_updates").delete().eq("id",id);
   if(error){showError("Delete failed: "+error.message);return;}
