@@ -557,26 +557,37 @@
             }
         }
     
-/* ================= PHOTO GALLERY ================= */
-.photo-gallery-section{padding:55px 5%;background:#f7fff7;text-align:center}
-.photo-gallery-section .title{margin-bottom:10px}
-.photo-gallery-intro{max-width:760px;margin:0 auto 22px;color:#526052;line-height:1.6}
-.photo-gallery-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-.photo-gallery-btn{display:inline-block;background:#126b32;color:#fff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold}
-.photo-gallery-btn.secondary{background:#ff9800;color:#111}
-
-    /* ================= WEBSITE UPDATES ================= */
-.website-updates-section{padding:55px 5%;background:#f7fff7}
-.website-updates-intro{max-width:800px;margin:-12px auto 28px;text-align:center;color:#526052;line-height:1.6}
-.website-updates-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
-.website-update-card{background:#fff;border:1px solid #dcebdc;border-radius:13px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.09)}
-.website-update-card img{width:100%;height:210px;object-fit:cover;display:block}
-.website-update-body{padding:16px}.website-update-category{display:inline-block;background:#e8f5e9;color:#126b32;font-size:11px;font-weight:700;padding:5px 8px;border-radius:12px}
-.website-update-body h3{color:#126b32;margin:9px 0 5px;font-size:18px}
-.website-update-body p{color:#555;line-height:1.55;margin:0;font-size:14px}
-.website-update-date{margin-top:10px;color:#888;font-size:11px}
-.website-updates-loading,.website-updates-empty{grid-column:1/-1;text-align:center;background:#fff;border:1px solid #dcebdc;border-radius:12px;padding:28px;color:#667085}
-@media(max-width:600px){.website-updates-grid{grid-template-columns:1fr}.website-update-card img{height:230px}}
+/* ================= SINGLE PHOTO UPDATE ================= */
+.website-photo-section{padding:45px 5%;background:#f7fff7;text-align:center}
+.website-photo-section .title{margin-bottom:22px}
+.website-photo-box{
+    width:320px;
+    height:320px;
+    max-width:90vw;
+    margin:0 auto;
+    background:#fff;
+    border:2px dashed #c9dfc9;
+    border-radius:10px;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.website-photo-box img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+.website-photo-placeholder{
+    color:#7a8b7a;
+    font-size:15px;
+    padding:20px;
+    line-height:1.6;
+}
+@media(max-width:600px){
+    .website-photo-box{width:290px;height:290px}
+}
 
 /* ================= MANAGEMENT TEAM ================= */
 .management-section {
@@ -807,15 +818,11 @@
 </div>
 </section>
 
-<!-- ================= WEBSITE UPDATES / PHOTO STORIES ================= -->
-<section class="website-updates-section" id="updates">
-    <h2 class="title">📸 हमारी गतिविधियाँ और अपडेट</h2>
-    <p class="website-updates-intro">
-        FPO की Seed Distribution, Farmer Success Story, Training, Field Visit, Farmer Meeting,
-        Crop/Harvest और अन्य गतिविधियों की नई तस्वीरें एवं जानकारी यहाँ दिखाई देंगी।
-    </p>
-    <div id="websiteUpdatesGrid" class="website-updates-grid">
-        <div class="website-updates-loading">Updates load हो रहे हैं...</div>
+<!-- ================= WEBSITE PHOTO ================= -->
+<section class="website-photo-section" id="updates">
+    <h2 class="title">📸 FPO गतिविधि</h2>
+    <div id="websitePhotoBox" class="website-photo-box">
+        <div class="website-photo-placeholder">Officer Dashboard से प्रकाशित फोटो यहाँ दिखाई देगी।</div>
     </div>
 </section>
 
@@ -1006,19 +1013,6 @@
 
 </section>
 
-<!-- ================= PHOTO GALLERY ================= -->
-<section class="photo-gallery-section" id="gallery">
-    <h2 class="title">📸 हमारी गतिविधियाँ</h2>
-    <p class="photo-gallery-intro">
-        Seed Distribution, Farmer Success Story, Training, Field Visit, Farmer Meeting,
-        Crop/Harvest और FPO की अन्य गतिविधियों की तस्वीरें देखें।
-    </p>
-    <div class="photo-gallery-actions">
-        <a href="photo-gallery.html" class="photo-gallery-btn">📷 Photo Gallery देखें</a>
-        <a href="photo-gallery.html" class="photo-gallery-btn secondary">📤 Staff Photo Upload</a>
-    </div>
-</section>
-
 <!-- ================= CONTACT ================= -->
 
 <section id="contact">
@@ -1077,6 +1071,34 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CBMS_PUBLIC_SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const CBMS_PUBLIC_SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const cbmsPublicDb=window.supabase.createClient(CBMS_PUBLIC_SUPABASE_URL,CBMS_PUBLIC_SUPABASE_KEY);
+
+async function loadWebsitePhoto(){
+  const box=document.getElementById("websitePhotoBox");
+  if(!box)return;
+  const {data,error}=await cbmsPublicDb.from("website_updates")
+    .select("title,image_url,published_at")
+    .eq("published",true)
+    .not("image_url","is",null)
+    .order("published_at",{ascending:false})
+    .limit(1);
+  if(error){
+    box.innerHTML='<div class="website-photo-placeholder">Photo अभी उपलब्ध नहीं है।</div>';
+    console.error("Website photo:",error);
+    return;
+  }
+  if(!data || !data.length || !data[0].image_url){
+    box.innerHTML='<div class="website-photo-placeholder">Officer Dashboard से प्रकाशित फोटो यहाँ दिखाई देगी।</div>';
+    return;
+  }
+  const item=data[0];
+  box.innerHTML='<img src="'+String(item.image_url).replace(/"/g,'&quot;')+'" alt="'+String(item.title||"FPO Activity Photo").replace(/"/g,'&quot;')+'" loading="lazy">';
+}
+loadWebsitePhoto();
+</script>
 <script>
 const CBMS_PUBLIC_SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
 const CBMS_PUBLIC_SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
