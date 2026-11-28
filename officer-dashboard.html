@@ -185,6 +185,7 @@ tr:nth-child(even) td{background:#fafcfd}
     <button class="sidebar-link" data-title="Admin Area & Status Management" onclick="showOfficerPanel('adminManagementPanel',this);cbmsLoadOfficerManagement()"><span class="ico">⚙</span>Admin Area &amp; Status Management</button>
     <button class="sidebar-link" data-title="Block Coordinator Performance" onclick="showOfficerPanel('performancePanel',this);loadPerformance()"><span class="ico">📊</span>Coordinator Performance</button>
     <button class="sidebar-link" data-title="Website Updates" onclick="showOfficerPanel('websiteUpdatesPanel',this);cbmsLoadWebsiteUpdates()"><span class="ico">📸</span>Website Updates</button>
+    <button class="sidebar-link" data-title="Photo Gallery" onclick="showOfficerPanel('photoGalleryPanel',this);cbmsLoadOfficerGallery()"><span class="ico">🖼️</span>Photo Gallery</button>
     <button class="sidebar-link" data-title="Document Generator" onclick="window.location.href='document-generator.html'"><span class="ico">📄</span>Document Generator</button>
     <button class="sidebar-link" data-title="Audit Log" onclick="showOfficerPanel('auditPanel',this)"><span class="ico">🕘</span>Audit Log</button>
     <button class="sidebar-link" data-title="System Backup" onclick="showOfficerPanel('backupPanel',this)"><span class="ico">💾</span>System Backup</button>
@@ -392,6 +393,36 @@ tr:nth-child(even) td{background:#fafcfd}
       <thead><tr><th>Photo</th><th>Type</th><th>Category</th><th>Title</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
       <tbody id="cbmsWebsiteUpdatesBody"><tr><td colspan="7" class="empty">No updates.</td></tr></tbody>
     </table></div>
+  </div>
+</section>
+
+<section id="photoGalleryPanel" class="portal-panel">
+  <div class="section">
+    <h2>📸 Photo Gallery Manager</h2>
+    <p class="section-note">Yahan upload ki gayi photos seedhe website ke Photo Gallery aur homepage ke photo section mein dikhenगी. Notice / Latest Updates se iska koi sambandh nahi hai.</p>
+    <div id="cbmsGalleryMsg" class="message"></div>
+    <div class="form-grid">
+      <div><label>Photo Category *</label>
+        <select id="cbmsGalleryCategory">
+          <option value="seed-distribution">Seed Distribution</option>
+          <option value="success-story">Success Story</option>
+          <option value="training">Training</option>
+          <option value="field-visit">Field Visit</option>
+          <option value="farmer-meeting">Farmer Meeting</option>
+          <option value="crop-harvest">Crop / Harvest</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div><label>Select Photos *</label><input id="cbmsGalleryFiles" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div>
+    </div>
+    <p class="section-note" style="margin-top:10px">Ek baar mein kai photos upload kar sakte hain. Har photo 10 MB se chhoti honi chahiye.</p>
+    <button class="primary-btn" id="cbmsGalleryUploadBtn" type="button" onclick="cbmsUploadGalleryPhotos()">📤 Upload Photos</button>
+  </div>
+  <div class="section">
+    <h2>Uploaded Photos</h2>
+    <div id="cbmsOfficerGalleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px">
+      <div class="empty">Photos load ho rahi hain...</div>
+    </div>
   </div>
 </section>
 
@@ -4088,6 +4119,80 @@ async function cbmsPublishWebsiteUpdate(){
     msg.className="message error";msg.textContent="Update failed: "+(err?.message||String(err));
   }finally{btn.disabled=false;btn.textContent="📤 Publish Update";}
 }
+/* =========================
+   OFFICER PHOTO GALLERY
+========================= */
+const cbmsGalleryBucket="fpo-gallery";
+const cbmsGalleryCategories=["seed-distribution","success-story","training","field-visit","farmer-meeting","crop-harvest","other"];
+const cbmsGalleryCategoryNames={"seed-distribution":"Seed Distribution","success-story":"Success Story","training":"Training","field-visit":"Field Visit","farmer-meeting":"Farmer Meeting","crop-harvest":"Crop / Harvest","other":"Other"};
+
+function cbmsGalleryMessage(message,type){
+  const el=document.getElementById("cbmsGalleryMsg");
+  if(!el)return;
+  el.style.display="block";
+  el.className="message "+(type==="error"?"error":"success");
+  el.textContent=message;
+}
+
+async function cbmsLoadOfficerGallery(){
+  const grid=document.getElementById("cbmsOfficerGalleryGrid");
+  if(!grid)return;
+  if(!currentOfficer || String(currentOfficer.status||"").toLowerCase()!=="active"){
+    grid.innerHTML='<div class="empty">Sirf Active Officer Photo Gallery manage kar sakta hai.</div>';return;
+  }
+  grid.innerHTML='<div class="empty">Photos load ho rahi hain...</div>';
+  try{
+    let photos=[];
+    for(const cat of cbmsGalleryCategories){
+      const {data,error}=await db.storage.from(cbmsGalleryBucket).list(cat,{limit:100,sortBy:{column:"created_at",order:"desc"}});
+      if(error)throw error;
+      (data||[]).filter(x=>x.name&&!x.name.endsWith("/")).forEach(x=>{
+        const {data:u}=db.storage.from(cbmsGalleryBucket).getPublicUrl(cat+"/"+x.name);
+        photos.push({name:x.name,cat,url:u.publicUrl,created_at:x.created_at||""});
+      });
+    }
+    photos.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
+    if(!photos.length){grid.innerHTML='<div class="empty">Abhi koi photo upload nahi hai.</div>';return;}
+    grid.innerHTML=photos.map(p=>'<div style="border:1px solid #d7e1e8;border-radius:8px;padding:8px;background:#f8fbfd;min-width:0"><img src="'+escapeHtml(p.url)+'" alt="Gallery photo" style="width:100%;height:125px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'"><div style="font-size:11px;font-weight:700;margin:7px 0;color:#075e88">'+escapeHtml(cbmsGalleryCategoryNames[p.cat])+'</div><div style="font-size:10px;overflow-wrap:anywhere;color:#667085">'+escapeHtml(p.name)+'</div><button class="action-btn reject-btn" style="margin:7px 0 0" onclick="cbmsDeleteGalleryPhoto(\''+p.cat+'\',\''+encodeURIComponent(p.name)+'\')">Delete Photo</button></div>').join("");
+  }catch(e){grid.innerHTML='<div class="empty">Gallery load failed: '+escapeHtml(e.message||String(e))+'</div>';}
+}
+
+async function cbmsUploadGalleryPhotos(){
+  const btn=document.getElementById("cbmsGalleryUploadBtn");
+  const input=document.getElementById("cbmsGalleryFiles");
+  const cat=document.getElementById("cbmsGalleryCategory").value;
+  const files=[...(input.files||[])];
+  if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){cbmsGalleryMessage("Sirf Active Officer photo upload kar sakta hai.","error");return;}
+  if(!files.length){cbmsGalleryMessage("Pehle photo select kijiye.","error");return;}
+  if(files.some(f=>!f.type.startsWith("image/")||f.size>10*1024*1024)){cbmsGalleryMessage("Sirf image files select karein aur har photo 10 MB se chhoti rakhein.","error");return;}
+  btn.disabled=true;btn.textContent="Uploading...";
+  try{
+    const {data:s,error:sErr}=await db.auth.getSession();
+    if(sErr||!s?.session)throw new Error("Officer session expired. Dobara login karein.");
+    let uploaded=0,failed=[];
+    for(const file of files){
+      const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+      const path=cat+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safe;
+      const {error}=await db.storage.from(cbmsGalleryBucket).upload(path,file,{cacheControl:"3600",upsert:false});
+      if(error)failed.push(file.name+": "+error.message);else uploaded++;
+    }
+    input.value="";
+    cbmsGalleryMessage(uploaded+" photo Photo Gallery mein upload ho gayi."+(failed.length?" Failed: "+failed.join(" | "):""),failed.length?"error":"success");
+    await cbmsLoadOfficerGallery();
+  }catch(e){cbmsGalleryMessage("Upload failed: "+(e.message||String(e)),"error");}
+  finally{btn.disabled=false;btn.textContent="📤 Upload Photos";}
+}
+
+async function cbmsDeleteGalleryPhoto(category,encodedName){
+  if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){cbmsGalleryMessage("Sirf Active Officer photo delete kar sakta hai.","error");return;}
+  const name=decodeURIComponent(encodedName);
+  if(!confirm("Is photo ko Photo Gallery se delete karna hai?"))return;
+  const {error}=await db.storage.from(cbmsGalleryBucket).remove([category+"/"+name]);
+  if(error){cbmsGalleryMessage("Delete failed: "+error.message,"error");return;}
+  cbmsGalleryMessage("Photo delete ho gayi.","success");
+  await cbmsLoadOfficerGallery();
+}
+
 async function cbmsDeleteWebsiteUpdate(id){
   if(!currentOfficer || String(currentOfficer.status || "").toLowerCase() !== "active"){
     showError("Sirf Active Officer update delete kar sakta hai.");return;
