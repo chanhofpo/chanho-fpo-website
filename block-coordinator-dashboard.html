@@ -98,7 +98,6 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   <div class="nav">
     <button class="active" onclick="showPanel('homePanel',this,'Dashboard')">🏠 Dashboard</button>
     <button onclick="showPanel('adminRegPanel',this,'Admin Registration')">👤 Admin Registration</button>
-    <button onclick="showPanel('farmerRegPanel',this,'Farmer Registration');cbmsFarmerRegInitialize()">👨‍🌾 Farmer Registration</button>
     <button onclick="showPanel('farmerVerifyPanel',this,'Farmer Edit & Verification');loadFarmers()">✅ Farmer Edit & Verification</button>
     <button onclick="showPanel('assignPanel',this,'Admin Assignment');loadAdmins();loadAssignments()">📍 Admin Assignment</button>
     <button onclick="showPanel('dataPanel',this,'Data List');loadAllDataLists()">📋 Data List</button>
@@ -208,68 +207,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <div id="adminRegResult" style="margin-top:12px" aria-live="polite"></div>
 </div></section>
 
-<section id="farmerRegPanel" class="panel">
-<div class="section">
-<h2>Farmer Registration</h2>
-<div class="note" style="margin-bottom:12px">
-  Is form se Block Coordinator apne assigned Block ke farmer register kar sakta hai.
-  Panchayat/Village sirf aapke active Coordinator Area Assignment ke hisaab se select hoga.
-  Registration ke baad farmer record me <b>block_coordinator_registered_by</b> aur
-  <b>block_coordinator_registered_at</b> automatically save honge.
-</div>
 
-<div class="grid">
-  <div><label>Name *</label><input id="frName" required></div>
-  <div><label>Father / Husband Name *</label><input id="frFather" required></div>
-  <div><label>Date of Birth</label><input id="frDob" type="date"></div>
-  <div><label>Gender *</label>
-    <select id="frGender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
-  </div>
-  <div><label>Aadhaar Number *</label><input id="frAadhaar" maxlength="12" inputmode="numeric" required></div>
-  <div><label>Mobile *</label><input id="frMobile" maxlength="10" inputmode="numeric" required></div>
-
-  <div><label>Block</label><input id="frBlock" readonly></div>
-  <div><label>Panchayat *</label><select id="frPanchayat" required onchange="cbmsFarmerRegPanchayatChanged()"><option value="">Select Panchayat</option></select></div>
-  <div><label>Village *</label><select id="frVillage" required disabled><option value="">First select Panchayat</option></select></div>
-
-  <div><label>Crop</label><input id="frCrop" placeholder="e.g. Paddy, Maize, Vegetable"></div>
-  <div><label>Land</label><input id="frLand" placeholder="e.g. 2 acre / 1.5 acre"></div>
-  <div><label>Category</label>
-    <select id="frCategory"><option value="">Select</option><option>General</option><option>OBC</option><option>SC</option><option>ST</option><option>Other</option></select>
-  </div>
-
-  <div class="span-3"><label>Full Address *</label><textarea id="frAddress" placeholder="House / Tola / Landmark"></textarea></div>
-</div>
-
-<h3 style="color:#075e88;margin:22px 0 10px">Bank Details</h3>
-<div class="grid">
-  <div><label>Bank Name *</label><input id="frBankName" required></div>
-  <div><label>Bank Branch *</label><input id="frBankBranch" required></div>
-  <div><label>Account Number *</label><input id="frAccountNumber" inputmode="numeric" maxlength="25" required></div>
-  <div><label>IFSC Code *</label><input id="frIfscCode" maxlength="11" style="text-transform:uppercase" required></div>
-  <div><label>Payment Mode *</label>
-    <select id="frPaymentMode" required><option value="">Select</option><option>Cash</option><option>UPI</option><option>Bank Transfer</option></select>
-  </div>
-</div>
-
-<h3 style="color:#075e88;margin:22px 0 10px">Documents</h3>
-<div class="note">
-  Photo, Signature, Aadhaar, Form aur Land Record upload kar sakte hain.
-  File maximum 5 MB; JPG, PNG, WEBP ya PDF.
-</div><br>
-<div class="grid">
-  <div><label>Farmer Photo</label><input id="frPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"></div>
-  <div><label>Signature</label><input id="frSignatureFile" type="file" accept="image/jpeg,image/png,image/webp"></div>
-  <div><label>Aadhaar Document</label><input id="frAadhaarFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
-  <div><label>Registration Form</label><input id="frFormFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
-  <div><label>Land Record</label><input id="frLandRecordFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
-</div><br>
-
-<button id="farmerRegisterBtn" class="primary" onclick="cbmsRegisterFarmer()">Register Farmer</button>
-<button type="button" class="secondary" onclick="cbmsFarmerRegReset()" style="margin-left:8px">Reset</button>
-<div id="farmerRegResult" style="margin-top:12px" aria-live="polite"></div>
-</div>
-</section>
 
 <section id="farmerVerifyPanel" class="panel">
 <div class="section"><h2>Farmer Data Edit & Verification</h2>
