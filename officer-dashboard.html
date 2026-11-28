@@ -365,13 +365,13 @@ tr:nth-child(even) td{background:#fafcfd}
 
   <section id="websiteUpdatesPanel" class="portal-panel">
   <div class="section">
-    <h2>📢 Website Content Manager — Story & Notice</h2>
-    <p class="section-note">Activity/Story homepage ke photo section me aur Notice homepage ke Important Notice section me dikhega.</p>
+    <h2>📢 Latest Updates — Notice Manager</h2>
+    <p class="section-note">Yahan kisi bhi tarah ka Notice / सूचना publish karein. Photo aur FPO activity caption ke liye alag Photo Gallery menu use karein.</p>
     <div id="cbmsWebsiteUpdateMsg" class="message"></div>
     <form id="cbmsWebsiteUpdateForm" onsubmit="event.preventDefault();cbmsPublishWebsiteUpdate();">
       <div class="form-grid">
         <div><label>Content Type *</label>
-          <select id="cbmsUpdateType" required><option value="story">Activity / Story</option><option value="notice">Notice / सूचना</option></select>
+          <select id="cbmsUpdateType" required><option value="notice">Notice / सूचना</option></select>
         </div>
         <div><label>Category *</label>
           <select id="cbmsUpdateCategory" required>
@@ -414,6 +414,7 @@ tr:nth-child(even) td{background:#fafcfd}
         </select>
       </div>
       <div><label>Select Photos *</label><input id="cbmsGalleryFiles" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div>
+      <div style="grid-column:1/-1"><label>Photo ke saath dikhne wali line / Caption *</label><textarea id="cbmsGalleryCaption" rows="2" maxlength="500" placeholder="Jaise: ग्राम रकाडीह में किसानों के बीच सरसों एवं मसूर बीज का वितरण किया गया।" required></textarea></div>
     </div>
     <p class="section-note" style="margin-top:10px">Ek baar mein kai photos upload kar sakte hain. Har photo 10 MB se chhoti honi chahiye.</p>
     <button class="primary-btn" id="cbmsGalleryUploadBtn" type="button" onclick="cbmsUploadGalleryPhotos()">📤 Upload Photos</button>
@@ -4135,62 +4136,51 @@ function cbmsGalleryMessage(message,type){
 }
 
 async function cbmsLoadOfficerGallery(){
-  const grid=document.getElementById("cbmsOfficerGalleryGrid");
-  if(!grid)return;
-  if(!currentOfficer || String(currentOfficer.status||"").toLowerCase()!=="active"){
-    grid.innerHTML='<div class="empty">Sirf Active Officer Photo Gallery manage kar sakta hai.</div>';return;
-  }
-  grid.innerHTML='<div class="empty">Photos load ho rahi hain...</div>';
-  try{
-    let photos=[];
-    for(const cat of cbmsGalleryCategories){
-      const {data,error}=await db.storage.from(cbmsGalleryBucket).list(cat,{limit:100,sortBy:{column:"created_at",order:"desc"}});
-      if(error)throw error;
-      (data||[]).filter(x=>x.name&&!x.name.endsWith("/")).forEach(x=>{
-        const {data:u}=db.storage.from(cbmsGalleryBucket).getPublicUrl(cat+"/"+x.name);
-        photos.push({name:x.name,cat,url:u.publicUrl,created_at:x.created_at||""});
-      });
-    }
-    photos.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
-    if(!photos.length){grid.innerHTML='<div class="empty">Abhi koi photo upload nahi hai.</div>';return;}
-    grid.innerHTML=photos.map(p=>'<div style="border:1px solid #d7e1e8;border-radius:8px;padding:8px;background:#f8fbfd;min-width:0"><img src="'+escapeHtml(p.url)+'" alt="Gallery photo" style="width:100%;height:125px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'"><div style="font-size:11px;font-weight:700;margin:7px 0;color:#075e88">'+escapeHtml(cbmsGalleryCategoryNames[p.cat])+'</div><div style="font-size:10px;overflow-wrap:anywhere;color:#667085">'+escapeHtml(p.name)+'</div><button class="action-btn reject-btn" style="margin:7px 0 0" onclick="cbmsDeleteGalleryPhoto(\''+p.cat+'\',\''+encodeURIComponent(p.name)+'\')">Delete Photo</button></div>').join("");
-  }catch(e){grid.innerHTML='<div class="empty">Gallery load failed: '+escapeHtml(e.message||String(e))+'</div>';}
+ const grid=document.getElementById("cbmsOfficerGalleryGrid");if(!grid)return;
+ if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){grid.innerHTML='<div class="empty">Sirf Active Officer Photo Gallery manage kar sakta hai.</div>';return;}
+ grid.innerHTML='<div class="empty">Photos load ho rahi hain...</div>';
+ try{
+  const {data,error}=await db.from("website_updates").select("id,title,description,image_url,category,created_at").eq("content_type","gallery").order("created_at",{ascending:false}).limit(200);
+  if(error)throw error;
+  if(!data||!data.length){grid.innerHTML='<div class="empty">Abhi koi photo upload nahi hai.</div>';return;}
+  grid.innerHTML=data.map(p=>'<div style="border:1px solid #d7e1e8;border-radius:8px;padding:8px;background:#f8fbfd;min-width:0"><img src="'+escapeHtml(p.image_url||"")+'" alt="Gallery photo" style="width:100%;height:125px;object-fit:cover;border-radius:6px" onerror="this.style.display=\'none\'"><div style="font-size:11px;font-weight:700;margin:7px 0;color:#075e88">'+escapeHtml(cbmsGalleryCategoryNames[p.category]||p.category||"FPO Activity")+'</div><div style="font-size:12px;overflow-wrap:anywhere;color:#344054">'+escapeHtml(p.description||p.title||"")+'</div><button class="action-btn reject-btn" style="margin:7px 0 0" onclick="cbmsDeleteGalleryPhoto(\''+p.id+'\')">Delete Photo</button></div>').join("");
+ }catch(e){grid.innerHTML='<div class="empty">Gallery load failed: '+escapeHtml(e.message||String(e))+'</div>';}
 }
-
 async function cbmsUploadGalleryPhotos(){
-  const btn=document.getElementById("cbmsGalleryUploadBtn");
-  const input=document.getElementById("cbmsGalleryFiles");
-  const cat=document.getElementById("cbmsGalleryCategory").value;
-  const files=[...(input.files||[])];
-  if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){cbmsGalleryMessage("Sirf Active Officer photo upload kar sakta hai.","error");return;}
-  if(!files.length){cbmsGalleryMessage("Pehle photo select kijiye.","error");return;}
-  if(files.some(f=>!f.type.startsWith("image/")||f.size>10*1024*1024)){cbmsGalleryMessage("Sirf image files select karein aur har photo 10 MB se chhoti rakhein.","error");return;}
-  btn.disabled=true;btn.textContent="Uploading...";
-  try{
-    const {data:s,error:sErr}=await db.auth.getSession();
-    if(sErr||!s?.session)throw new Error("Officer session expired. Dobara login karein.");
-    let uploaded=0,failed=[];
-    for(const file of files){
-      const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-      const path=cat+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safe;
-      const {error}=await db.storage.from(cbmsGalleryBucket).upload(path,file,{cacheControl:"3600",upsert:false});
-      if(error)failed.push(file.name+": "+error.message);else uploaded++;
-    }
-    input.value="";
-    cbmsGalleryMessage(uploaded+" photo Photo Gallery mein upload ho gayi."+(failed.length?" Failed: "+failed.join(" | "):""),failed.length?"error":"success");
-    await cbmsLoadOfficerGallery();
-  }catch(e){cbmsGalleryMessage("Upload failed: "+(e.message||String(e)),"error");}
-  finally{btn.disabled=false;btn.textContent="📤 Upload Photos";}
-}
-
-async function cbmsDeleteGalleryPhoto(category,encodedName){
-  if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){cbmsGalleryMessage("Sirf Active Officer photo delete kar sakta hai.","error");return;}
-  const name=decodeURIComponent(encodedName);
-  if(!confirm("Is photo ko Photo Gallery se delete karna hai?"))return;
-  const {error}=await db.storage.from(cbmsGalleryBucket).remove([category+"/"+name]);
-  if(error){cbmsGalleryMessage("Delete failed: "+error.message,"error");return;}
-  cbmsGalleryMessage("Photo delete ho gayi.","success");
+ const btn=document.getElementById("cbmsGalleryUploadBtn"),input=document.getElementById("cbmsGalleryFiles");
+ const cat=document.getElementById("cbmsGalleryCategory").value,caption=document.getElementById("cbmsGalleryCaption").value.trim(),files=[...(input.files||[])];
+ if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){cbmsGalleryMessage("Sirf Active Officer photo upload kar sakta hai.","error");return;}
+ if(!caption){cbmsGalleryMessage("Photo ke saath dikhne wali line likhiye.","error");return;}
+ if(!files.length){cbmsGalleryMessage("Pehle photo select kijiye.","error");return;}
+ if(files.some(f=>!f.type.startsWith("image/")||f.size>10*1024*1024)){cbmsGalleryMessage("Sirf image files select karein aur har photo 10 MB se chhoti rakhein.","error");return;}
+ btn.disabled=true;btn.textContent="Uploading...";
+ try{
+  const {data:s,error:sErr}=await db.auth.getSession();if(sErr||!s?.session)throw new Error("Officer session expired. Dobara login karein.");
+  let uploaded=0,failed=[];
+  for(const file of files){
+   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_"),path=cat+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safe;
+   const {error:uErr}=await db.storage.from(cbmsGalleryBucket).upload(path,file,{cacheControl:"3600",upsert:false});
+   if(uErr){failed.push(file.name+": "+uErr.message);continue;}
+   const image_url=db.storage.from(cbmsGalleryBucket).getPublicUrl(path).data.publicUrl;
+   const {error:iErr}=await db.from("website_updates").insert({title:caption.slice(0,150),description:caption,category:cat,content_type:"gallery",image_url,published:true,published_at:new Date().toISOString()});
+   if(iErr){await db.storage.from(cbmsGalleryBucket).remove([path]);failed.push(file.name+": "+iErr.message);continue;}
+   uploaded++;
+  }
+  input.value="";document.getElementById("cbmsGalleryCaption").value="";
+  cbmsGalleryMessage(uploaded+" photo caption ke saath Photo Gallery mein publish ho gayi."+(failed.length?" Failed: "+failed.join(" | "):""),failed.length?"error":"success");
   await cbmsLoadOfficerGallery();
+ }catch(e){cbmsGalleryMessage("Upload failed: "+(e.message||String(e)),"error");}
+ finally{btn.disabled=false;btn.textContent="📤 Upload Photos";}
+}
+async function cbmsDeleteGalleryPhoto(id){
+ if(!currentOfficer||String(currentOfficer.status||"").toLowerCase()!=="active"){cbmsGalleryMessage("Sirf Active Officer photo delete kar sakta hai.","error");return;}
+ if(!confirm("Is photo ko Photo Gallery se delete karna hai?"))return;
+ const {data,error}=await db.from("website_updates").select("image_url").eq("id",id).eq("content_type","gallery").maybeSingle();
+ if(error){cbmsGalleryMessage("Photo details nahi mili: "+error.message,"error");return;}
+ const {error:dErr}=await db.from("website_updates").delete().eq("id",id).eq("content_type","gallery");
+ if(dErr){cbmsGalleryMessage("Delete failed: "+dErr.message,"error");return;}
+ if(data?.image_url){try{const u=new URL(data.image_url),marker="/storage/v1/object/public/"+cbmsGalleryBucket+"/",at=u.pathname.indexOf(marker);if(at>=0)await db.storage.from(cbmsGalleryBucket).remove([decodeURIComponent(u.pathname.slice(at+marker.length))]);}catch(e){}}
+ cbmsGalleryMessage("Photo delete ho gayi.","success");await cbmsLoadOfficerGallery();
 }
 
 async function cbmsDeleteWebsiteUpdate(id){
