@@ -1105,12 +1105,12 @@ async function cbmsFarmerPhotoUrl(path){
 
     // photo_url may be stored as a full URL or as a private bucket path.
     // Handle both formats so the farmer photograph appears in View + Print.
-    if(/^https?:\\/\\//i.test(raw)){
+    if(/^https?:\/\//i.test(raw)){
       return raw;
     }
 
-    let value=raw.replace(/^\\/+/, '');
-    value=value.replace(/^farmer-documents\\//i,'');
+    let value=raw.replace(/^\/+/, '');
+    value=value.replace(/^farmer-documents\//i,'');
 
     const {data,error}=await db.storage.from('farmer-documents').createSignedUrl(value,600);
     if(!error && data?.signedUrl) return data.signedUrl;
