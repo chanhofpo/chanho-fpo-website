@@ -496,8 +496,11 @@ button:disabled{
 
 <div class="field">
     <label>Bank Name *</label>
-    <input type="text" id="bank_name" required>
+    <select id="bank_name" required>
+        <option value="">Select Bank</option><option>State Bank of India</option><option>Bank of India</option><option>Punjab National Bank</option><option>Canara Bank</option><option>Union Bank of India</option><option>Indian Bank</option><option>Bank of Baroda</option><option>Jharkhand Rajya Gramin Bank</option><option>UCO Bank</option><option>HDFC Bank</option><option>ICICI Bank</option><option>Axis Bank</option><option value="Other">Other</option>
+    </select>
 </div>
+<div class="field" id="otherBankField" style="display:none;"><label>Other Bank Name *</label><input type="text" id="bank_name_other" placeholder="बैंक का नाम लिखें"></div>
 
 <div class="field">
     <label>Branch Name *</label>
@@ -521,13 +524,9 @@ button:disabled{
 <div class="grid">
 
 <div class="field">
-    <label>Payment Mode *</label>
-    <select id="payment_mode" required>
-        <option value="">Select Payment Mode</option>
-        <option value="Cash">Cash</option>
-        <option value="UPI">UPI</option>
-    </select>
+    <label>Payment Mode *</label><select id="payment_mode" required><option value="">Select Payment Mode</option><option value="Cash">Cash</option><option value="UPI">UPI</option></select>
 </div>
+<div class="field" id="utrField" style="display:none;"><label>UTR / Transaction Number *</label><input type="text" id="utr_number" placeholder="UPI transaction number"></div>
 
 </div>
 
@@ -569,12 +568,8 @@ button:disabled{
     </div>
 </div>
 
-<div class="field full">
-    <label>Land Record *</label>
-    <div class="upload-box">
-        <input type="file" id="land_record" accept="image/*,.pdf" required>
-    </div>
-</div>
+<div class="field"><label>Land Record *</label><div class="upload-box"><input type="file" id="land_record" accept="image/*,.pdf" required></div></div>
+<div class="field"><label>Bank Passbook *</label><div class="upload-box"><input type="file" id="bank_passbook" accept="image/*,.pdf" required></div></div>
 
 </div>
 
@@ -639,6 +634,16 @@ document.getElementById("village");
 
 const areaInfo =
 document.getElementById("areaInfo");
+
+const bankSelect = document.getElementById("bank_name");
+const otherBankField = document.getElementById("otherBankField");
+const otherBankInput = document.getElementById("bank_name_other");
+const paymentModeSelect = document.getElementById("payment_mode");
+const utrField = document.getElementById("utrField");
+const utrInput = document.getElementById("utr_number");
+bankSelect.addEventListener("change", function(){ const other = this.value === "Other"; otherBankField.style.display = other ? "flex" : "none"; otherBankInput.required = other; if(!other) otherBankInput.value = ""; });
+paymentModeSelect.addEventListener("change", function(){ const upi = this.value === "UPI"; utrField.style.display = upi ? "flex" : "none"; utrInput.required = upi; if(!upi) utrInput.value = ""; });
+function getBankName(){ return bankSelect.value === "Other" ? otherBankInput.value.trim() : bankSelect.value; }
 
 const AREA_DATA = {
 
@@ -981,7 +986,7 @@ function buildPreview(){
       <div class="preview-section">
         <h3>4. Bank Details</h3>
         <div class="preview-grid">
-          ${previewField("Bank Name","bank_name")}
+          <div class="preview-item"><span>Bank Name</span><strong>${escapePreview(getBankName() || "-")}</strong></div>
           ${previewField("Branch Name","bank_branch")}
           ${previewField("Account Number","account_number")}
           ${previewField("IFSC Code","ifsc_code")}
@@ -992,6 +997,7 @@ function buildPreview(){
         <h3>5. Payment Details</h3>
         <div class="preview-grid">
           ${previewField("Payment Mode","payment_mode")}
+          ${getValue("payment_mode") === "UPI" ? `<div class="preview-item"><span>UTR / Transaction Number</span><strong>${escapePreview(getValue("utr_number"))}</strong></div>` : ""}
         </div>
       </div>
 
@@ -1003,6 +1009,7 @@ function buildPreview(){
           ${previewFile("Aadhaar Card","aadhar_file")}
           ${previewFile("Form","form_file")}
           ${previewFile("Land Record","land_record")}
+          ${previewFile("Bank Passbook","bank_passbook")}
         </div>
       </div>
     `;
@@ -1036,7 +1043,9 @@ function validateRegistrationBeforePreview(){
         throw new Error("Mobile number 10 digit का होना चाहिए।");
     }
 
-    const files = ["photo","signature","aadhar_file","form_file","land_record"];
+    const files = ["photo","signature","aadhar_file","form_file","land_record","bank_passbook"];
+    if(getValue("bank_name") === "Other" && !getValue("bank_name_other")) throw new Error("Other Bank Name भरना जरूरी है।");
+    if(getValue("payment_mode") === "UPI" && !getValue("utr_number")) throw new Error("UPI payment के लिए UTR/Transaction Number भरना जरूरी है।");
     for(const id of files){
         if(!document.getElementById(id)?.files?.[0]){
             throw new Error("सभी documents upload करना जरूरी है।");
@@ -1104,7 +1113,8 @@ async function finalSubmitRegistration(){
             signature: document.getElementById("signature").files[0],
             aadhar_file: document.getElementById("aadhar_file").files[0],
             form_file: document.getElementById("form_file").files[0],
-            land_record: document.getElementById("land_record").files[0]
+            land_record: document.getElementById("land_record").files[0],
+            bank_passbook: document.getElementById("bank_passbook").files[0]
         };
 
         finalBtn.textContent = "Uploading Documents...";
@@ -1114,6 +1124,7 @@ async function finalSubmitRegistration(){
         const aadhar_url = await uploadFile(files.aadhar_file,"aadhar");
         const form_url = await uploadFile(files.form_file,"form");
         const land_record_url = await uploadFile(files.land_record,"land-record");
+        const bank_passbook_url = await uploadFile(files.bank_passbook,"bank-passbook");
 
         finalBtn.textContent = "Registering Farmer...";
 
@@ -1133,7 +1144,7 @@ async function finalSubmitRegistration(){
             p_land:getValue("land"),
             p_category:getValue("category"),
             p_address:getValue("address"),
-            p_bank_name:getValue("bank_name"),
+            p_bank_name:getBankName(),
             p_bank_branch:getValue("bank_branch"),
             p_account_number:getValue("account_number"),
             p_ifsc_code:getValue("ifsc_code").toUpperCase(),
@@ -1142,10 +1153,13 @@ async function finalSubmitRegistration(){
             p_signature_url:signature_url,
             p_aadhar_url:aadhar_url,
             p_form_url:form_url,
-            p_land_record_url:land_record_url
+            p_land_record_url:land_record_url,
+            p_bank_passbook_url:bank_passbook_url,
+            p_utr_number:getValue("payment_mode") === "UPI" ? getValue("utr_number") : null
         });
 
         if(error) throw new Error(error.message);
+        if(data && data.success === false) throw new Error(data.message || data.error || "Registration failed.");
 
         let registrationNumber = data;
         if(typeof data === "object" && data !== null){
