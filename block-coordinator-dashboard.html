@@ -37,6 +37,31 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 .progress{height:8px;background:#e5e7eb;border-radius:10px;overflow:hidden;min-width:120px}.progress span{display:block;height:100%;background:var(--green)}
 @media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:800px){.sidebar{position:static;width:100%;height:auto}.main{margin-left:0;width:100%}.app{display:block}.stats,.grid,.filters{grid-template-columns:1fr}.span-3{grid-column:auto}}
+
+/* ================= FARMER OFFICIAL FORM / PRINT ================= */
+.farmer-detail-modal{display:none;position:fixed;inset:0;background:rgba(8,38,25,.62);z-index:3000;overflow:auto;padding:22px}
+.farmer-detail-card{max-width:980px;margin:10px auto;background:#fff;border-radius:12px;box-shadow:0 18px 60px rgba(0,0,0,.28);overflow:hidden}
+.farmer-detail-head{background:linear-gradient(135deg,#126b32,#198754);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:14px}
+.farmer-detail-head img{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:50%;padding:3px}
+.farmer-detail-head h2{color:#fff;margin:0;font-size:19px}.farmer-detail-head small{display:block;margin-top:4px;opacity:.92}
+.farmer-detail-body{padding:20px}.farmer-detail-top{display:grid;grid-template-columns:1fr 145px;gap:20px;align-items:start}
+.farmer-photo-box{text-align:center}.farmer-photo-box img{width:125px;height:155px;object-fit:cover;border:2px solid #198754;border-radius:7px;background:#f5f8f6}.farmer-photo-box .no-photo{width:125px;height:155px;border:2px dashed #aab9b0;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#667085;font-size:12px;margin:auto}
+.farmer-form-section{margin-top:18px}.farmer-form-section h3{margin:0 0 9px;background:#eaf6ee;color:#126b32;border-left:5px solid #198754;padding:9px 11px;font-size:13px;text-transform:uppercase}
+.farmer-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #dbe5df;border-radius:7px;overflow:hidden}
+.farmer-detail-item{padding:9px 11px;border-right:1px solid #dbe5df;border-bottom:1px solid #dbe5df;min-height:52px}.farmer-detail-item:nth-child(even){border-right:0}
+.farmer-detail-item span{display:block;font-size:10px;color:#667085;font-weight:700;text-transform:uppercase;letter-spacing:.25px}.farmer-detail-item strong{display:block;margin-top:4px;font-size:12px;color:#1f2937;overflow-wrap:anywhere}
+.farmer-detail-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:13px 20px;border-top:1px solid #e5e7eb;background:#f8faf9}
+.farmer-detail-actions button{border:0;border-radius:6px;padding:9px 14px;font-weight:700;cursor:pointer}.fd-print{background:#198754;color:#fff}.fd-close{background:#e9eef1;color:#344054}
+@media(max-width:700px){.farmer-detail-modal{padding:8px}.farmer-detail-top{grid-template-columns:1fr}.farmer-photo-box{order:-1}.farmer-detail-grid{grid-template-columns:1fr}.farmer-detail-item,.farmer-detail-item:nth-child(even){border-right:0}}
+@media print{
+  body *{visibility:hidden!important}
+  #farmerPrintSheet,#farmerPrintSheet *{visibility:visible!important}
+  #farmerPrintSheet{display:block!important;position:absolute;left:0;top:0;width:100%;background:#fff}
+  @page{size:A4 portrait;margin:10mm}
+  .print-actions{display:none!important}
+}
+#farmerPrintSheet{display:none}
+
 </style>
 </head>
 <body>
@@ -225,6 +250,18 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 <div class="filters"><input id="fvSearch" placeholder="Name, Reg No, Mobile, Village..." oninput="renderFarmers()"><select id="fvStatus" onchange="renderFarmers()"><option value="">All Status</option><option>Pending Admin Verification</option><option>Pending Block Coordinator Verification</option><option>Pending Officer Approval</option><option>Approved</option><option>Rejected</option></select><button class="secondary" onclick="loadFarmers()">Refresh</button></div>
 <div class="table-wrap"><table><thead><tr><th>Reg No</th><th>Name</th><th>Mobile</th><th>Panchayat</th><th>Village</th><th>Admin</th><th>Status</th><th>Action</th></tr></thead><tbody id="farmerBody"></tbody></table></div>
 </div></section>
+
+
+<div id="farmerDetailModal" class="farmer-detail-modal" onclick="cbmsCloseFarmerDetail(event)">
+  <div class="farmer-detail-card" onclick="event.stopPropagation()">
+    <div id="farmerDetailContent"></div>
+    <div class="farmer-detail-actions">
+      <button class="fd-print" onclick="cbmsPrintFarmerFromModal()">🖨️ Print / Save PDF</button>
+      <button class="fd-close" onclick="cbmsCloseFarmerDetail()">Close</button>
+    </div>
+  </div>
+</div>
+<div id="farmerPrintSheet"></div>
 
 <section id="assignPanel" class="panel">
 <div class="section"><h2>Admin Assignment / Realignment</h2>
@@ -984,8 +1021,12 @@ function renderFarmers(){
     <td>${esc(f.registration_no)}</td><td>${esc(f.name)}</td><td>${esc(f.mobile)}</td>
     <td>${esc(f.panchayat)}</td><td>${esc(f.village)}</td><td>${esc(f.admin_id||"-")}</td>
     <td><span class="badge ${statusBadge(f.status)}">${esc(f.status||"-")}</span></td>
-    <td><button type="button" class="small edit" data-edit-farmer-id="${esc(f.id)}">Edit</button>
-    ${!["approved","rejected","pending officer approval","verified"].includes(String(f.status||"").trim().toLowerCase())?`<button class="small verify" onclick="verifyFarmer('${f.id}')">Verify</button>`:""}</td>
+    <td>
+    <button type="button" class="small edit" data-edit-farmer-id="${esc(f.id)}">Edit</button>
+    <button type="button" class="small" style="background:#198754;color:#fff" onclick="cbmsViewFarmer('${esc(f.id)}')">👁 View</button>
+    <button type="button" class="small" style="background:#075e88;color:#fff" onclick="cbmsPrintFarmer('${esc(f.id)}')">📄 Print / PDF</button>
+    ${!["approved","rejected","pending officer approval","verified"].includes(String(f.status||"").trim().toLowerCase())?\`<button class="small verify" onclick="verifyFarmer('${f.id}')">Verify</button>\`:""}
+  </td>
   </tr>`).join(""):'<tr><td colspan="8">No farmer found.</td></tr>';
 }
 
@@ -1049,6 +1090,29 @@ async function saveFarmerEdit(){
 }
 
 
+/* ================= FARMER DETAILS / A4 PRINT ================= */
+let cbmsSelectedFarmerForPrint = null;
+function cbmsFarmerValue(v){ return v===null || v===undefined || String(v).trim()==='' ? '—' : String(v); }
+function cbmsFarmerEsc(v){ return String(v??'').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch])); }
+function cbmsFarmerDetailItem(label,value){ return '<div class="farmer-detail-item"><span>'+cbmsFarmerEsc(label)+'</span><strong>'+cbmsFarmerEsc(cbmsFarmerValue(value))+'</strong></div>'; }
+async function cbmsFarmerPhotoUrl(path){ if(!path)return ''; try{ const value=String(path).replace(/^\\/+/, ''); const {data,error}=await db.storage.from('farmer-documents').createSignedUrl(value,600); if(!error&&data?.signedUrl)return data.signedUrl; }catch(e){console.warn('Farmer photo URL:',e)} return ''; }
+function cbmsFarmerFormHTML(f,photoUrl){
+ const photo=photoUrl ? '<img src="'+cbmsFarmerEsc(photoUrl)+'" alt="Farmer Photo">' : '<div class="no-photo">Farmer Photo<br>Not Available</div>';
+ const item=cbmsFarmerDetailItem;
+ return '<div class="farmer-detail-head"><img src="logo.png" alt="CBMS Official Logo"><div><h2>CHANHO BIRSA MUNDA SANGATHAN PRODUCER COMPANY LIMITED</h2><small>Farmer Registration Details</small></div></div>'
+ + '<div class="farmer-detail-body"><div class="farmer-detail-top"><div>'
+ + '<div class="farmer-form-section"><h3>Registration Information</h3><div class="farmer-detail-grid">'+item('Registration No.',f.registration_no)+item('Registration Date',f.registered_at?new Date(f.registered_at).toLocaleDateString('en-IN'):'')+item('Status',f.status)+item('Mobile',f.mobile)+'</div></div>'
+ + '</div><div class="farmer-photo-box">'+photo+'<div style="font-size:10px;color:#667085;margin-top:5px">Farmer Photograph</div></div></div>'
+ + '<div class="farmer-form-section"><h3>Farmer Information</h3><div class="farmer-detail-grid">'+item('Name',f.name)+item('Father / Husband Name',f.father_name)+item('Date of Birth',f.date_of_birth)+item('Gender',f.gender)+item('Category',f.category)+item('Aadhaar Number',f.aadhar_number)+'</div></div>'
+ + '<div class="farmer-form-section"><h3>Address Details</h3><div class="farmer-detail-grid">'+item('Village',f.village)+item('Panchayat',f.panchayat)+item('Block',f.block)+item('District',f.district)+item('State',f.state)+item('Full Address',f.address)+'</div></div>'
+ + '<div class="farmer-form-section"><h3>Agriculture Details</h3><div class="farmer-detail-grid">'+item('Crop',f.crop)+item('Land Area',f.land)+'</div></div>'
+ + '<div class="farmer-form-section"><h3>Bank & Membership Details</h3><div class="farmer-detail-grid">'+item('Bank Name',f.bank_name)+item('Bank Branch',f.bank_branch)+item('Account Number',f.account_number)+item('IFSC Code',f.ifsc_code)+item('Payment Mode',f.payment_mode)+item('Admin ID',f.admin_id)+'</div></div>'
+ + '</div></div>';
+}
+async function cbmsViewFarmer(id){ const f=farmers.find(x=>String(x.id)===String(id)); if(!f){msg('Farmer record nahi mila.','error');return;} cbmsSelectedFarmerForPrint=f; const modal=document.getElementById('farmerDetailModal'); const box=document.getElementById('farmerDetailContent'); box.innerHTML='<div class="farmer-detail-body">Loading farmer details...</div>'; modal.style.display='block'; const photo=await cbmsFarmerPhotoUrl(f.photo_url); box.innerHTML=cbmsFarmerFormHTML(f,photo); }
+function cbmsCloseFarmerDetail(event){ if(event&&event.target!==event.currentTarget)return; const modal=document.getElementById('farmerDetailModal'); if(modal)modal.style.display='none'; }
+async function cbmsPrintFarmer(id){ const f=farmers.find(x=>String(x.id)===String(id)); if(!f){msg('Farmer record nahi mila.','error');return;} cbmsSelectedFarmerForPrint=f; const photo=await cbmsFarmerPhotoUrl(f.photo_url); const sheet=document.getElementById('farmerPrintSheet'); sheet.innerHTML=cbmsFarmerFormHTML(f,photo); sheet.style.display='block'; window.print(); setTimeout(()=>{sheet.style.display='none';sheet.innerHTML='';},700); }
+async function cbmsPrintFarmerFromModal(){ if(cbmsSelectedFarmerForPrint)await cbmsPrintFarmer(cbmsSelectedFarmerForPrint.id); }
 async function verifyFarmer(id){
   const farmer=farmers.find(f=>String(f.id)===String(id));
   if(!farmer){msg("Farmer record nahi mila.","error");return}
