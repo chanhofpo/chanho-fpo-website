@@ -77,67 +77,25 @@ input,select{width:100%;padding:11px;border:1px solid #cfd8d2;border-radius:7px}
 const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
 const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const BUCKET="fpo-gallery";
-const categories=["seed-distribution","success-story","training","field-visit","farmer-meeting","crop-harvest","other"];
-const categoryNames={
-"seed-distribution":"Seed Distribution","success-story":"Success Story","training":"Training",
-"field-visit":"Field Visit","farmer-meeting":"Farmer Meeting","crop-harvest":"Crop / Harvest","other":"Other"
-};
+const categoryNames={"seed-distribution":"Seed Distribution","success-story":"Success Story","training":"Training","field-visit":"Field Visit","farmer-meeting":"Farmer Meeting","crop-harvest":"Crop / Harvest","other":"Other"};
 let allPhotos=[];
-
 async function loadPhotos(){
-  const out=[];
-  for(const cat of categories){
-    const {data,error}=await db.storage.from(BUCKET).list(cat,{limit:100,sortBy:{column:"created_at",order:"desc"}});
-    if(!error && data){
-      data.filter(x=>x.name && !x.name.endsWith("/")).forEach(x=>{
-        const {data:urlData}=db.storage.from(BUCKET).getPublicUrl(cat+"/"+x.name);
-        out.push({name:x.name,cat,url:urlData.publicUrl,created_at:x.created_at||""});
-      });
-    }
-  }
-  allPhotos=out.sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at)));
-  render("all");
+ const {data,error}=await db.from("website_updates").select("title,description,image_url,category,published_at").eq("content_type","gallery").eq("published",true).order("published_at",{ascending:false}).limit(200);
+ if(error){document.getElementById("gallery").innerHTML='<div class="empty">Gallery load nahi ho payi. Kripya baad mein try karein.</div>';return;}
+ allPhotos=(data||[]).map(x=>({url:x.image_url,cat:x.category||"other",caption:x.description||x.title||"",created_at:x.published_at||""}));
+ render("all");
 }
-
 function render(filter){
-  const box=document.getElementById("gallery");
-  const photos=filter==="all"?allPhotos:allPhotos.filter(x=>x.cat===filter);
-  if(!photos.length){box.innerHTML='<div class="empty">अभी इस category में कोई photo upload नहीं है।</div>';return;}
-  box.innerHTML=photos.map(p=>'<article class="card"><img src="'+p.url.replace(/"/g,'&quot;')+'" alt="'+categoryNames[p.cat]+'" onclick="openLightbox(this.src)"><div class="info"><div class="cat">'+categoryNames[p.cat]+'</div><div class="name">'+escapeHtml(p.name.replace(/\.[^.]+$/,"").replace(/[-_]/g," "))+'</div></div></article>').join("");
+ const box=document.getElementById("gallery"),photos=filter==="all"?allPhotos:allPhotos.filter(x=>x.cat===filter);
+ if(!photos.length){box.innerHTML='<div class="empty">अभी इस category में कोई photo upload नहीं है।</div>';return;}
+ box.innerHTML=photos.map(p=>'<article class="card"><img src="'+String(p.url||"").replace(/"/g,"&quot;")+'" alt="'+(categoryNames[p.cat]||"FPO Activity")+'" loading="lazy" onclick="openLightbox(this.src)"><div class="info"><div class="cat">'+(categoryNames[p.cat]||"FPO Activity")+'</div><div class="name">'+escapeHtml(p.caption)+'</div></div></article>').join("");
 }
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
 function openLightbox(src){document.getElementById("lightboxImg").src=src;document.getElementById("lightbox").classList.add("open")}
 function closeLightbox(){document.getElementById("lightbox").classList.remove("open")}
 document.getElementById("lightbox").addEventListener("click",e=>{if(e.target.id==="lightbox")closeLightbox()});
-
-document.querySelectorAll(".filter").forEach(btn=>btn.addEventListener("click",()=>{
- document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render(btn.dataset.cat);
-}));
-
-async function checkStaff(){
- const {data}=await db.auth.getSession();
- if(data && data.session && data.session.user){
-   document.getElementById("uploadBox").classList.add("show");
- }
-}
-document.getElementById("uploadBtn").addEventListener("click",async()=>{
- const files=[...document.getElementById("photo").files],cat=document.getElementById("category").value,msg=document.getElementById("msg");
- if(!files.length){msg.textContent="Photo select कीजिए।";return}
- msg.textContent="Uploading...";
- let ok=0;
- for(const file of files){
-   if(!file.type.startsWith("image/")) continue;
-   const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
-   const path=cat+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"-"+safe;
-   const {error}=await db.storage.from(BUCKET).upload(path,file,{cacheControl:"3600",upsert:false});
-   if(!error) ok++;
- }
- msg.textContent=ok+" photo upload हो गया।";
- document.getElementById("photo").value="";
- await loadPhotos();
-});
-checkStaff();
+document.querySelectorAll(".filter").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render(btn.dataset.cat)}));
+document.getElementById("uploadBox").style.display="none";
 loadPhotos();
 </script>
 </body>
