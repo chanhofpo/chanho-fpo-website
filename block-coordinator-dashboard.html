@@ -57,6 +57,8 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   body *{visibility:hidden!important}
   #farmerPrintSheet,#farmerPrintSheet *{visibility:visible!important}
   #farmerPrintSheet{display:block!important;position:absolute;left:0;top:0;width:100%;background:#fff}
+  #farmerPrintSheet img{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .farmer-photo-box img{display:block!important;visibility:visible!important;width:125px!important;height:155px!important;object-fit:cover!important}
   @page{size:A4 portrait;margin:10mm}
   .print-actions{display:none!important}
 }
@@ -1095,7 +1097,28 @@ let cbmsSelectedFarmerForPrint = null;
 function cbmsFarmerValue(v){ return v===null || v===undefined || String(v).trim()==='' ? '—' : String(v); }
 function cbmsFarmerEsc(v){ return String(v??'').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch])); }
 function cbmsFarmerDetailItem(label,value){ return '<div class="farmer-detail-item"><span>'+cbmsFarmerEsc(label)+'</span><strong>'+cbmsFarmerEsc(cbmsFarmerValue(value))+'</strong></div>'; }
-async function cbmsFarmerPhotoUrl(path){ if(!path)return ''; try{ const value=String(path).replace(/^\/+/, ''); const {data,error}=await db.storage.from('farmer-documents').createSignedUrl(value,600); if(!error&&data?.signedUrl)return data.signedUrl; }catch(e){console.warn('Farmer photo URL:',e)} return ''; }
+async function cbmsFarmerPhotoUrl(path){
+  if(!path) return '';
+  try{
+    const raw=String(path).trim();
+    if(!raw) return '';
+
+    // photo_url may be stored as a full URL or as a private bucket path.
+    // Handle both formats so the farmer photograph appears in View + Print.
+    if(/^https?:\\/\\//i.test(raw)){
+      return raw;
+    }
+
+    let value=raw.replace(/^\\/+/, '');
+    value=value.replace(/^farmer-documents\\//i,'');
+
+    const {data,error}=await db.storage.from('farmer-documents').createSignedUrl(value,600);
+    if(!error && data?.signedUrl) return data.signedUrl;
+  }catch(e){
+    console.warn('Farmer photo URL:',e);
+  }
+  return '';
+}
 function cbmsFarmerFormHTML(f,photoUrl){
  const photo=photoUrl ? '<img src="'+cbmsFarmerEsc(photoUrl)+'" alt="Farmer Photo">' : '<div class="no-photo">Farmer Photo<br>Not Available</div>';
  const item=cbmsFarmerDetailItem;
@@ -1111,7 +1134,36 @@ function cbmsFarmerFormHTML(f,photoUrl){
 }
 async function cbmsViewFarmer(id){ const f=farmers.find(x=>String(x.id)===String(id)); if(!f){msg('Farmer record nahi mila.','error');return;} cbmsSelectedFarmerForPrint=f; const modal=document.getElementById('farmerDetailModal'); const box=document.getElementById('farmerDetailContent'); box.innerHTML='<div class="farmer-detail-body">Loading farmer details...</div>'; modal.style.display='block'; const photo=await cbmsFarmerPhotoUrl(f.photo_url); box.innerHTML=cbmsFarmerFormHTML(f,photo); }
 function cbmsCloseFarmerDetail(event){ if(event&&event.target!==event.currentTarget)return; const modal=document.getElementById('farmerDetailModal'); if(modal)modal.style.display='none'; }
-async function cbmsPrintFarmer(id){ const f=farmers.find(x=>String(x.id)===String(id)); if(!f){msg('Farmer record nahi mila.','error');return;} cbmsSelectedFarmerForPrint=f; const photo=await cbmsFarmerPhotoUrl(f.photo_url); const sheet=document.getElementById('farmerPrintSheet'); sheet.innerHTML=cbmsFarmerFormHTML(f,photo); sheet.style.display='block'; window.print(); setTimeout(()=>{sheet.style.display='none';sheet.innerHTML='';},700); }
+async function cbmsPrintFarmer(id){
+  const f=farmers.find(x=>String(x.id)===String(id));
+  if(!f){msg('Farmer record nahi mila.','error');return;}
+
+  cbmsSelectedFarmerForPrint=f;
+  const photo=await cbmsFarmerPhotoUrl(f.photo_url);
+  const sheet=document.getElementById('farmerPrintSheet');
+
+  sheet.innerHTML=cbmsFarmerFormHTML(f,photo);
+  sheet.style.display='block';
+
+  // Wait for the photograph to finish loading before opening the browser print dialog.
+  const photoImg=sheet.querySelector('.farmer-photo-box img');
+  if(photoImg){
+    try{
+      if(!photoImg.complete) await new Promise(resolve=>{
+        photoImg.addEventListener('load',resolve,{once:true});
+        photoImg.addEventListener('error',resolve,{once:true});
+      });
+    }catch(e){ console.warn('Farmer photo print wait:',e); }
+  }
+
+  await new Promise(resolve=>setTimeout(resolve,120));
+  window.print();
+
+  setTimeout(()=>{
+    sheet.style.display='none';
+    sheet.innerHTML='';
+  },1200);
+}
 async function cbmsPrintFarmerFromModal(){ if(cbmsSelectedFarmerForPrint)await cbmsPrintFarmer(cbmsSelectedFarmerForPrint.id); }
 async function verifyFarmer(id){
   const farmer=farmers.find(f=>String(f.id)===String(id));
