@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBMS FPO - Document Generator</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Devanagari",sans-serif;background:#eef3f7;color:#1f2937}
+.wrap{max-width:1200px;margin:0 auto;padding:18px}.top{background:#fff;border:1px solid #d7e1e8;border-radius:10px;padding:14px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px #00000012}.top img{width:62px;height:62px;object-fit:contain}.top h1{margin:0;font-size:18px;color:#075e88}.top p{margin:4px 0 0;font-size:11px;color:#667085}
+.tabs{display:flex;gap:8px;margin:15px 0;flex-wrap:wrap}.tab{border:0;background:#dcebf4;color:#075e88;padding:10px 15px;border-radius:6px;font-weight:700;cursor:pointer}.tab.active{background:#0b6f9f;color:#fff}
+.panel{display:none;background:#fff;border:1px solid #d7e1e8;border-radius:10px;padding:18px}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.span2{grid-column:span 2}.span3{grid-column:1/-1}label{font-size:11px;font-weight:700;display:block;margin-bottom:5px;color:#344054}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:5px;font:inherit;font-size:13px}textarea{min-height:85px}.actions{margin-top:15px;display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:5px;padding:10px 16px;font-weight:700;cursor:pointer}.primary{background:#0b6f9f;color:#fff}.green{background:#198754;color:#fff}.gray{background:#6c757d;color:#fff}.danger{background:#dc3545;color:#fff}
+.items{margin-top:14px;border:1px solid #d7e1e8;border-radius:7px;overflow:auto}.items table{width:100%;border-collapse:collapse;min-width:720px}.items th,.items td{border:1px solid #e5e7eb;padding:7px}.items th{background:#0b6f9f;color:#fff;font-size:11px}.items input{padding:7px}.right{text-align:right}.small{font-size:11px;color:#667085}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.span2{grid-column:span 2}.span3{grid-column:1/-1}}@media(max-width:560px){.grid{grid-template-columns:1fr}.span2,.span3{grid-column:auto}}
+@media print{body{background:#fff}.no-print{display:none!important}.wrap{max-width:none;padding:0}.top{display:none}.panel{display:block!important;border:0;padding:0}.form-area{display:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><img src="logo.png"><div><h1>CHANHO BIRSA MUNDA SANGATHAN PRODUCER COMPANY LIMITED</h1><p>Document Generator • Officer Only • Appointment • Authorization • Quotation</p></div></div>
+
+<div class="tabs no-print">
+<button class="tab active" onclick="showTab('appointment',this)">Appointment Letter</button>
+<button class="tab" onclick="showTab('authorization',this)">Authorization Letter</button>
+<button class="tab" onclick="showTab('quotation',this)">Quotation</button>
+</div>
+
+<section id="appointment" class="panel active">
+<div class="form-area">
+<h2>Appointment Letter</h2>
+<div class="grid">
+<div><label>Reference No.</label><input id="a_ref"></div>
+<div><label>Date</label><input id="a_date" type="date"></div>
+<div><label>पद</label><input id="a_role" value="पंचायत समन्वयक"></div>
+<div><label>नाम</label><input id="a_name"></div>
+<div><label>पिता का नाम</label><input id="a_father"></div>
+<div><label>प्रखंड</label><input id="a_block" value="मंदार"></div>
+<div><label>जिला</label><input id="a_district" value="रांची"></div>
+<div><label>सदस्य कमीशन (₹)</label><input id="a_member" type="number" value="200"></div>
+<div><label>पंचायत शुद्ध लाभ कमीशन (%)</label><input id="a_profit" type="number" value="25"></div>
+<div class="span3"><label>मुख्य कार्य</label><textarea id="a_work">किसानों को FPO से जोड़ना, सदस्यता बढ़ाना, किसानों के साथ समन्वय करना तथा FPO की गतिविधियों एवं सेवाओं को संबंधित पंचायतों में आगे बढ़ाना।</textarea></div>
+<div class="span3"><label>कार्य एवं जिम्मेदारियाँ</label><textarea id="a_duties">1. संबंधित पंचायतों में किसानों से संपर्क करना।
+2. नए किसानों को FPO से जोड़ना एवं सदस्यता प्रक्रिया में सहयोग करना।
+3. किसान बैठकों एवं जागरूकता कार्यक्रमों का आयोजन/समन्वय करना।
+4. FPO की कृषि सेवाओं, योजनाओं एवं सुविधाओं की जानकारी किसानों तक पहुँचाना।
+5. किसानों की आवश्यकताओं एवं मांगों की जानकारी FPO कार्यालय तक पहुँचाना।
+6. FPO के कृषि उत्पादों की खरीद एवं बिक्री से संबंधित कार्यों में सहयोग करना।
+7. FPO द्वारा दिए गए अन्य क्षेत्रीय कार्यों का निष्पादन करना।</textarea></div>
+</div>
+<div class="actions"><button class="btn primary" onclick="previewAppointment()">Generate / Print PDF</button></div>
+</div>
+<div id="a_preview"></div>
+</section>
+
+<section id="authorization" class="panel">
+<div class="form-area">
+<h2>Authorization Letter</h2>
+<div class="grid">
+<div><label>Reference No.</label><input id="z_ref"></div>
+<div><label>Date</label><input id="z_date" type="date"></div>
+<div><label>पद</label><input id="z_role" value="अधिकृत प्रतिनिधि"></div>
+<div><label>नाम</label><input id="z_name"></div>
+<div><label>पिता का नाम</label><input id="z_father"></div>
+<div><label>कार्य क्षेत्र</label><input id="z_area" value="मंदार प्रखंड, जिला रांची, झारखंड"></div>
+<div class="span3"><label>अधिकृत कार्य</label><textarea id="z_work">1. किसानों से संपर्क एवं समन्वय स्थापित करना।
+2. किसानों का पंजीकरण एवं आवश्यक दस्तावेज एकत्र करना।
+3. FPO की योजनाओं, सेवाओं एवं गतिविधियों का प्रचार-प्रसार करना।
+4. कृषि विभाग एवं अन्य संबंधित कार्यालयों में FPO की ओर से समन्वय करना।
+5. किसान बैठक, प्रशिक्षण एवं जागरूकता कार्यक्रम आयोजित करना।
+6. FPO द्वारा सौंपे गए अन्य कार्यों का निष्पादन करना।</textarea></div>
+</div>
+<div class="actions"><button class="btn primary" onclick="previewAuthorization()">Generate / Print PDF</button></div>
+</div>
+<div id="z_preview"></div>
+</section>
+
+<section id="quotation" class="panel">
+<div class="form-area">
+<h2>Quotation</h2>
+<div class="grid">
+<div><label>Quotation No.</label><input id="q_no"></div>
+<div><label>Date</label><input id="q_date" type="date"></div>
+<div><label>Validity</label><input id="q_validity" value="15 Days"></div>
+<div><label>To / Customer</label><input id="q_customer"></div>
+<div class="span2"><label>Address</label><input id="q_address"></div>
+<div class="span3"><label>Subject</label><input id="q_subject" value="Quotation for supply of goods / services"></div>
+</div>
+<div class="items"><table><thead><tr><th>#</th><th>Item / Service</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount (₹)</th><th></th></tr></thead><tbody id="q_items"></tbody></table></div>
+<div class="actions"><button class="btn gray" onclick="addItem()">+ Add Item</button></div>
+<div class="grid" style="margin-top:12px">
+<div><label>GST (%)</label><input id="q_gst" type="number" value="0" oninput="calcQuote()"></div>
+<div><label>Terms & Conditions</label><textarea id="q_terms">1. Rates are subject to the validity mentioned above.
+2. Payment and delivery terms will be as mutually agreed.
+3. This quotation is issued on behalf of Chanho Birsa Munda Sangathan Producer Company Limited.</textarea></div>
+<div><label>Prepared By</label><input id="q_prepared" value="Officer"></div>
+</div>
+<div class="actions"><button class="btn primary" onclick="previewQuotation()">Generate / Print PDF</button></div>
+</div>
+<div id="q_preview"></div>
+</section>
+</div>
+
+<script>
+const SUPABASE_URL="https://unqihzayhrpmtdxrjiyy.supabase.co";
+const SUPABASE_KEY="sb_publishable_lBcosCFICJZK2rWm7AuZHQ_J3eA9tL4";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{storageKey:"cbms-officer-session-v1",persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
+function today(){return new Date().toISOString().slice(0,10)}
+function fmtDate(v){if(!v)return "";const [y,m,d]=v.split("-");return d+"-"+m+"-"+y}
+function showTab(id,btn){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");btn.classList.add("active")}
+function setDefaults(){
+ const d=today();["a_date","z_date","q_date"].forEach(id=>document.getElementById(id).value=d);
+ const yy=new Date().getFullYear();
+ document.getElementById("a_ref").value="CBMS/MND/APP/"+yy+"-01";
+ document.getElementById("z_ref").value="CBMS/MND/AUTH/"+yy+"-01";
+ document.getElementById("q_no").value="CBMS/QUO/"+yy+"-01";
+ addItem();
+}
+function addItem(){const tb=document.getElementById("q_items");const n=tb.children.length+1;const tr=document.createElement("tr");tr.innerHTML='<td>'+n+'</td><td><input class="qi_name"></td><td><input class="qi_qty" type="number" value="1" oninput="calcQuote()"></td><td><input class="qi_unit" value="Nos"></td><td><input class="qi_rate" type="number" value="0" oninput="calcQuote()"></td><td class="qi_amt right">0.00</td><td><button class="btn danger" type="button" onclick="this.closest(\'tr\').remove();renumber();calcQuote()">×</button></td>';tb.appendChild(tr)}
+function renumber(){[...document.querySelectorAll("#q_items tr")].forEach((tr,i)=>tr.children[0].textContent=i+1)}
+function calcQuote(){let sub=0;document.querySelectorAll("#q_items tr").forEach(tr=>{const a=(+tr.querySelector(".qi_qty").value||0)*(+tr.querySelector(".qi_rate").value||0);tr.querySelector(".qi_amt").textContent=a.toFixed(2);sub+=a});const gst=(sub*(+document.getElementById("q_gst").value||0))/100;return {sub,gst,total:sub+gst}}
+function pageCSS(){return '<style>@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;background:#fff;color:#111;font-family:Arial,"Noto Sans Devanagari",sans-serif}.sheet{width:210mm;min-height:297mm;padding:10mm 15mm 15mm;position:relative;margin:0 auto}.head{border-bottom:3px solid #138b45;padding-bottom:5px;margin-bottom:7mm}.head img{width:100%;height:auto;display:block}.water{position:absolute;top:78mm;left:50%;transform:translateX(-50%);width:125mm;opacity:.075;z-index:0}.content{position:relative;z-index:1}.refrow{display:flex;justify-content:space-between;font-size:12px;margin:5mm 0 3mm}.title{text-align:center;font-size:17px;font-weight:800;text-decoration:underline;margin:4mm 0 7mm}.body{font-size:12.5px;line-height:1.7}.body p{margin:0 0 5mm}.section-title{font-weight:800;margin:5mm 0 2mm}.sig{display:flex;justify-content:space-between;margin-top:25mm;font-size:11px}.sig div{width:40%;text-align:center;border-top:1px solid #222;padding-top:4px}.box{border:1px solid #333;padding:4mm;margin-top:5mm}.qtable{width:100%;border-collapse:collapse;font-size:10px;margin-top:5mm}.qtable th,.qtable td{border:1px solid #444;padding:2.5mm}.qtable th{background:#eaf4fb}.right{text-align:right}.quote-total{width:55%;margin-left:auto;margin-top:4mm;font-size:11px}.quote-total div{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:2mm}.terms{font-size:10.5px;line-height:1.55;white-space:pre-line;margin-top:7mm}.footer{position:absolute;bottom:6mm;left:15mm;right:15mm;border-top:1px solid #ddd;padding-top:2mm;font-size:9px;display:flex;justify-content:space-between;color:#555}@media print{.sheet{margin:0}}</style>'}
+function shell(title,ref,date,body){return '<!doctype html><html lang="hi"><head><meta charset="utf-8"><title>'+esc(title)+'</title>'+pageCSS()+'</head><body><main class="sheet"><div class="head"><img src="logo.png" alt="CBMS FPO Letterhead"></div><img class="water" src="logo.png"><div class="content"><div class="refrow"><span>REF. NO.: '+esc(ref)+'</span><span>DATE.: '+esc(fmtDate(date))+'</span></div><div class="title">'+esc(title)+'</div>'+body+'</div><div class="footer"><span>खुशहाल किसान देश का तरक्की का नाम</span><span>हर किसान का तरक्की का रास्ता</span></div></main></body></html>'}
+function printHtml(html){const w=window.open("","_blank");if(!w){alert("Pop-up allow करें.");return}w.document.open();w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),500)}
+function previewAppointment(){
+ const name=document.getElementById("a_name").value,father=document.getElementById("a_father").value,ref=document.getElementById("a_ref").value,date=document.getElementById("a_date").value;
+ if(!name){alert("नाम भरिए.");return}
+ const body='<div class="body"><p>प्रिय <b>'+esc(document.getElementById("a_role").value)+'</b>,</p><p>आपको <b>Chanho Birsa Munda Sangathan Producer Company Limited</b> की ओर से <b>'+esc(document.getElementById("a_block").value)+' प्रखंड, जिला '+esc(document.getElementById("a_district").value)+', झारखंड</b> में FPO के कार्यों के लिए <b>Commission-Based</b> के रूप में नियुक्त किया जाता है।</p><p>नाम: <b>'+esc(name)+'</b><br>पिता का नाम: <b>'+esc(father)+'</b></p><p>'+esc(document.getElementById("a_work").value)+'</p><div class="section-title">1. कमीशन एवं भुगतान</div><p>(क) सदस्यता कमीशन: आपके द्वारा FPO से जोड़े गए प्रत्येक <b>सत्यापित एवं स्वीकृत सदस्य</b> पर <b>₹ '+esc(document.getElementById("a_member").value)+'</b> कमीशन देय होगा।</p><p>(ख) पंचायत लाभ पर कमीशन: जिस पंचायत में आपके माध्यम से FPO का कार्य/व्यवसाय होता है, उस पंचायत से FPO को प्राप्त होने वाले <b>शुद्ध लाभ (Net Profit)</b> का <b>'+esc(document.getElementById("a_profit").value)+'%</b> आपका कमीशन रहेगा।</p><div class="section-title">2. कार्य एवं जिम्मेदारियाँ</div><div style="white-space:pre-line">'+esc(document.getElementById("a_duties").value)+'</div><div class="section-title">3. कमीशन की गणना</div><p>सदस्यता कमीशन केवल FPO द्वारा सत्यापित एवं स्वीकृत सदस्य पर देय होगा। पंचायत लाभ का '+esc(document.getElementById("a_profit").value)+'% कमीशन FPO के वास्तविक शुद्ध लाभ की गणना एवं लेखा सत्यापन के बाद देय होगा। लाभ की गणना कंपनी के लेखा अभिलेखों के आधार पर की जाएगी।</p><div class="section-title">4. नियुक्ति की प्रकृति</div><p>यह नियुक्ति <b>Commission-Based Work</b> के आधार पर है। यह नियमित मासिक वेतन वाली नियुक्ति नहीं है। कंपनी की पूर्व लिखित अनुमति के बिना FPO की ओर से कोई वित्तीय या कानूनी प्रतिबद्धता करने का अधिकार नहीं होगा। कंपनी को कार्य की समीक्षा तथा आवश्यकतानुसार कार्यक्षेत्र, लक्ष्य या नियुक्ति की शर्तों में परिवर्तन करने का अधिकार रहेगा।</p><div class="sig"><div>अधिकृत हस्ताक्षरकर्ता<br>नाम: __________________<br>पद: __________________</div><div>नियुक्त व्यक्ति के हस्ताक्षर<br>नाम: '+esc(name)+'</div></div></div>';
+ printHtml(shell("APPOINTMENT LETTER",ref,date,body))
+}
+function previewAuthorization(){
+ const name=document.getElementById("z_name").value,ref=document.getElementById("z_ref").value,date=document.getElementById("z_date").value;
+ if(!name){alert("नाम भरिए.");return}
+ const body='<div class="body"><p>यह प्रमाणित किया जाता है कि श्री <b>'+esc(name)+'</b>, पिता – श्री <b>'+esc(document.getElementById("z_father").value)+'</b>, को <b>Chanho Birsa Munda Sangathan Producer Company Limited</b> की ओर से <b>'+esc(document.getElementById("z_area").value)+'</b> में कंपनी के <b>'+esc(document.getElementById("z_role").value)+'</b> के रूप में कार्य करने हेतु अधिकृत किया जाता है।</p><div class="section-title">अधिकृत कार्य</div><div style="white-space:pre-line">'+esc(document.getElementById("z_work").value)+'</div><p style="margin-top:6mm">यह अधिकार पत्र कंपनी द्वारा निर्धारित नियमों एवं शर्तों के अधीन प्रभावी रहेगा। पूर्व लिखित अनुमति के बिना किसी वित्तीय लेन-देन, अनुबंध अथवा कानूनी प्रतिबद्धता में कंपनी को बाध्य करने का अधिकार नहीं होगा।</p><div class="sig"><div>अधिकृत हस्ताक्षरकर्ता<br>नाम: __________________<br>पद: __________________</div><div>कंपनी की मुहर</div></div></div>';
+ printHtml(shell("AUTHORIZATION LETTER",ref,date,body))
+}
+function previewQuotation(){
+ const ref=document.getElementById("q_no").value,date=document.getElementById("q_date").value,c=document.getElementById("q_customer").value;
+ if(!c){alert("Customer/To भरिए.");return}
+ const t=calcQuote();let rows="";document.querySelectorAll("#q_items tr").forEach((tr,i)=>rows+='<tr><td>'+(i+1)+'</td><td>'+esc(tr.querySelector(".qi_name").value)+'</td><td>'+esc(tr.querySelector(".qi_qty").value)+'</td><td>'+esc(tr.querySelector(".qi_unit").value)+'</td><td class="right">'+(+tr.querySelector(".qi_rate").value||0).toFixed(2)+'</td><td class="right">'+tr.querySelector(".qi_amt").textContent+'</td></tr>');
+ const body='<div class="body"><div class="box"><b>To:</b> '+esc(c)+'<br>'+esc(document.getElementById("q_address").value)+'<br><br><b>Subject:</b> '+esc(document.getElementById("q_subject").value)+'</div><table class="qtable"><thead><tr><th>#</th><th>Item / Service</th><th>Qty</th><th>Unit</th><th>Rate (₹)</th><th>Amount (₹)</th></tr></thead><tbody>'+rows+'</tbody></table><div class="quote-total"><div><span>Subtotal</span><b>₹ '+t.sub.toFixed(2)+'</b></div><div><span>GST ('+esc(document.getElementById("q_gst").value)+'%)</span><b>₹ '+t.gst.toFixed(2)+'</b></div><div><span>Total</span><b>₹ '+t.total.toFixed(2)+'</b></div></div><div class="terms"><b>Terms & Conditions:</b><br>'+esc(document.getElementById("q_terms").value)+'</div><div class="sig"><div>Prepared By<br>'+esc(document.getElementById("q_prepared").value)+'</div><div>Authorized Signatory<br>Company Seal</div></div></div>';
+ printHtml(shell("QUOTATION",ref,date,body))
+}
+(async function(){
+ document.getElementById("a_date").value=today();document.getElementById("z_date").value=today();document.getElementById("q_date").value=today();
+ try{const {data}=await db.auth.getSession();if(!data?.session){location.href="officer-login.html"}}catch(e){console.warn(e)}
+ setDefaults();
+})();
+</script>
+</body></html>
