@@ -54,23 +54,20 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
 .farmer-detail-actions button{border:0;border-radius:6px;padding:9px 14px;font-weight:700;cursor:pointer}.fd-print{background:#198754;color:#fff}.fd-close{background:#e9eef1;color:#344054}
 @media(max-width:700px){.farmer-detail-modal{padding:8px}.farmer-detail-top{grid-template-columns:1fr}.farmer-photo-box{order:-1}.farmer-detail-grid{grid-template-columns:1fr}.farmer-detail-item,.farmer-detail-item:nth-child(even){border-right:0}}
 @media print{
-  @page{size:A4 portrait;margin:8mm}
-  html,body{margin:0!important;padding:0!important;background:#fff!important}
-  body > *{display:none!important}
-  body > #farmerPrintSheet{
+  @page{size:A4 portrait;margin:10mm}
+  body *{visibility:hidden!important}
+  #farmerPrintSheet,#farmerPrintSheet *{visibility:visible!important}
+  #farmerPrintSheet{
     display:block!important;
-    position:static!important;
-    width:194mm!important;
-    min-height:0!important;
-    height:auto!important;
-    max-height:none!important;
-    overflow:visible!important;
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    background:#fff!important;
     margin:0!important;
     padding:0!important;
-    background:#fff!important;
-    zoom:.90;
   }
-  #farmerPrintSheet .farmer-detail-head{padding:13px 16px!important}
+  #farmerPrintSheet .farmer-detail-head{padding:14px 16px!important}
   #farmerPrintSheet .farmer-detail-head img{width:54px!important;height:54px!important}
   #farmerPrintSheet .farmer-detail-head h2{font-size:17px!important}
   #farmerPrintSheet .farmer-detail-body{padding:14px 16px!important}
@@ -81,6 +78,7 @@ input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-ra
   #farmerPrintSheet .farmer-detail-item strong{font-size:11px!important;margin-top:3px!important}
   #farmerPrintSheet .farmer-photo-box img{
     display:block!important;
+    visibility:visible!important;
     width:115px!important;
     height:145px!important;
     object-fit:cover!important;
