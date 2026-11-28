@@ -1025,7 +1025,7 @@ function renderFarmers(){
     <button type="button" class="small edit" data-edit-farmer-id="${esc(f.id)}">Edit</button>
     <button type="button" class="small" style="background:#198754;color:#fff" onclick="cbmsViewFarmer('${esc(f.id)}')">👁 View</button>
     <button type="button" class="small" style="background:#075e88;color:#fff" onclick="cbmsPrintFarmer('${esc(f.id)}')">📄 Print / PDF</button>
-    ${!["approved","rejected","pending officer approval","verified"].includes(String(f.status||"").trim().toLowerCase())?\`<button class="small verify" onclick="verifyFarmer('${f.id}')">Verify</button>\`:""}
+    ${!["approved","rejected","pending officer approval","verified"].includes(String(f.status||"").trim().toLowerCase())?`<button class="small verify" onclick="verifyFarmer('${f.id}')">Verify</button>`:""}
   </td>
   </tr>`).join(""):'<tr><td colspan="8">No farmer found.</td></tr>';
 }
@@ -1095,7 +1095,7 @@ let cbmsSelectedFarmerForPrint = null;
 function cbmsFarmerValue(v){ return v===null || v===undefined || String(v).trim()==='' ? '—' : String(v); }
 function cbmsFarmerEsc(v){ return String(v??'').replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[ch])); }
 function cbmsFarmerDetailItem(label,value){ return '<div class="farmer-detail-item"><span>'+cbmsFarmerEsc(label)+'</span><strong>'+cbmsFarmerEsc(cbmsFarmerValue(value))+'</strong></div>'; }
-async function cbmsFarmerPhotoUrl(path){ if(!path)return ''; try{ const value=String(path).replace(/^\\/+/, ''); const {data,error}=await db.storage.from('farmer-documents').createSignedUrl(value,600); if(!error&&data?.signedUrl)return data.signedUrl; }catch(e){console.warn('Farmer photo URL:',e)} return ''; }
+async function cbmsFarmerPhotoUrl(path){ if(!path)return ''; try{ const value=String(path).replace(/^\/+/, ''); const {data,error}=await db.storage.from('farmer-documents').createSignedUrl(value,600); if(!error&&data?.signedUrl)return data.signedUrl; }catch(e){console.warn('Farmer photo URL:',e)} return ''; }
 function cbmsFarmerFormHTML(f,photoUrl){
  const photo=photoUrl ? '<img src="'+cbmsFarmerEsc(photoUrl)+'" alt="Farmer Photo">' : '<div class="no-photo">Farmer Photo<br>Not Available</div>';
  const item=cbmsFarmerDetailItem;
